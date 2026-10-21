@@ -104,3 +104,108 @@ export interface HomeContent {
   request: { title: string; accent: string; promises: IconText[] };
   subscribe: { title: string; accent: string; text: string };
 }
+
+/** Общие поля SEO у страниц из админки (ADM-02) */
+export interface SeoFields {
+  h1: string;
+  title: string;
+  description: string;
+  /** Есть ли перевод на английский (EN-05): без перевода /en/-версия не индексируется */
+  hasEn?: boolean;
+  updatedAt: string;
+}
+
+export interface Faq {
+  q: string;
+  a: string;
+}
+
+export interface LinkItem {
+  label: string;
+  href: string;
+}
+
+/** Страница бренда /brands/{slug}/ (ТЗ 4.1, 5.1) */
+export interface BrandContent extends SeoFields {
+  slug: string;
+  name: string;
+  logo?: string;
+  /** Страна и город производителя — только подтверждённые данные */
+  country?: string;
+  /** Короткая строка для списка брендов */
+  summary: string;
+  intro: string;
+  text: string[];
+  /** Основные группы товаров со ссылками на разделы каталога */
+  groups: LinkItem[];
+  /** Позиции этого бренда поставляются в любой фасовке под запрос (ТЗ 5.2.2) */
+  customPackaging?: boolean;
+  faq?: Faq[];
+  /** Очередь из ТЗ 4.2: 1 — первая, 2 — вторая */
+  wave: 1 | 2;
+}
+
+export type ServiceFieldKind = 'route' | 'temperature' | 'cargo' | 'date' | 'goods' | 'permit' | 'regulator';
+
+/** Страница услуги /services/{slug}/ (ТЗ 4.1, 10.3, SC-06) */
+export interface ServiceContent extends SeoFields {
+  slug: string;
+  /** Короткое название для меню и списков */
+  name: string;
+  summary: string;
+  intro: string;
+  /** Что входит в услугу */
+  includes: string[];
+  /** Как работаем — настоящая последовательность шагов */
+  steps: { title: string; text: string }[];
+  /** Что понадобится от клиента */
+  needs?: string[];
+  text?: string[];
+  /** Справочная таблица (например, температурные режимы) */
+  table?: { caption: string; head: string[]; rows: string[][] };
+  /** Страны, откуда доставляем — для логистических услуг */
+  countries?: string[];
+  faq?: Faq[];
+  related: LinkItem[];
+  /** Поля формы расчёта (RFQ-08: набор полей задаётся на услугу) */
+  form: { title: string; text: string; fields: ServiceFieldKind[] };
+  /** Картинка из лендинга, если есть */
+  image?: ImageRef;
+}
+
+export type ArticleBlock =
+  | { type: 'h2'; id: string; text: string }
+  | { type: 'p'; text: string }
+  | { type: 'ul'; items: string[] }
+  | { type: 'table'; caption: string; head: string[]; rows: string[][] }
+  | { type: 'note'; text: string };
+
+/** Статья /articles/{slug}/ (ТЗ 10.4) */
+export interface Article extends SeoFields {
+  slug: string;
+  lead: string;
+  publishedAt: string;
+  authorSlug: string;
+  /** Проверено экспертом-химиком (ТЗ 10.4) */
+  reviewed: boolean;
+  readingMinutes: number;
+  body: ArticleBlock[];
+  /** Ссылки статья → категория → бренды → услуги (SEO-08) */
+  links: LinkItem[];
+  cta: { title: string; text: string; href: string; label: string };
+}
+
+export interface Author {
+  slug: string;
+  name: string;
+  role: string;
+  /** Квалификация и опыт; пока не заполнено — страница автора закрыта от индексации */
+  bio?: string[];
+  photo?: ImageRef;
+}
+
+/** Страницы доверия: /about/, /delivery/, /documents/ (ТЗ 10.4) */
+export interface TrustPage extends SeoFields {
+  slug: 'about' | 'delivery' | 'documents' | 'contacts';
+  intro: string;
+}

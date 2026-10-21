@@ -1,4 +1,6 @@
-import type { BrandRef, CardType, FacetKey, Packaging, ProductPreview } from '@/types/catalog';
+import type { BrandRef, CardType, FacetKey, Packaging, ProductPreview, SubstanceRole } from '@/types/catalog';
+import { mockProducts } from './products';
+import { SUBSTANCE_SLUGS } from './substances';
 
 /**
  * МОКОВЫЙ АССОРТИМЕНТ ДЛЯ ВЁРСТКИ КАТАЛОГА (~460 позиций).
@@ -89,6 +91,7 @@ function make(o: {
   packs: PackDef[];
   custom?: boolean;
   attrs?: Partial<Record<FacetKey, string[]>>;
+  substance?: { slug: string; role: SubstanceRole };
 }): ProductPreview {
   seq += 1;
   const id = `c${seq}`;
@@ -110,6 +113,7 @@ function make(o: {
     categorySlug: sub ? `${top}/${sub}` : top,
     packagings,
     customPackaging: !!o.custom,
+    substance: o.substance,
     popularity: Math.round(rand() * 1000),
     attributes: {
       brand: [o.brand.slug],
@@ -184,6 +188,8 @@ const RS = 'reference-standards';
 
 const standards: ProductPreview[] = [];
 SUBSTANCES.forEach(([name, cas]) => {
+  const substanceSlug = SUBSTANCE_SLUGS[name];
+  const sub = (role: SubstanceRole) => (substanceSlug ? { slug: substanceSlug, role } : undefined);
   const storage = [pick(STORAGE)];
   const apiAttrs = { storage, purpose: chance(0.5) ? ['assay', 'identification'] : ['assay'], type: ['api'] };
 
@@ -191,28 +197,28 @@ SUBSTANCES.forEach(([name, cas]) => {
     standards.push(
       make({
         brand: B.edqm, name: `${name} CRS`, catalogNumber: `${letter(name)}${digits(7)}`, cas,
-        category: [RS, 'edqm'], cardType: 'standard', packs: [pick([PK.mg20, PK.mg100, PK.mg200])], attrs: apiAttrs,
+        category: [RS, 'edqm'], cardType: 'standard', packs: [pick([PK.mg20, PK.mg100, PK.mg200])], attrs: apiAttrs, substance: sub('api'),
       }),
     );
   if (chance(0.75))
     standards.push(
       make({
         brand: B.usp, name: `${name} Reference Standard`, catalogNumber: `1${digits(6)}`, cas,
-        category: [RS, 'usp'], cardType: 'standard', packs: [pick([PK.mg100, PK.mg200, PK.mg500])], attrs: apiAttrs,
+        category: [RS, 'usp'], cardType: 'standard', packs: [pick([PK.mg100, PK.mg200, PK.mg500])], attrs: apiAttrs, substance: sub('api'),
       }),
     );
   if (chance(0.4))
     standards.push(
       make({
         brand: B.bp, name: `${name} BPCRS`, catalogNumber: `BP${digits(3)}`, cas,
-        category: [RS, 'british-pharmacopoeia'], cardType: 'standard', packs: [PK.mg100], attrs: apiAttrs,
+        category: [RS, 'british-pharmacopoeia'], cardType: 'standard', packs: [PK.mg100], attrs: apiAttrs, substance: sub('api'),
       }),
     );
   if (chance(0.4))
     standards.push(
       make({
         brand: B.lgc, name, catalogNumber: `MM${digits(4)}.00`, cas,
-        category: [RS, 'lgc'], cardType: 'standard', packs: [PK.mg10, PK.mg25, PK.mg50, PK.mg100], attrs: apiAttrs,
+        category: [RS, 'lgc'], cardType: 'standard', packs: [PK.mg10, PK.mg25, PK.mg50, PK.mg100], attrs: apiAttrs, substance: sub('api'),
       }),
     );
   if (chance(0.5))
@@ -220,7 +226,7 @@ SUBSTANCES.forEach(([name, cas]) => {
       make({
         brand: B.merck, name: `${name}, Pharmaceutical Secondary Standard; Certified Reference Material`,
         catalogNumber: `PHR${digits(4)}`, cas, category: [RS, 'merck'], cardType: 'standard',
-        packs: pick([[PK.mg500], [PK.g1], [PK.mg500, PK.g1]]), attrs: { ...apiAttrs, purpose: ['assay', 'system-suitability'] },
+        packs: pick([[PK.mg500], [PK.g1], [PK.mg500, PK.g1]]), attrs: { ...apiAttrs, purpose: ['assay', 'system-suitability'] }, substance: sub('api'),
       }),
     );
   // примеси и меченые соединения — синтезаторы делают любую фасовку под запрос (ТЗ 5.2.2)
@@ -233,6 +239,7 @@ SUBSTANCES.forEach(([name, cas]) => {
         make({
           brand: b, name: `${name} EP Impurity ${'ABCDEFG'[i]}`, catalogNumber: `${prefix}${letter(name)}${digits(5)}`,
           category: [RS, 'impurity-standards'], cardType: 'standard', packs: [PK.mg10, PK.mg25, PK.mg50], custom: true, attrs: { storage: [pick(['2-8', '-20'] as const)], purpose: ['impurity-control'], type: ['impurity'] },
+          substance: sub('impurity'),
         }),
       );
     }
@@ -242,7 +249,7 @@ SUBSTANCES.forEach(([name, cas]) => {
       make({
         brand: B.trc, name: `${name}-d4`, catalogNumber: `${letter(name)}${digits(6)}`,
         category: [RS, 'impurity-standards'], cardType: 'standard', packs: [PK.mg10, PK.mg25], custom: true,
-        attrs: { storage: ['-20'], purpose: ['assay'], type: ['labeled'] },
+        attrs: { storage: ['-20'], purpose: ['assay'], type: ['labeled'] }, substance: sub('labeled'),
       }),
     );
 });
@@ -444,7 +451,6 @@ const other: ProductPreview[] = [];
   ),
 );
 [
-  [B.edqm, 'European Pharmacopoeia 11th Edition, online subscription (1 year)'],
   [B.edqm, 'European Pharmacopoeia 11th Edition, print'],
   [B.usp, 'USP–NF Online, annual subscription'],
   [B.bp, 'British Pharmacopoeia 2026, print + online'],
@@ -458,4 +464,15 @@ const other: ProductPreview[] = [];
   ),
 );
 
-export const catalogProducts: ProductPreview[] = [...standards, ...chromatography, ...reagents, ...other];
+// ── витринные позиции главной входят в каталог; сгенерированные дубли убираем ──
+// Дубль: тот же бренд и тот же кат. №, или то же название с тем же CAS (уникальность — ТЗ 5.1)
+const generated = [...standards, ...chromatography, ...reagents, ...other];
+const norm = (s: string) => s.toLowerCase().replace(/[\s.\-]/g, '');
+const isDuplicate = (g: ProductPreview) =>
+  mockProducts.some(
+    (f) =>
+      f.brand.slug === g.brand.slug &&
+      (norm(f.catalogNumber) === norm(g.catalogNumber) || (f.name === g.name && !!f.cas && f.cas === g.cas)),
+  );
+
+export const catalogProducts: ProductPreview[] = [...mockProducts, ...generated.filter((g) => !isDuplicate(g))];

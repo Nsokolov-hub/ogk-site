@@ -43,6 +43,8 @@ export interface SiteRequestPayload {
     elapsedMs: number;
   };
   pageUrl: string;
+  /** Заявка на услугу (RFQ-08): slug услуги и значения её полей */
+  service?: { slug: string; name: string; fields: Record<string, string> };
   /** UTM, ClientID и т. п. — подключим вместе с модулем атрибуции */
   attribution?: unknown;
 }

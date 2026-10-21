@@ -49,6 +49,8 @@ export function AddToRfqButton({
       catalogNumber: product.catalogNumber,
       cas: product.cas,
       categorySlug: product.categorySlug,
+      packagings: product.packagings,
+      customAllowed: product.customPackaging,
       packagingId,
       packagingLabel: pk?.label,
       quantity: 1,

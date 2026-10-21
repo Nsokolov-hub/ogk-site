@@ -13,30 +13,15 @@ import { SubscribeSection } from '@/components/home/SubscribeSection';
 import { WhyUsSection } from '@/components/home/WhyUsSection';
 import { JsonLd, organizationLd, websiteLd } from '@/components/seo/JsonLd';
 import { getHomeContent, getSiteSettings } from '@/lib/api';
+import { pageMetadata } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home.meta' });
-  const url = locale === 'ru' ? '/' : `/${locale}/`;
-  return {
-    title: t('title'),
-    description: t('description'),
-    alternates: {
-      canonical: url,
-      languages: { ru: '/', en: '/en/', 'x-default': '/' },
-    },
-    openGraph: {
-      type: 'website',
-      url,
-      siteName: 'ОГК-ХИМ',
-      title: t('title'),
-      description: t('description'),
-      locale: locale === 'ru' ? 'ru_RU' : 'en_US',
-      images: [{ url: '/images/home/hero-1.jpg', width: 2880, height: 1728 }],
-    },
-  };
+  // EN-контент главной ещё не переведён: /en/ — noindex с canonical на русскую версию (EN-05)
+  return pageMetadata({ locale, path: '/', title: t('title'), description: t('description') });
 }
 
 export default async function HomePage({ params }: Props) {

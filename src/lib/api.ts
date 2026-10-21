@@ -9,7 +9,7 @@ import type { SiteRequestPayload, SiteRequestResult } from '@/types/requests';
 import type { SiteSettings } from '@/types/settings';
 import { catalogTree } from '@/data/mock/categories';
 import { homeContentRu } from '@/data/mock/home';
-import { mockProducts } from '@/data/mock/products';
+import { catalogProducts } from '@/data/mock/catalog-products';
 import { siteSettings } from '@/data/mock/settings';
 
 /** Имитация сети только в браузере, чтобы не тормозить серверный рендер */
@@ -35,20 +35,10 @@ export type HomeProductsSort = 'popular' | 'alpha';
 
 const MOCK_TOTAL = 36;
 
-/** Моки повторяются по кругу, чтобы «Загрузить ещё» можно было нажать дважды */
+/** «Популярные» — подборка из админки; в моках — самые популярные позиции каталога, все со своими карточками */
 function buildMockList(sort: HomeProductsSort): ProductPreview[] {
-  const base = sort === 'alpha' ? [...mockProducts].sort((a, b) => a.name.localeCompare(b.name, 'en')) : mockProducts;
-  return Array.from({ length: MOCK_TOTAL }, (_, i) => {
-    const p = base[i % base.length];
-    const round = Math.floor(i / base.length);
-    if (round === 0) return p;
-    return {
-      ...p,
-      id: `${p.id}-r${round}`,
-      slug: `${p.slug}-r${round}`,
-      packagings: p.packagings.map((pk) => ({ ...pk, id: `${pk.id}-r${round}` })),
-    };
-  });
+  const top = [...catalogProducts].sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0)).slice(0, MOCK_TOTAL);
+  return sort === 'alpha' ? top.sort((a, b) => a.name.localeCompare(b.name, 'en')) : top;
 }
 
 export async function getHomeProducts(p: {

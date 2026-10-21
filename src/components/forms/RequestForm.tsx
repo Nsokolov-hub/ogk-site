@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
@@ -32,12 +32,31 @@ const schema = z.object({
 
 type Values = z.infer<typeof schema>;
 
-/** Форма «Отправьте ваш запрос» на главной: заявка kind = general */
-export function RequestForm({ docs }: { docs: SiteSettings['docs'] }) {
+/** Событие «подставить текст в форму заявки» — кнопки «Запросить CoA партии», «Запросить SDS» на карточке */
+export const REQUEST_PREFILL_EVENT = 'ogk:request-prefill';
+
+export function prefillRequest(text: string) {
+  window.dispatchEvent(new CustomEvent<string>(REQUEST_PREFILL_EVENT, { detail: text }));
+}
+
+/**
+ * Форма «Отправьте ваш запрос»: главная, категории, карточки, бренды, страницы доверия. Заявка kind = general.
+ * defaultMessage — подставленный запрос (товар с карточки, текст из пустого поиска, SC-03).
+ */
+export function RequestForm({
+  docs,
+  defaultMessage = '',
+  formType = 'request',
+}: {
+  docs: SiteSettings['docs'];
+  defaultMessage?: string;
+  formType?: string;
+}) {
   const t = useTranslations('form');
   const te = useTranslations('errors');
   const locale = useLocale() as 'ru' | 'en';
-  const { onFocusCapture, elapsedMs } = useFormMeta('request');
+  const { onFocusCapture, elapsedMs } = useFormMeta(formType);
+  const formRef = useRef<HTMLFormElement>(null);
   const [file, setFile] = useState<File | undefined>();
   const [fileError, setFileError] = useState<string | undefined>();
   const [status, setStatus] = useState<{ kind: 'success'; number: string } | { kind: 'error' } | null>(null);
@@ -47,12 +66,30 @@ export function RequestForm({ docs }: { docs: SiteSettings['docs'] }) {
     control,
     handleSubmit,
     reset,
+    getValues,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<Values>({
     resolver: zodResolver(schema),
     mode: 'onTouched',
-    defaultValues: { name: '', company: '', email: '', phone: '', message: '', consent: false, website: '' },
+    defaultValues: { name: '', company: '', email: '', phone: '', message: defaultMessage, consent: false, website: '' },
   });
+
+  // Кнопки «Запросить документ» дописывают строку в запрос, прокручивают к форме и ставят фокус в поле
+  useEffect(() => {
+    const onPrefill = (e: Event) => {
+      const text = (e as CustomEvent<string>).detail;
+      const current = getValues('message').trim();
+      setValue('message', current && !current.includes(text) ? `${current}\n${text}` : current || text, { shouldDirty: true });
+      setStatus(null);
+      const el = formRef.current;
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.querySelector<HTMLTextAreaElement>('textarea')?.focus({ preventScroll: true });
+    };
+    window.addEventListener(REQUEST_PREFILL_EVENT, onPrefill);
+    return () => window.removeEventListener(REQUEST_PREFILL_EVENT, onPrefill);
+  }, [getValues, setValue]);
 
   const err = (key?: string) => (key ? te(key) : undefined);
 
@@ -78,9 +115,9 @@ export function RequestForm({ docs }: { docs: SiteSettings['docs'] }) {
             antispam: { website: v.website ?? '', elapsedMs: elapsedMs() },
             pageUrl: window.location.href,
           });
-      track('form_submit', { form_type: 'request', page: window.location.pathname });
+      track('form_submit', { form_type: formType, page: window.location.pathname });
       setStatus({ kind: 'success', number: res.number });
-      reset();
+      reset({ name: '', company: '', email: '', phone: '', message: defaultMessage, consent: false, website: '' });
       setFile(undefined);
     } catch {
       setStatus({ kind: 'error' });
@@ -101,7 +138,14 @@ export function RequestForm({ docs }: { docs: SiteSettings['docs'] }) {
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-4 md:gap-5" aria-busy={isSubmitting}>
+    <form
+      ref={formRef}
+      noValidate
+      onSubmit={handleSubmit(onSubmit)}
+      onFocusCapture={onFocusCapture}
+      className="relative flex scroll-mt-32 flex-col gap-4 md:gap-5"
+      aria-busy={isSubmitting}
+    >
       <p className="text-small text-text-secondary">{t('requiredHint')}</p>
       <div className="grid gap-4 md:grid-cols-2 md:gap-5">
         <Input label={t('fullName')} required autoComplete="name" placeholder={t('fullNamePlaceholder')} error={err(errors.name?.message)} {...register('name')} />

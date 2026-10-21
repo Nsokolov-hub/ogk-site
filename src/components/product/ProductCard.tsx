@@ -46,12 +46,17 @@ export function ProductCard({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col sm:mt-4">
-        <Link
-          href={`/brands/${product.brand.slug}/`}
-          className="relative z-10 w-fit text-small text-text-secondary transition-colors hover:text-accent"
-        >
-          {product.brand.name}
-        </Link>
+        {/* У «Разных производителей» нет страницы бренда — без ссылки, чтобы не было битых URL */}
+        {product.brand.slug === 'various' ? (
+          <span className="w-fit text-small text-text-secondary">{product.brand.name}</span>
+        ) : (
+          <Link
+            href={`/brands/${product.brand.slug}/`}
+            className="relative z-10 w-fit text-small text-text-secondary transition-colors hover:text-accent"
+          >
+            {product.brand.name}
+          </Link>
+        )}
 
         {/* Ссылка растянута на всю карточку через ::after; кнопки и селект лежат выше (z-10) */}
         <h3 id={titleId} className="mt-1.5 text-body font-medium text-text">

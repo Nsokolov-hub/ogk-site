@@ -18,6 +18,7 @@ import { catalogHref, countSelected, parseCatalogQuery, type SearchParams } from
 import { getCatalogListing } from '@/lib/catalog-api';
 import { getCategoryPage } from '@/lib/category-page';
 import { cn } from '@/lib/cn';
+import { pageMetadata } from '@/lib/seo';
 
 type Props = {
   params: Promise<{ locale: Locale; slug?: string[] }>;
@@ -40,18 +41,18 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const t = await getTranslations({ locale, namespace: 'catalog' });
   const q = parseCatalogQuery(await searchParams);
   const filtered = countSelected(q.filters) > 0 || q.sort !== 'popular';
-  const base = data.href;
-  const localized = locale === 'ru' ? base : `/${locale}${base}`;
-  const canonical = !filtered && q.page > 1 ? `${localized}?page=${q.page}` : localized;
-  const title = !filtered && q.page > 1 ? `${data.content.title} ${t('pageTitle', { n: q.page })}` : data.content.title;
+  const paged = !filtered && q.page > 1;
+  const title = paged ? `${data.content.title} ${t('pageTitle', { n: q.page })}` : data.content.title;
 
-  return {
+  return pageMetadata({
+    locale,
+    path: data.href,
     title,
     description: data.content.description,
-    alternates: { canonical, languages: { ru: base, en: `/en${base}`, 'x-default': base } },
-    robots: filtered ? { index: false, follow: true } : undefined,
-    openGraph: { type: 'website', url: canonical, siteName: 'ОГК-ХИМ', title, description: data.content.description },
-  };
+    // Фильтры и сортировка — noindex, follow, canonical на категорию; пагинация — canonical на себя
+    index: !filtered,
+    canonicalQuery: paged ? `page=${q.page}` : undefined,
+  });
 }
 
 export default async function CatalogPage({ params, searchParams }: Props) {

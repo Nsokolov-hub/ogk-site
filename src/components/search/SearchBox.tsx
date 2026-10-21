@@ -34,6 +34,7 @@ type State = { status: 'idle' } | { status: 'loading' } | { status: 'done'; resu
 export function SearchBox({
   size = 'md',
   value,
+  defaultValue,
   onValueChange,
   autoFocus,
   requestHref = '/rfq/',
@@ -43,6 +44,8 @@ export function SearchBox({
 }: {
   size?: 'md' | 'lg';
   value?: string;
+  /** Начальное значение, например запрос со страницы результатов */
+  defaultValue?: string;
   onValueChange?: (v: string) => void;
   autoFocus?: boolean;
   /** Куда вести из пустой выдачи: на главной — к форме, на остальных страницах — в корзину запроса */
@@ -55,7 +58,7 @@ export function SearchBox({
   const t = useTranslations('search');
   const locale = useLocale();
   const { fieldId } = useFieldIds();
-  const [own, setOwn] = useState('');
+  const [own, setOwn] = useState(defaultValue ?? '');
   const query = value ?? own;
   const setQuery = (v: string) => (onValueChange ? onValueChange(v) : setOwn(v));
   const [state, setState] = useState<State>({ status: 'idle' });

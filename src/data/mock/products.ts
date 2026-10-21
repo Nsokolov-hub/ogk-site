@@ -1,16 +1,18 @@
-import type { BrandRef, Packaging, ProductPreview } from '@/types/catalog';
+import type { BrandRef, FacetKey, Packaging, ProductPreview } from '@/types/catalog';
 
 /**
  * ЗАГЛУШКИ ДЛЯ ВЁРСТКИ, а не реальный каталог.
+ * Витринные позиции главной: они же входят в каталог, поиск и имеют подробные карточки
+ * (контрольный пример ТЗ SC-01: Y0001897 → Oxcarbazepine CRS EDQM).
  * Кат. номера частично условные — заменятся выгрузкой ассортимента (ТЗ 9.6).
  */
 
-const b = (slug: string, name: string): BrandRef => ({ slug, name });
+const b = (slug: string, name: string): BrandRef => ({ slug, name, logo: `/images/brands/${slug}.svg` });
 
-const pack = (id: string, label: string): Packaging => ({
-  id,
-  label,
-});
+/** id фасовки = {id товара}-{ключ фильтра «Фасовка»} — так фильтр находит подпись */
+const pack = (productId: string, key: string, label: string): Packaging => ({ id: `${productId}-${key}`, label });
+
+const attrs = (a: Partial<Record<FacetKey, string[]>>) => a;
 
 export const mockProducts: ProductPreview[] = [
   {
@@ -21,9 +23,12 @@ export const mockProducts: ProductPreview[] = [
     brand: b('edqm', 'EDQM'),
     catalogNumber: 'Y0001897',
     cas: '28721-07-5',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p1-100mg', '100 мг')],
+    categorySlug: 'reference-standards/edqm',
+    packagings: [pack('p1', '100-mg', '100 мг')],
     customPackaging: false,
+    substance: { slug: 'oxcarbazepine', role: 'api' },
+    popularity: 1400,
+    attributes: attrs({ brand: ['edqm'], pack: ['100-mg'], storage: ['2-8'], purpose: ['assay', 'identification'], type: ['api'] }),
   },
   {
     id: 'p2',
@@ -33,14 +38,17 @@ export const mockProducts: ProductPreview[] = [
     brand: b('edqm', 'EDQM'),
     catalogNumber: 'P0300000',
     cas: '103-90-2',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p2-100mg', '100 мг')],
+    categorySlug: 'reference-standards/edqm',
+    packagings: [pack('p2', '100-mg', '100 мг')],
     customPackaging: false,
+    substance: { slug: 'paracetamol', role: 'api' },
+    popularity: 1390,
     image: {
       src: '/images/products/paracetamol-structure.svg',
       alt: 'Структурная формула парацетамола',
       kind: 'structure',
     },
+    attributes: attrs({ brand: ['edqm'], pack: ['100-mg'], storage: ['2-8'], purpose: ['assay', 'identification'], type: ['api'] }),
   },
   {
     id: 'p3',
@@ -50,9 +58,12 @@ export const mockProducts: ProductPreview[] = [
     brand: b('usp', 'USP'),
     catalogNumber: '1100000',
     cas: '298-46-4',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p3-200mg', '200 мг')],
+    categorySlug: 'reference-standards/usp',
+    packagings: [pack('p3', '200-mg', '200 мг')],
     customPackaging: false,
+    substance: { slug: 'carbamazepine', role: 'api' },
+    popularity: 1380,
+    attributes: attrs({ brand: ['usp'], pack: ['200-mg'], storage: ['room'], purpose: ['assay', 'identification'], type: ['api'] }),
   },
   {
     id: 'p4',
@@ -62,9 +73,12 @@ export const mockProducts: ProductPreview[] = [
     brand: b('usp', 'USP'),
     catalogNumber: '1396309',
     cas: '1115-70-4',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p4-200mg', '200 мг')],
+    categorySlug: 'reference-standards/usp',
+    packagings: [pack('p4', '200-mg', '200 мг')],
     customPackaging: false,
+    substance: { slug: 'metformin', role: 'api' },
+    popularity: 1370,
+    attributes: attrs({ brand: ['usp'], pack: ['200-mg'], storage: ['room'], purpose: ['assay'], type: ['api'] }),
   },
   {
     id: 'p5',
@@ -74,9 +88,12 @@ export const mockProducts: ProductPreview[] = [
     brand: b('lgc', 'LGC'),
     catalogNumber: 'MM0080.02',
     cas: '3564-73-6',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p5-10mg', '10 мг'), pack('p5-25mg', '25 мг'), pack('p5-50mg', '50 мг')],
+    categorySlug: 'reference-standards/lgc',
+    packagings: [pack('p5', '10-mg', '10 мг'), pack('p5', '25-mg', '25 мг'), pack('p5', '50-mg', '50 мг')],
     customPackaging: false,
+    substance: { slug: 'carbamazepine', role: 'impurity' },
+    popularity: 1360,
+    attributes: attrs({ brand: ['lgc'], pack: ['10-mg', '25-mg', '50-mg'], storage: ['2-8'], purpose: ['impurity-control'], type: ['impurity'] }),
   },
   {
     id: 'p6',
@@ -86,9 +103,12 @@ export const mockProducts: ProductPreview[] = [
     brand: b('synzeal', 'SynZeal'),
     catalogNumber: 'SZ-O004004',
     cas: '88546-55-8',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p6-10mg', '10 мг'), pack('p6-25mg', '25 мг')],
+    categorySlug: 'reference-standards/impurity-standards',
+    packagings: [pack('p6', '10-mg', '10 мг'), pack('p6', '25-mg', '25 мг')],
     customPackaging: true,
+    substance: { slug: 'omeprazole', role: 'impurity' },
+    popularity: 1350,
+    attributes: attrs({ brand: ['synzeal'], pack: ['10-mg', '25-mg', 'custom'], storage: ['2-8'], purpose: ['impurity-control'], type: ['impurity'] }),
   },
   {
     id: 'p7',
@@ -98,9 +118,12 @@ export const mockProducts: ProductPreview[] = [
     brand: b('merck', 'Merck'),
     catalogNumber: 'PHR0000',
     cas: '29331-92-8',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p7-50mg', '50 мг')],
+    categorySlug: 'reference-standards/merck',
+    packagings: [pack('p7', '50-mg', '50 мг')],
     customPackaging: false,
+    substance: { slug: 'oxcarbazepine', role: 'metabolite' },
+    popularity: 1340,
+    attributes: attrs({ brand: ['merck'], pack: ['50-mg'], storage: ['2-8'], purpose: ['assay'], type: ['metabolite'] }),
   },
   {
     id: 'p8',
@@ -111,8 +134,10 @@ export const mockProducts: ProductPreview[] = [
     catalogNumber: '1.00030',
     cas: '75-05-8',
     categorySlug: 'reagents',
-    packagings: [pack('p8-1l', '1 л'), pack('p8-2-5l', '2,5 л')],
+    packagings: [pack('p8', '1-l', '1 л'), pack('p8', '2-5-l', '2,5 л')],
     customPackaging: false,
+    popularity: 1330,
+    attributes: attrs({ brand: ['merck'], pack: ['1-l', '2-5-l'], storage: ['room'] }),
   },
   {
     id: 'p9',
@@ -123,8 +148,10 @@ export const mockProducts: ProductPreview[] = [
     catalogNumber: 'M813573',
     cas: '547-58-0',
     categorySlug: 'reagents',
-    packagings: [pack('p9-25g', '25 г'), pack('p9-100g', '100 г')],
+    packagings: [pack('p9', '25-g', '25 г'), pack('p9', '100-g', '100 г')],
     customPackaging: false,
+    popularity: 1320,
+    attributes: attrs({ brand: ['macklin'], pack: ['25-g', '100-g'], storage: ['room'] }),
   },
   {
     id: 'p10',
@@ -134,9 +161,12 @@ export const mockProducts: ProductPreview[] = [
     brand: b('edqm', 'EDQM'),
     catalogNumber: 'I0050000',
     cas: '15687-27-1',
-    categorySlug: 'reference-standards',
-    packagings: [pack('p10-100mg', '100 мг')],
+    categorySlug: 'reference-standards/edqm',
+    packagings: [pack('p10', '100-mg', '100 мг')],
     customPackaging: false,
+    substance: { slug: 'ibuprofen', role: 'api' },
+    popularity: 1310,
+    attributes: attrs({ brand: ['edqm'], pack: ['100-mg'], storage: ['2-8'], purpose: ['assay', 'identification'], type: ['api'] }),
   },
   {
     id: 'p11',
@@ -145,9 +175,11 @@ export const mockProducts: ProductPreview[] = [
     name: 'XBridge C18 Column, 130 Å, 5 µm, 4.6 mm × 150 mm',
     brand: b('waters', 'Waters'),
     catalogNumber: '186003116',
-    categorySlug: 'chromatography',
-    packagings: [pack('p11-1', '1 шт.')],
+    categorySlug: 'chromatography/hplc-columns',
+    packagings: [pack('p11', '1-pcs', '1 шт.')],
     customPackaging: false,
+    popularity: 1300,
+    attributes: attrs({ brand: ['waters'], phase: ['C18'], length: ['150'], diameter: ['4.6'], particle: ['5'], ph: ['1-12'] }),
   },
   {
     id: 'p12',
@@ -156,20 +188,24 @@ export const mockProducts: ProductPreview[] = [
     name: 'ZORBAX Eclipse Plus C18, 4.6 × 150 mm, 5 µm',
     brand: b('agilent', 'Agilent'),
     catalogNumber: '959993-902',
-    categorySlug: 'chromatography',
-    packagings: [pack('p12-1', '1 шт.')],
+    categorySlug: 'chromatography/hplc-columns',
+    packagings: [pack('p12', '1-pcs', '1 шт.')],
     customPackaging: false,
+    popularity: 1290,
+    attributes: attrs({ brand: ['agilent'], phase: ['C18'], length: ['150'], diameter: ['4.6'], particle: ['5'], ph: ['2-9'] }),
   },
   {
     id: 'p13',
     slug: 'atcc-25922-escherichia-coli',
     cardType: 'other',
     name: 'Escherichia coli (Migula) Castellani and Chalmers, lyophilized',
-    brand: b('atcc', 'ATCC'),
+    brand: { slug: 'atcc', name: 'ATCC' },
     catalogNumber: '25922',
     categorySlug: 'biological-standards',
-    packagings: [pack('p13-1', '1 ампула')],
+    packagings: [pack('p13', '1-vial', '1 ампула')],
     customPackaging: false,
+    popularity: 1280,
+    attributes: attrs({ brand: ['atcc'], pack: ['1-vial'], storage: ['2-8'] }),
   },
   {
     id: 'p14',
@@ -179,7 +215,9 @@ export const mockProducts: ProductPreview[] = [
     brand: b('edqm', 'EDQM'),
     catalogNumber: 'PH-EUR-ONLINE',
     categorySlug: 'pharmacopeias',
-    packagings: [pack('p14-1', '1 шт.')],
+    packagings: [pack('p14', '1-pcs', '1 шт.')],
     customPackaging: false,
+    popularity: 1270,
+    attributes: attrs({ brand: ['edqm'], pack: ['1-pcs'] }),
   },
 ];

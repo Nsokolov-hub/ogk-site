@@ -90,3 +90,85 @@ export function websiteLd(s: SiteSettings, locale: string) {
     },
   };
 }
+
+/**
+ * Product (SEO-06): name, sku, mpn, brand, image, description.
+ * Блока offers нет: цены на витрине не показываются, а offers без price невалиден.
+ */
+export function productLd(p: {
+  url: string;
+  name: string;
+  sku: string;
+  brand: string;
+  description: string;
+  image?: string;
+  cas?: string;
+  category?: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    '@id': `${p.url}#product`,
+    url: p.url,
+    name: p.name,
+    sku: p.sku,
+    mpn: p.sku,
+    brand: { '@type': 'Brand', name: p.brand },
+    description: p.description,
+    ...(p.image ? { image: p.image } : {}),
+    ...(p.category ? { category: p.category } : {}),
+    ...(p.cas ? { additionalProperty: [{ '@type': 'PropertyValue', name: 'CAS', value: p.cas }] } : {}),
+  };
+}
+
+export function articleLd(p: {
+  url: string;
+  headline: string;
+  description: string;
+  datePublished: string;
+  dateModified: string;
+  author: { name: string; url: string; jobTitle?: string };
+  siteUrl: string;
+  image?: string;
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    '@id': `${p.url}#article`,
+    mainEntityOfPage: p.url,
+    headline: p.headline,
+    description: p.description,
+    datePublished: p.datePublished,
+    dateModified: p.dateModified,
+    inLanguage: 'ru',
+    author: { '@type': 'Person', name: p.author.name, url: p.author.url, ...(p.author.jobTitle ? { jobTitle: p.author.jobTitle } : {}) },
+    publisher: { '@id': `${p.siteUrl}/#organization` },
+    ...(p.image ? { image: p.image } : {}),
+  };
+}
+
+export function personLd(p: { url: string; name: string; jobTitle: string; siteUrl: string }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    '@id': `${p.url}#person`,
+    url: p.url,
+    name: p.name,
+    jobTitle: p.jobTitle,
+    worksFor: { '@id': `${p.siteUrl}/#organization` },
+  };
+}
+
+/** Услуга: кто оказывает и где (дополняет BreadcrumbList и FAQPage на странице услуги) */
+export function serviceLd(p: { url: string; name: string; description: string; siteUrl: string }) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    '@id': `${p.url}#service`,
+    url: p.url,
+    name: p.name,
+    description: p.description,
+    provider: { '@id': `${p.siteUrl}/#organization` },
+    areaServed: { '@type': 'Country', name: 'RU' },
+  };
+}

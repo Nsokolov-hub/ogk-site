@@ -54,3 +54,146 @@ export function suggest(query: string, limit = SUGGEST_LIMIT): SuggestResult {
     })),
   };
 }
+
+// ── страница результатов /search/ (SRCH-07) ──
+
+export interface SearchFacetValue {
+  value: string;
+  label: string;
+  count: number;
+  selected: boolean;
+}
+
+export interface SearchPageResult {
+  query: string;
+  items: ProductPreview[];
+  total: number;
+  page: number;
+  pageCount: number;
+  facets: { brand: SearchFacetValue[]; category: SearchFacetValue[] };
+}
+
+export const SEARCH_PAGE_SIZE = 24;
+
+/** Полная выдача с фильтрами по бренду и разделу и счётчиками; порядок — как у подсказок (SRCH-04) */
+export function searchCatalog(p: {
+  query: string;
+  brand?: string;
+  category?: string;
+  page?: number;
+  categoryNames: Record<string, string>;
+}): SearchPageResult {
+  const q = p.query.trim().toLowerCase().replace(/\s+/g, ' ');
+  const empty = { query: p.query, items: [], total: 0, page: 1, pageCount: 1, facets: { brand: [], category: [] } };
+  if (q.length < SUGGEST_MIN) return empty;
+  const qc = compact(q);
+
+  const found: { p: ProductPreview; r: number }[] = [];
+  for (const prod of catalogProducts) {
+    const res = rank(prod, q, qc);
+    if (res) found.push({ p: prod, r: res[0] });
+  }
+  found.sort((a, b) => a.r - b.r || (b.p.popularity ?? 0) - (a.p.popularity ?? 0) || a.p.name.localeCompare(b.p.name, 'en'));
+  const all = found.map((f) => f.p);
+  const topOf = (prod: ProductPreview) => prod.categorySlug.split('/')[0];
+
+  // Счётчики фасета считаем с учётом другого фильтра — так видны альтернативы
+  const byBrand = all.filter((x) => !p.category || topOf(x) === p.category);
+  const byCategory = all.filter((x) => !p.brand || x.brand.slug === p.brand);
+  const count = (list: ProductPreview[], key: (x: ProductPreview) => string, label: (x: ProductPreview) => string, selected?: string) => {
+    const m = new Map<string, SearchFacetValue>();
+    for (const x of list) {
+      const k = key(x);
+      const v = m.get(k) ?? { value: k, label: label(x), count: 0, selected: k === selected };
+      v.count += 1;
+      m.set(k, v);
+    }
+    if (selected && !m.has(selected)) m.set(selected, { value: selected, label: selected, count: 0, selected: true });
+    return Array.from(m.values()).sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  };
+
+  const filtered = all.filter((x) => (!p.brand || x.brand.slug === p.brand) && (!p.category || topOf(x) === p.category));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / SEARCH_PAGE_SIZE));
+  const page = Math.min(Math.max(1, p.page ?? 1), pageCount);
+
+  return {
+    query: p.query,
+    items: filtered.slice((page - 1) * SEARCH_PAGE_SIZE, page * SEARCH_PAGE_SIZE),
+    total: filtered.length,
+    page,
+    pageCount,
+    facets: {
+      brand: count(byBrand, (x) => x.brand.slug, (x) => x.brand.name, p.brand),
+      category: count(byCategory, topOf, (x) => p.categoryNames[topOf(x)] ?? topOf(x), p.category),
+    },
+  };
+}
+
+// ── пакетный поиск по списку (SRCH-09, SC-02) ──
+
+export const BATCH_LIMIT = 200;
+
+export type BatchCandidate = Pick<
+  ProductPreview,
+  'id' | 'slug' | 'name' | 'brand' | 'catalogNumber' | 'cas' | 'categorySlug' | 'packagings' | 'customPackaging' | 'cardType'
+>;
+
+export interface BatchLineResult {
+  line: string;
+  query: string;
+  quantity: number;
+  /** exact — найдено точно; multiple — несколько кандидатов, нужен выбор; none — свободная строка */
+  status: 'exact' | 'multiple' | 'none';
+  candidates: BatchCandidate[];
+}
+
+const toCandidate = (x: ProductPreview): BatchCandidate => ({
+  id: x.id,
+  slug: x.slug,
+  name: x.name,
+  brand: x.brand,
+  catalogNumber: x.catalogNumber,
+  cas: x.cas,
+  categorySlug: x.categorySlug,
+  packagings: x.packagings,
+  customPackaging: x.customPackaging,
+  cardType: x.cardType,
+});
+
+/** «Y0001897 2», «28721-07-5;3», «Paracetamol CRS» → запрос и количество */
+export function parseLine(line: string): { query: string; quantity: number } {
+  const cols = line.split(/\t|;/).map((c) => c.trim()).filter(Boolean);
+  if (cols.length >= 2 && /^\d{1,3}$/.test(cols[cols.length - 1])) {
+    return { query: cols.slice(0, -1).join(' '), quantity: Number(cols[cols.length - 1]) };
+  }
+  const words = line.trim().split(/\s+/);
+  if (words.length === 2 && /^\d{1,3}$/.test(words[1]) && /\d/.test(words[0])) {
+    return { query: words[0], quantity: Number(words[1]) };
+  }
+  return { query: line.trim(), quantity: 1 };
+}
+
+export function matchLines(lines: string[]): BatchLineResult[] {
+  return lines
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, BATCH_LIMIT)
+    .map((line) => {
+      const { query, quantity } = parseLine(line);
+      const q = query.toLowerCase();
+      const qc = compact(q);
+      // Точный кат. № или CAS — без исправления опечаток (SRCH-03)
+      const exact = catalogProducts.filter((x) => compact(x.catalogNumber) === qc || (x.cas && compact(x.cas) === qc));
+      let candidates = exact;
+      if (!candidates.length && q.length >= 3) {
+        candidates = catalogProducts
+          .map((x) => ({ x, r: rank(x, q, qc) }))
+          .filter((m) => m.r && m.r[0] <= 3)
+          .sort((a, b) => a.r![0] - b.r![0] || (b.x.popularity ?? 0) - (a.x.popularity ?? 0))
+          .slice(0, 5)
+          .map((m) => m.x);
+      }
+      const status: BatchLineResult['status'] = candidates.length === 0 ? 'none' : candidates.length === 1 ? 'exact' : 'multiple';
+      return { line, query, quantity: Math.max(1, Math.min(999, quantity)), status, candidates: candidates.slice(0, 5).map(toCandidate) };
+    });
+}

@@ -136,7 +136,8 @@
     "consent": "Your consent is required",
     "fileType": "Supported files: xlsx, csv, pdf or docx",
     "fileSize": "The file is larger than 10 MB",
-    "positive": "Enter an amount greater than zero"
+    "positive": "Enter an amount greater than zero",
+    "inn": "Check the INN: 10 digits for a company or 12 for a sole trader"
   },
   "subscribe": {
     "email": "Email for the newsletter",
@@ -295,5 +296,422 @@
       "requestTitle": "Could not find the item?",
       "requestText": "Describe your request or attach a list of items: we will order from the manufacturer catalogs. We reply within 2 business hours."
     }
+  },
+  "productPage": {
+    "meta": {
+      "number": "cat. no.",
+      "title": "{name} — {brand} {number}, CAS {cas} | OGK-CHEM",
+      "titleNoCas": "{name} — {brand} {numberLabel} {number} | OGK-CHEM",
+      "description": "{name}, {ids}. Delivery to Russia, documents, {logistics}. Request a quote",
+      "cold": "cold chain",
+      "ambient": "delivery across Russia"
+    },
+    "discontinued": "Discontinued",
+    "discontinuedText": "We will find an alternative: “Find an alternative” is preselected and a manager will offer a replacement.",
+    "anyPackaging": "Any pack size on request",
+    "copy": "Copy: {label}",
+    "copied": "{label} copied",
+    "ids": {
+      "brand": "Manufacturer",
+      "catalogNumber": "Cat. No.",
+      "partNumber": "P/N",
+      "strainCode": "Strain code",
+      "cas": "CAS",
+      "altCas": "Alternative CAS",
+      "formula": "Molecular formula",
+      "mw": "Molecular weight",
+      "mwValue": "{value} g/mol",
+      "purity": "Purity",
+      "storage": "Storage",
+      "iupac": "Chemical name (IUPAC)",
+      "synonyms": "Synonyms",
+      "monograph": "Pharmacopoeial monograph",
+      "substance": "Substance",
+      "purpose": "Purpose",
+      "packagings": "Manufacturer pack sizes",
+      "customPackaging": "Custom pack size",
+      "customPackagingValue": "Any amount on request",
+      "shipping": "Shipping",
+      "dangerous": "Dangerous goods",
+      "yes": "Yes"
+    },
+    "shipping": {
+      "ambient": "Ambient",
+      "cold-chain": "Cold chain, insulated box with ice packs",
+      "dry-ice": "Dry ice"
+    },
+    "order": {
+      "title": "Pack size and quantity",
+      "packaging": "Pack size",
+      "custom": "Custom pack size",
+      "customError": "Enter an amount greater than zero",
+      "amount": "Amount per pack",
+      "unit": "Unit",
+      "quantity": "Number of packs",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity",
+      "packNumber": "pack cat. no. {n}",
+      "add": "Add to quote",
+      "inCart": "In quote cart",
+      "added": "Added to the quote cart",
+      "oneClick": "One-click order",
+      "note": "We will send the price and lead time in a quotation within 2 business hours."
+    },
+    "tabs": {
+      "label": "Product information",
+      "description": "Description",
+      "specs": "Technical data"
+    },
+    "docs": {
+      "title": "Documents",
+      "download": "Download",
+      "request": "Request",
+      "requestCoa": "Request batch CoA",
+      "coaBatch": "Certificate of analysis (CoA) for a specific batch",
+      "requestText": "Please send: {doc} — {product}",
+      "lang": "Document language: {lang}",
+      "empty": "We will send the manufacturer's documents with the quotation."
+    },
+    "sections": {
+      "substance": "{name}: other standards and impurities",
+      "substanceAll": "All items for this substance ({count})",
+      "analogues": "Alternatives from other manufacturers",
+      "accessories": "Compatible accessories",
+      "faq": "FAQ",
+      "requestTitle": "Request a quotation",
+      "requestText": "The product is already in your request — add pack size, quantity and timing. We reply within 2 business hours.",
+      "requestMessage": "{product}{cas}. Quantity and pack size: "
+    },
+    "roles": {
+      "api": "API standard",
+      "impurity": "Impurity standard",
+      "metabolite": "Metabolite standard",
+      "labeled": "Labeled compound"
+    }
+  },
+  "substancePage": {
+    "meta": {
+      "title": "{name}: reference standards and impurities | OGK-CHEM",
+      "description": "{name} standards and {count, plural, one {# impurity} other {# impurities}} from {brands}. Selection, documents, supply to order."
+    },
+    "h1": "{name}: reference standards and impurities",
+    "facts": {
+      "inn": "INN",
+      "formula": "Molecular formula",
+      "mw": "Molecular weight",
+      "items": "Items in catalog",
+      "brands": "Manufacturers"
+    },
+    "groups": {
+      "api": "API standards",
+      "impurity": "Impurities",
+      "metabolite": "Metabolites",
+      "labeled": "Labeled compounds"
+    },
+    "about": "About {name}",
+    "synonyms": "Synonyms",
+    "requestTitle": "Can't find the {name} impurity you need?",
+    "requestText": "Send the impurity name, CAS or monograph reference — we will source it from manufacturers and custom synthesis labs. We reply within 2 business hours.",
+    "requestMessage": "Substance: {name}, CAS {cas}. Standards needed: ",
+    "picker": {
+      "selectGroup": "Select all",
+      "unselectGroup": "Clear selection",
+      "select": "Select: {name}",
+      "brand": "Manufacturer:",
+      "selected": "{count, plural, one {# item selected} other {# items selected}}",
+      "addSelected": "Add to quote cart",
+      "added": "{count, plural, one {# item added} other {# items added}} to the quote cart",
+      "toCart": "Go to cart"
+    },
+    "list": {
+      "breadcrumb": "Substances",
+      "title": "Standards and impurities by substance (INN) | OGK-CHEM",
+      "description": "A–Z substance index: reference standards, impurities, metabolites and labeled compounds for one API from different manufacturers.",
+      "h1": "Substances",
+      "lead": "Reference standards, impurities and metabolites for one substance from every manufacturer on one page. Pick an INN and add the items you need in one go.",
+      "letters": "First letter"
+    }
+  },
+  "services": {
+    "list": {
+      "breadcrumb": "Services",
+      "title": "Services for pharma companies: supply, logistics, cold chain, customs | OGK-CHEM",
+      "description": "Supply of medicines for research, pharma logistics from 23 countries, cold chain, customs clearance, import permits and HS code classification.",
+      "h1": "Services for pharmaceutical companies",
+      "lead": "End to end: sourcing and purchasing, cold-chain delivery, customs clearance and import permits. We quote any task within 2 business hours.",
+      "more": "Get a delivery quote",
+      "requestTitle": "Didn't find the service you need?",
+      "requestText": "Describe the task — we will propose a solution within 2 business hours."
+    },
+    "page": {
+      "includes": "What's included",
+      "steps": "How we work",
+      "countries": "We ship from {count} countries",
+      "needs": "What we need from you",
+      "faq": "FAQ",
+      "related": "See also",
+      "promises": {
+        "zap": "Reply within 2 business hours",
+        "user": "A dedicated manager",
+        "mail": "A cost estimate and quotation"
+      }
+    }
+  },
+  "serviceForm": {
+    "labels": {
+      "from": "From",
+      "to": "To",
+      "temperature": "Temperature range",
+      "weight": "Weight, kg",
+      "places": "Packages or volume",
+      "date": "Desired date",
+      "goods": "Goods description",
+      "permit": "Need help with an import permit",
+      "regulator": "Authority",
+      "comment": "Comment"
+    },
+    "fromPlaceholder": "Shipper country, city",
+    "toPlaceholder": "Consignee city",
+    "weightPlaceholder": "e.g. 12",
+    "placesPlaceholder": "e.g. 2 boxes",
+    "goodsPlaceholder": "What it is, manufacturer, composition, purpose, quantity",
+    "permitLabel": "Need help with a Ministry of Health import permit",
+    "temperatures": {
+      "15-25": "+15…+25 °C",
+      "2-8": "+2…+8 °C",
+      "-20": "−20 °C",
+      "dry-ice": "Dry ice",
+      "unknown": "Not sure"
+    },
+    "regulators": {
+      "minzdrav": "Ministry of Health of Russia",
+      "fstec": "FSTEC of Russia",
+      "unknown": "Not sure — need advice"
+    },
+    "yes": "yes",
+    "no": "no",
+    "contacts": "Contact details",
+    "attach": "Attach documents",
+    "submit": "Send request",
+    "note": "We reply within 2 business hours with questions and a cost estimate."
+  },
+  "brands": {
+    "list": {
+      "breadcrumb": "Brands",
+      "title": "Brands: EDQM, USP, Waters, Agilent, Merck and more | OGK-CHEM",
+      "description": "Manufacturers of reference standards, reagents, HPLC columns and lab equipment we supply: EDQM, USP, LGC, Merck, Waters, Agilent, Shimadzu, ATCC and others.",
+      "h1": "Manufacturers",
+      "lead": "We supply reference standards, reagents and chromatography consumables from leading manufacturers. Pick a brand to see its items and supply terms.",
+      "count": "{count, plural, one {# item} other {# items}} in catalog",
+      "onRequest": "Items to order",
+      "requestTitle": "Need a manufacturer that isn't listed?",
+      "requestText": "We work with 60+ manufacturers. Send the brand name and catalog numbers — we will check and quote."
+    },
+    "page": {
+      "country": "Country",
+      "items": "Items in catalog",
+      "onRequest": "To order",
+      "packaging": "Pack sizes",
+      "packagingCustom": "Any on request",
+      "packagingFixed": "Manufacturer pack sizes",
+      "logoAlt": "{brand} logo",
+      "groups": "{brand} products in the catalog",
+      "popular": "Popular {brand} items",
+      "allItems": "All items ({count})",
+      "noItemsTitle": "{brand} items are supplied to order",
+      "noItemsText": "Send the manufacturer's catalog numbers — we will check availability and quote the whole list.",
+      "sendList": "Send a list",
+      "about": "About {brand}",
+      "faq": "FAQ",
+      "requestTitle": "Request {brand} items",
+      "requestText": "Send catalog numbers or attach a list — we reply within 2 business hours.",
+      "requestMessage": "Manufacturer: {brand}. Items needed (cat. no., pack size, quantity): ",
+      "others": "Other manufacturers"
+    }
+  },
+  "articles": {
+    "list": {
+      "breadcrumb": "Articles",
+      "title": "Articles on reference standards, HPLC and pharma logistics | OGK-CHEM",
+      "description": "Practical articles for laboratories: choosing a reference standard, EDQM vs USP, choosing an HPLC column and cold-chain shipping.",
+      "h1": "Articles",
+      "lead": "Answers to the questions laboratories bring to us: reference standards, chromatography, cold chain and importing into Russia.",
+      "read": "Read"
+    },
+    "readingTime": "{minutes} min read",
+    "author": "Author",
+    "published": "Published",
+    "updated": "Updated",
+    "reviewed": "Expert reviewed",
+    "toc": "Contents",
+    "links": "Related",
+    "more": "More articles",
+    "authorPage": {
+      "title": "{name} — OGK-CHEM expert",
+      "description": "Articles by OGK-CHEM expert {name} on reference standards, chromatography and pharma logistics.",
+      "articles": "Articles by this author"
+    }
+  },
+  "trust": {
+    "newTab": "(opens in a new tab)",
+    "faq": "FAQ",
+    "related": "See also",
+    "requestTitle": "Discuss a supply",
+    "requestText": "Describe the task or attach a list of items — we reply within 2 business hours.",
+    "links": {
+      "documents": "Documents and company details",
+      "delivery": "Delivery and supply terms",
+      "contacts": "Contacts"
+    },
+    "requisites": {
+      "title": "Company details",
+      "name": "Legal name",
+      "inn": "INN (tax ID)",
+      "kpp": "KPP",
+      "ogrn": "OGRN",
+      "address": "Address",
+      "hours": "Business hours"
+    },
+    "about": {
+      "directions": "What we do",
+      "steps": "How we work",
+      "audience": "Who we help"
+    },
+    "delivery": {
+      "toc": "Page sections",
+      "countries": "Countries we ship from"
+    },
+    "documents": {
+      "legal": "Legal documents",
+      "card": "Company card",
+      "privacy": "Privacy policy",
+      "consent": "Consent to personal data processing",
+      "supply": "Documents supplied with orders",
+      "requestSample": "Request a sample",
+      "requestSampleText": "Please send a sample document: {doc}",
+      "requestTitle": "Need a document?",
+      "requestText": "Tell us which document and for which item — we will send it with our reply within 2 business hours."
+    },
+    "contacts": {
+      "phone": "Phone",
+      "email": "E-mail",
+      "orderEmail": "Requests and quotations",
+      "infoEmail": "General questions",
+      "address": "Address",
+      "map": "Open in Yandex Maps",
+      "hours": "Business hours",
+      "hoursNote": "We accept website requests 24/7 and reply within 2 business hours.",
+      "formTitle": "Write to us",
+      "formText": "Describe your question or request — a manager will contact you within 2 business hours."
+    }
+  },
+  "rfq": {
+    "metaTitle": "Quote cart — OGK-CHEM",
+    "h1": "Quote cart",
+    "lead": "Collect items and send one request — we will send a quotation with prices and lead times within 2 business hours.",
+    "items": "{count, plural, one {# item} other {# items}}",
+    "allAnalogues": "Open to alternatives for all items",
+    "actions": {
+      "bulk": "Add a list",
+      "free": "Item not in catalog",
+      "toForm": "To checkout"
+    },
+    "item": {
+      "quantity": "Number of packs",
+      "decrease": "Decrease quantity",
+      "increase": "Increase quantity",
+      "customAmount": "Amount per pack",
+      "unit": "Unit",
+      "comment": "Item comment",
+      "commentPlaceholder": "e.g. CoA for a specific batch needed",
+      "addComment": "Comment",
+      "remove": "Remove: {name}",
+      "removeShort": "Remove",
+      "freeRow": "free-text item",
+      "freeName": "Item description",
+      "freeBrand": "Manufacturer",
+      "freeNumber": "Cat. No."
+    },
+    "bulk": {
+      "title": "Add items as a list",
+      "text": "Paste up to 200 catalog numbers or CAS numbers, one per line, optionally with quantity after a space or tab. You can copy whole columns from Excel.",
+      "label": "Item list",
+      "hint": "Up to {max} lines",
+      "placeholder": "Y0001897 2\n28721-07-5\nPHR1005\nXBridge C18",
+      "match": "Find in catalog ({count})",
+      "loading": "Searching…",
+      "file": "Upload a file",
+      "fileParsed": "File “{name}”: {count, plural, one {# line} other {# lines}}. It will be attached to the request.",
+      "xlsxAttached": "We will attach “{name}” to the request for the manager. To match items now, copy the columns from Excel into the field above.",
+      "fileType": "Use csv, txt or xlsx files",
+      "errorTitle": "Couldn't check the list",
+      "errorText": "Check your connection and try again.",
+      "stats": "Exact: {exact} · choose: {multiple} · not found: {none}",
+      "status": {
+        "exact": "Exact match",
+        "multiple": "Several options",
+        "none": "Not in catalog — will be added as free text"
+      },
+      "qty": "{n} pack(s)",
+      "choose": "What to add",
+      "asFree": "As free text — we'll source it",
+      "skip": "Don't add",
+      "addAll": "Add to cart ({count})",
+      "cancel": "Cancel",
+      "added": "{count, plural, one {# item added} other {# items added}}",
+      "packagingNote": "You can change pack size, quantity and alternatives in the cart."
+    },
+    "empty": {
+      "title": "Your cart is empty",
+      "text": "Find an item by name, cat. no. or CAS, add a list, or describe your request in the form below.",
+      "catalog": "Go to catalog"
+    },
+    "form": {
+      "title": "Send the request",
+      "text": "There are no prices on the site: a manager will calculate the supply and send a quotation and invoice.",
+      "summary": "{count, plural, one {# item} other {# items}} in the request.",
+      "inn": "INN (tax ID)",
+      "innHint": "Helps us prepare the quotation and invoice faster",
+      "city": "Delivery city",
+      "date": "Desired date",
+      "comment": "Comment",
+      "commentPlaceholder": "Delivery terms, tender documents, etc.",
+      "attach": "Attach a file",
+      "submit": "Send request",
+      "note": "We reply within 2 business hours.",
+      "terms": "Supply terms",
+      "noItems": "Add at least one item — or describe your request on the contacts page.",
+      "freeInvalid": "Fill in the description for items not in the catalog."
+    },
+    "done": {
+      "title": "Request No. {number} sent",
+      "text": "A manager will contact you within 2 business hours and send a quotation. A copy of the request will arrive by e-mail.",
+      "items": "Request contents: {count, plural, one {# item} other {# items}}",
+      "qty": "{n} pack(s)",
+      "catalog": "Back to catalog",
+      "home": "Home"
+    }
+  },
+  "searchPage": {
+    "metaTitle": "Catalog search — OGK-CHEM",
+    "metaTitleQuery": "“{q}” — OGK-CHEM catalog search",
+    "breadcrumb": "Search",
+    "h1": "Catalog search",
+    "h1Query": "Search results for “{q}”",
+    "lead": "Search by name, catalog number or CAS — an exact number match always comes first.",
+    "found": "{count, plural, one {# item found} other {# items found}}",
+    "emptyLead": "This item isn't on the site — we will source it from manufacturers' catalogs. Leave your contact and we'll reply within 2 business hours.",
+    "substances": "Substances",
+    "brands": "Manufacturers",
+    "filters": "Result filters",
+    "facetCategory": "Section",
+    "facetBrand": "Manufacturer",
+    "noFiltered": "Nothing matches these filters — remove a filter.",
+    "page": "Page {page} of {total}",
+    "sections": "Catalog sections",
+    "requestTitle": "Didn't find it?",
+    "requestTitleEmpty": "We'll source it to order",
+    "requestText": "Your query is already in the request — add quantity and contacts. We'll find the item and reply within 2 business hours.",
+    "requestMessage": "Looking for: {q}. Quantity and pack size: "
   }
 }
