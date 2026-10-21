@@ -8,11 +8,11 @@ import type { CatalogFilters, CatalogSort, Facet, FacetKey, ProductPreview } fro
 
 export const PAGE_SIZE = 24;
 
-export const FACET_KEYS: FacetKey[] = ['brand', 'availability', 'pack', 'storage', 'purpose', 'type', 'phase', 'length', 'diameter', 'particle', 'ph'];
-const SORTS: CatalogSort[] = ['popular', 'name', 'availability'];
+export const FACET_KEYS: FacetKey[] = ['brand', 'pack', 'storage', 'purpose', 'type', 'phase', 'length', 'diameter', 'particle', 'ph'];
+const SORTS: CatalogSort[] = ['popular', 'name'];
 
 /** Значения, которые переводятся через messages (catalog.values.*); остальные выводятся как есть */
-export const TRANSLATED_FACETS: FacetKey[] = ['availability', 'storage', 'purpose', 'type'];
+export const TRANSLATED_FACETS: FacetKey[] = ['storage', 'purpose', 'type'];
 
 export type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -68,18 +68,15 @@ export function applyFilters(items: ProductPreview[], filters: CatalogFilters, e
 }
 
 export function sortItems(items: ProductPreview[], sort: CatalogSort) {
-  const inStock = (p: ProductPreview) => (p.availability === 'in_stock' ? 0 : 1);
   const byName = (a: ProductPreview, b: ProductPreview) => a.name.localeCompare(b.name, 'en');
   const list = [...items];
   if (sort === 'name') return list.sort(byName);
-  if (sort === 'availability') return list.sort((a, b) => inStock(a) - inStock(b) || byName(a, b));
-  return list.sort((a, b) => inStock(a) - inStock(b) || (b.popularity ?? 0) - (a.popularity ?? 0) || byName(a, b));
+  return list.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0) || byName(a, b));
 }
 
 // ── порядок значений в фасетах ──
 const UNIT_ORDER = ['mg', 'g', 'ml', 'l', 'pcs', 'vial', 'pack'];
 const FIXED_ORDER: Partial<Record<FacetKey, string[]>> = {
-  availability: ['in_stock', 'on_request'],
   storage: ['room', '2-8', '-20', '-80'],
   purpose: ['assay', 'identification', 'impurity-control', 'system-suitability'],
   type: ['api', 'impurity', 'metabolite', 'labeled'],

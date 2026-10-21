@@ -72,7 +72,7 @@ src/
     ui/
       Container.tsx  SectionHeading.tsx  Button.tsx  RoundArrowButton.tsx
       Input.tsx  Textarea.tsx  Checkbox.tsx  Select.tsx  RadioGroup.tsx
-      QuantityStepper.tsx  FileInput.tsx  StatusBadge.tsx  Chip.tsx
+      QuantityStepper.tsx  FileInput.tsx  Chip.tsx
       Dialog.tsx  Logo.tsx  LogoSecondary.tsx  Icon.tsx
     product/
       ProductCard.tsx          # size: 'sm' | 'md' (на главной 'sm', в каталоге будет 'md')
@@ -182,7 +182,7 @@ src/
 
 `RoundArrowButton` — круг 40px (32 на мобильных), контур 1px `text`, внутри стрелка → (lucide `ArrowRight`). Hover: контур и стрелка `accent`. Нужен `aria-label`.
 
-`StatusBadge` — пилюля 12–14px: `in_stock` → «В наличии» (заливка `accent`, текст `text-on-accent`); `on_request` → «Под заказ» (контур `border`, текст `text-secondary`).
+Статуса наличия нет: все товары поставляются под заказ, поэтому бейджей «В наличии» / «Под заказ» на сайте нет (решение бизнеса от 21.10.2026).
 
 `Chip` — пилюля `surface`, текст `text`, 14–16px; если есть `href` — ссылка с hover `accent`.
 
@@ -278,8 +278,7 @@ src/
 **`ProductCard size="sm"`** (контракт общий для всего сайта):
 - Корпус: фон `surface`, скругление 32px (24px на <768), padding 16–20px, hover — свечение 4.1. Карточка — `<article>`.
 - `ProductImage`: квадрат 1:1, фон `surface-strong`, скругление 16px, `object-contain` с полями 12px. Приоритет: фото производителя → 2D-структура → `VialPlaceholder`.
-- `VialPlaceholder` — **inline SVG** фирменного флакона: зелёная крышка `accent`, серебристое кольцо, янтарное стекло, белая этикетка, на этикетке — название (до 2 строк, обрезка) и CAS. Должен выглядеть аккуратно в любом размере.
-- Сверху на изображении слева — `StatusBadge`.
+- `VialPlaceholder` — **inline SVG** фирменной банки: янтарное стекло с плечиками и горлышком, гладкая тёмно-зелёная крышка, этикетка с чёрной полосой бренда (зелёный текст) и кремовым полем — название (по ширине, до 2 строк; без CAS — до 3) и CAS. Должен выглядеть аккуратно в любом размере.
 - Бренд — `caption`, uppercase, `text-secondary`, ссылка на `/brands/{slug}/`.
 - Название — `body`/500, **максимум 2 строки с многоточием** (`line-clamp-2`), полное название в атрибуте `title`; ссылка на `/product/{slug}/`. Ссылка растягивается на изображение (но не перекрывает кнопки — никаких вложенных интерактивных элементов).
 - Строки `small` с `tabular-nums`: «Кат. № Y0001897», «CAS 28721-07-5» (если CAS нет — строку не выводим). У оборудования вместо «Кат. №» — «P/N».
@@ -372,7 +371,6 @@ src/
 
 ```ts
 // types/catalog.ts
-export type Availability = 'in_stock' | 'on_request';            // «В наличии» | «Под заказ»
 export type CardType = 'standard' | 'equipment' | 'other';       // 3 типа карточек
 export type PackUnit = 'mg' | 'g' | 'ml' | 'pcs';
 
@@ -380,7 +378,6 @@ export interface Packaging {
   id: string;
   label: string;               // «100 мг», «1 л», «1 шт.»
   catalogNumber?: string;      // свой кат. № фасовки, если есть
-  availability: Availability;
 }
 
 export interface BrandRef { slug: string; name: string; logo?: string }
@@ -396,7 +393,6 @@ export interface ProductPreview {
   categorySlug: string;        // основная категория
   packagings: Packaging[];
   customPackaging: boolean;    // «Любая фасовка под запрос»
-  availability: Availability;  // сводный статус
   image?: { src: string; alt: string; kind: 'photo' | 'structure' };
   discontinued?: boolean;
 }

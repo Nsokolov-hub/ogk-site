@@ -3,11 +3,10 @@
 import { useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
 import { AddToRfqButton } from '@/components/product/AddToRfqButton';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/cn';
 
-/** Режим таблицы для профессионалов (ТЗ 5.3): кат. №, название, CAS, бренд, фасовка, статус */
+/** Режим таблицы для профессионалов (ТЗ 5.3): кат. №, название, CAS, бренд, фасовка */
 export function ProductTable({ items, caption }: { items: ProductPreview[]; caption: string }) {
   const t = useTranslations('catalog.table');
   const tp = useTranslations('product');
@@ -16,7 +15,7 @@ export function ProductTable({ items, caption }: { items: ProductPreview[]; capt
 
   return (
     <div className="overflow-x-auto rounded-block border border-border">
-      <table className="w-full min-w-[880px] border-collapse text-small">
+      <table className="w-full min-w-[760px] border-collapse text-small">
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-surface-strong">
           <tr>
@@ -25,7 +24,6 @@ export function ProductTable({ items, caption }: { items: ProductPreview[]; capt
             <th scope="col" className={th}>{t('cas')}</th>
             <th scope="col" className={th}>{t('brand')}</th>
             <th scope="col" className={th}>{t('packaging')}</th>
-            <th scope="col" className={th}>{t('status')}</th>
             <th scope="col" className={cn(th, 'w-[150px]')}>
               <span className="sr-only">{t('actions')}</span>
             </th>
@@ -45,9 +43,6 @@ export function ProductTable({ items, caption }: { items: ProductPreview[]; capt
               <td className={cn(td, 'text-text')}>
                 {p.packagings.map((pk) => pk.label).join(' / ')}
                 {p.customPackaging ? <span className="block text-caption text-accent">{tp('anyPackaging')}</span> : null}
-              </td>
-              <td className={td}>
-                <StatusBadge status={p.availability} />
               </td>
               <td className={td}>
                 <AddToRfqButton product={p} packagingId={p.packagings[0]?.id ?? null} place="list" className="w-[136px] px-3 sm:px-3" />

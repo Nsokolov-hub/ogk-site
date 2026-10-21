@@ -1,4 +1,4 @@
-import type { Availability, BrandRef, Packaging, ProductPreview } from '@/types/catalog';
+import type { BrandRef, Packaging, ProductPreview } from '@/types/catalog';
 
 /**
  * ЗАГЛУШКИ ДЛЯ ВЁРСТКИ, а не реальный каталог.
@@ -7,10 +7,9 @@ import type { Availability, BrandRef, Packaging, ProductPreview } from '@/types/
 
 const b = (slug: string, name: string): BrandRef => ({ slug, name });
 
-const pack = (id: string, label: string, availability: Availability = 'on_request'): Packaging => ({
+const pack = (id: string, label: string): Packaging => ({
   id,
   label,
-  availability,
 });
 
 export const mockProducts: ProductPreview[] = [
@@ -25,7 +24,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'reference-standards',
     packagings: [pack('p1-100mg', '100 мг')],
     customPackaging: false,
-    availability: 'on_request',
   },
   {
     id: 'p2',
@@ -38,7 +36,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'reference-standards',
     packagings: [pack('p2-100mg', '100 мг')],
     customPackaging: false,
-    availability: 'on_request',
     image: {
       src: '/images/products/paracetamol-structure.svg',
       alt: 'Структурная формула парацетамола',
@@ -54,9 +51,8 @@ export const mockProducts: ProductPreview[] = [
     catalogNumber: '1100000',
     cas: '298-46-4',
     categorySlug: 'reference-standards',
-    packagings: [pack('p3-200mg', '200 мг', 'in_stock')],
+    packagings: [pack('p3-200mg', '200 мг')],
     customPackaging: false,
-    availability: 'in_stock',
   },
   {
     id: 'p4',
@@ -67,9 +63,8 @@ export const mockProducts: ProductPreview[] = [
     catalogNumber: '1396309',
     cas: '1115-70-4',
     categorySlug: 'reference-standards',
-    packagings: [pack('p4-200mg', '200 мг', 'in_stock')],
+    packagings: [pack('p4-200mg', '200 мг')],
     customPackaging: false,
-    availability: 'in_stock',
   },
   {
     id: 'p5',
@@ -82,7 +77,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'reference-standards',
     packagings: [pack('p5-10mg', '10 мг'), pack('p5-25mg', '25 мг'), pack('p5-50mg', '50 мг')],
     customPackaging: false,
-    availability: 'on_request',
   },
   {
     id: 'p6',
@@ -95,7 +89,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'reference-standards',
     packagings: [pack('p6-10mg', '10 мг'), pack('p6-25mg', '25 мг')],
     customPackaging: true,
-    availability: 'on_request',
   },
   {
     id: 'p7',
@@ -108,7 +101,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'reference-standards',
     packagings: [pack('p7-50mg', '50 мг')],
     customPackaging: false,
-    availability: 'on_request',
   },
   {
     id: 'p8',
@@ -119,9 +111,8 @@ export const mockProducts: ProductPreview[] = [
     catalogNumber: '1.00030',
     cas: '75-05-8',
     categorySlug: 'reagents',
-    packagings: [pack('p8-1l', '1 л', 'in_stock'), pack('p8-2-5l', '2,5 л', 'in_stock')],
+    packagings: [pack('p8-1l', '1 л'), pack('p8-2-5l', '2,5 л')],
     customPackaging: false,
-    availability: 'in_stock',
   },
   {
     id: 'p9',
@@ -134,7 +125,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'reagents',
     packagings: [pack('p9-25g', '25 г'), pack('p9-100g', '100 г')],
     customPackaging: false,
-    availability: 'on_request',
   },
   {
     id: 'p10',
@@ -145,9 +135,8 @@ export const mockProducts: ProductPreview[] = [
     catalogNumber: 'I0050000',
     cas: '15687-27-1',
     categorySlug: 'reference-standards',
-    packagings: [pack('p10-100mg', '100 мг', 'in_stock')],
+    packagings: [pack('p10-100mg', '100 мг')],
     customPackaging: false,
-    availability: 'in_stock',
   },
   {
     id: 'p11',
@@ -157,9 +146,8 @@ export const mockProducts: ProductPreview[] = [
     brand: b('waters', 'Waters'),
     catalogNumber: '186003116',
     categorySlug: 'chromatography',
-    packagings: [pack('p11-1', '1 шт.', 'in_stock')],
+    packagings: [pack('p11-1', '1 шт.')],
     customPackaging: false,
-    availability: 'in_stock',
   },
   {
     id: 'p12',
@@ -171,7 +159,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'chromatography',
     packagings: [pack('p12-1', '1 шт.')],
     customPackaging: false,
-    availability: 'on_request',
   },
   {
     id: 'p13',
@@ -183,7 +170,6 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'biological-standards',
     packagings: [pack('p13-1', '1 ампула')],
     customPackaging: false,
-    availability: 'on_request',
   },
   {
     id: 'p14',
@@ -195,6 +181,5 @@ export const mockProducts: ProductPreview[] = [
     categorySlug: 'pharmacopeias',
     packagings: [pack('p14-1', '1 шт.')],
     customPackaging: false,
-    availability: 'on_request',
   },
 ];

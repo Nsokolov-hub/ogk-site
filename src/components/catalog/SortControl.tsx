@@ -7,9 +7,9 @@ import { useFieldIds } from '@/components/ui/Field';
 import { catalogHref, type CatalogQuery } from '@/lib/catalog';
 import { localizedPath, useCatalogNavigate } from '@/lib/catalog-nav';
 
-const SORTS: CatalogSort[] = ['popular', 'name', 'availability'];
+const SORTS: CatalogSort[] = ['popular', 'name'];
 
-/** «Сортировать по»: популярности (по умолчанию, в наличии выше), названию A–Z, наличию */
+/** «Сортировать по»: популярности (по умолчанию) или названию A–Z */
 export function SortControl({ basePath, query }: { basePath: string; query: CatalogQuery }) {
   const t = useTranslations('catalog');
   const locale = useLocale();

@@ -7,9 +7,9 @@ import type { CategoryContent } from '@/types/content';
  * Ключ — путь категории без /catalog/: '' — корень, 'reference-standards/edqm' — подкатегория.
  */
 
-const STANDARD_FACETS: FacetKey[] = ['brand', 'availability', 'pack', 'storage', 'purpose', 'type'];
-const COLUMN_FACETS: FacetKey[] = ['brand', 'availability', 'phase', 'length', 'diameter', 'particle', 'ph'];
-const BASIC_FACETS: FacetKey[] = ['brand', 'availability'];
+const STANDARD_FACETS: FacetKey[] = ['brand', 'pack', 'storage', 'purpose', 'type'];
+const COLUMN_FACETS: FacetKey[] = ['brand', 'phase', 'length', 'diameter', 'particle', 'ph'];
+const BASIC_FACETS: FacetKey[] = ['brand'];
 
 const DELIVERY_STANDARDS = [
   'Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении',
@@ -19,7 +19,7 @@ const DELIVERY_STANDARDS = [
 ];
 
 const DELIVERY_GENERAL = [
-  'Поставка со склада или под заказ — срок указываем в коммерческом предложении',
+  'Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении',
   'Доставка в любой регион России',
   'Документы для закупок по 44-ФЗ и 223-ФЗ',
 ];
@@ -180,9 +180,9 @@ export const categoryContent: Record<string, CategoryContent> = {
   reagents: {
     h1: 'Реактивы для фармацевтических лабораторий',
     title: 'Лабораторные реактивы для фармацевтики — поставка | ОГК-ХИМ',
-    description: 'Растворители для ВЭЖХ и ЖХ-МС, кислоты, соли и индикаторы для фармацевтических лабораторий. Поставка со склада и под заказ, запрос КП.',
+    description: 'Растворители для ВЭЖХ и ЖХ-МС, кислоты, соли и индикаторы для фармацевтических лабораторий. Поставка под заказ, запрос КП.',
     intro: 'Растворители для ВЭЖХ и ЖХ-МС, кислоты, соли, буферные компоненты и индикаторы.',
-    facets: ['brand', 'availability', 'pack', 'storage'],
+    facets: ['brand', 'pack', 'storage'],
     delivery: DELIVERY_GENERAL,
     faq: FAQ_COMMON,
     documents: DOCS,
@@ -237,7 +237,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: 'Предколонки для ВЭЖХ и хроматографии — ОГК-ХИМ',
     description: 'Предколонки и защитные картриджи для колонок ВЭЖХ и УВЭЖХ. Запрос КП.',
     intro: 'Предколонки и защитные картриджи продлевают срок службы аналитической колонки.',
-    facets: ['brand', 'availability', 'phase', 'ph'],
+    facets: ['brand', 'phase', 'ph'],
     delivery: DELIVERY_GENERAL,
     faq: FAQ_COMMON,
     documents: DOCS,
@@ -260,7 +260,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: 'Референтные лекарственные препараты для исследований | ОГК-ХИМ',
     description: 'Поставка референтных лекарственных препаратов в Россию для исследовательских целей. Запрос КП.',
     intro: 'Референтные лекарственные препараты для сравнительных исследований — поставка в Россию для исследовательских целей.',
-    facets: ['brand', 'availability'],
+    facets: ['brand'],
     delivery: DELIVERY_GENERAL,
     faq: FAQ_COMMON,
     documents: DOCS,
@@ -271,7 +271,7 @@ export const categoryContent: Record<string, CategoryContent> = {
     title: 'Микроорганизмы и биологические стандарты для лабораторий | ОГК-ХИМ',
     description: 'Тест-штаммы ATCC для микробиологического контроля. Поставка с соблюдением холодовой цепи, запрос КП.',
     intro: 'Тест-штаммы микроорганизмов ATCC для микробиологического контроля качества.',
-    facets: ['brand', 'availability', 'storage'],
+    facets: ['brand', 'storage'],
     delivery: DELIVERY_STANDARDS,
     faq: FAQ_COMMON,
     documents: DOCS,

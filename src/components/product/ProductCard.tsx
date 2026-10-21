@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
-import { StatusBadge } from '@/components/ui/StatusBadge';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/cn';
 import { AddToRfqButton } from './AddToRfqButton';
@@ -17,7 +16,7 @@ const IMAGE_SIZES = {
 };
 
 /**
- * Превью товара (ТЗ 5.3). Цен нет.
+ * Превью товара (ТЗ 5.3). Цен и статуса наличия нет: все товары под заказ.
  * sm — маленькая для главной (4 в ряд), md — средняя для каталога (3 в ряд).
  */
 export function ProductCard({
@@ -33,7 +32,6 @@ export function ProductCard({
 }) {
   const t = useTranslations('product');
   const [packagingId, setPackagingId] = useState<string | null>(product.packagings[0]?.id ?? null);
-  const selected = product.packagings.find((p) => p.id === packagingId);
   const titleId = `pc-${product.id}`;
   const numberLabel = product.cardType === 'equipment' ? t('partNumber') : t('catalogNumber');
 
@@ -45,10 +43,6 @@ export function ProductCard({
     >
       <div className="relative w-full self-start">
         <ProductImage product={product} sizes={IMAGE_SIZES[size]} priority={priority} className="rounded-sm sm:rounded-field" />
-        <StatusBadge
-          status={selected?.availability ?? product.availability}
-          className="absolute left-1 top-1 h-5 px-1.5 text-[10px] sm:left-3 sm:top-3 sm:h-6 sm:px-2.5 sm:text-caption"
-        />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col sm:mt-4">

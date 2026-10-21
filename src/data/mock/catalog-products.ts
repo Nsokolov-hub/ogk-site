@@ -1,8 +1,8 @@
-import type { Availability, BrandRef, CardType, FacetKey, Packaging, ProductPreview } from '@/types/catalog';
+import type { BrandRef, CardType, FacetKey, Packaging, ProductPreview } from '@/types/catalog';
 
 /**
  * МОКОВЫЙ АССОРТИМЕНТ ДЛЯ ВЁРСТКИ КАТАЛОГА (~460 позиций).
- * Названия веществ и CAS — реальные, каталожные номера и наличие — условные.
+ * Названия веществ и CAS — реальные, каталожные номера — условные.
  * Заменится выгрузкой ассортимента (ТЗ 9.6). Генерация детерминированная: одинаковый результат на сервере и в браузере.
  */
 
@@ -88,7 +88,6 @@ function make(o: {
   cardType: CardType;
   packs: PackDef[];
   custom?: boolean;
-  inStockChance?: number;
   attrs?: Partial<Record<FacetKey, string[]>>;
 }): ProductPreview {
   seq += 1;
@@ -97,13 +96,7 @@ function make(o: {
   if (usedSlugs.has(slug)) slug = `${slug}-${seq}`;
   usedSlugs.add(slug);
 
-  const inStock = chance(o.inStockChance ?? 0.2);
-  const packagings: Packaging[] = o.packs.map((p, i) => ({
-    id: `${id}-${p.key}`,
-    label: p.label,
-    availability: (inStock && i === 0 ? 'in_stock' : 'on_request') as Availability,
-  }));
-  const availability: Availability = inStock ? 'in_stock' : 'on_request';
+  const packagings: Packaging[] = o.packs.map((p) => ({ id: `${id}-${p.key}`, label: p.label }));
   const [top, sub] = o.category;
 
   return {
@@ -117,11 +110,9 @@ function make(o: {
     categorySlug: sub ? `${top}/${sub}` : top,
     packagings,
     customPackaging: !!o.custom,
-    availability,
     popularity: Math.round(rand() * 1000),
     attributes: {
       brand: [o.brand.slug],
-      availability: [availability],
       pack: [...o.packs.map((p) => p.key), ...(o.custom ? ['custom'] : [])],
       ...o.attrs,
     },
@@ -241,8 +232,7 @@ SUBSTANCES.forEach(([name, cas]) => {
       standards.push(
         make({
           brand: b, name: `${name} EP Impurity ${'ABCDEFG'[i]}`, catalogNumber: `${prefix}${letter(name)}${digits(5)}`,
-          category: [RS, 'impurity-standards'], cardType: 'standard', packs: [PK.mg10, PK.mg25, PK.mg50], custom: true,
-          inStockChance: 0.08, attrs: { storage: [pick(['2-8', '-20'] as const)], purpose: ['impurity-control'], type: ['impurity'] },
+          category: [RS, 'impurity-standards'], cardType: 'standard', packs: [PK.mg10, PK.mg25, PK.mg50], custom: true, attrs: { storage: [pick(['2-8', '-20'] as const)], purpose: ['impurity-control'], type: ['impurity'] },
         }),
       );
     }
@@ -251,7 +241,7 @@ SUBSTANCES.forEach(([name, cas]) => {
     standards.push(
       make({
         brand: B.trc, name: `${name}-d4`, catalogNumber: `${letter(name)}${digits(6)}`,
-        category: [RS, 'impurity-standards'], cardType: 'standard', packs: [PK.mg10, PK.mg25], custom: true, inStockChance: 0.05,
+        category: [RS, 'impurity-standards'], cardType: 'standard', packs: [PK.mg10, PK.mg25], custom: true,
         attrs: { storage: ['-20'], purpose: ['assay'], type: ['labeled'] },
       }),
     );
@@ -293,7 +283,7 @@ FAMILIES.forEach((f) => {
     chromatography.push(
       make({
         brand: f.brand, name: `${f.name} Column, ${num(p)} µm, ${num(d)} × ${length} mm`, catalogNumber: f.pn(),
-        category: [CH, 'hplc-columns'], cardType: 'equipment', packs: [PK.pcs1], inStockChance: 0.3,
+        category: [CH, 'hplc-columns'], cardType: 'equipment', packs: [PK.pcs1],
         attrs: { phase: [f.phase], length: [String(length)], diameter: [String(d)], particle: [String(p)], ph: [f.ph] },
       }),
     );
@@ -327,7 +317,7 @@ FAMILIES.forEach((f) => {
       chromatography.push(
         make({
           brand: b, name: `Syringe Filter, ${membrane}, ${pore} µm, ${d} mm`, catalogNumber: `${b === B.agilent ? '5190-' : 'SF-'}${digits(4)}`,
-          category: [CH, 'filters'], cardType: 'equipment', packs: [PK.pcs100], inStockChance: 0.4,
+          category: [CH, 'filters'], cardType: 'equipment', packs: [PK.pcs100],
         }),
       );
     }),
@@ -340,7 +330,7 @@ FAMILIES.forEach((f) => {
     chromatography.push(
       make({
         brand: b, name, catalogNumber: `${b === B.agilent ? '5067-' : '700'}${digits(4)}`,
-        category: [CH, 'fittings'], cardType: 'equipment', packs: [pick([PK.pcs1, pk('10-pcs', '10 шт.')])], inStockChance: 0.35,
+        category: [CH, 'fittings'], cardType: 'equipment', packs: [pick([PK.pcs1, pk('10-pcs', '10 шт.')])],
       }),
     );
   });
@@ -383,7 +373,7 @@ REAGENTS.forEach(([name, cas, kind]) => {
     reagents.push(
       make({
         brand: b, name, cas, catalogNumber: b === B.merck ? `1.${digits(5)}` : `${letter(name)}${digits(6)}`,
-        category: ['reagents'], cardType: 'standard', inStockChance: 0.35,
+        category: ['reagents'], cardType: 'standard',
         packs: kind === 'solid' ? [PK.g100, PK.g500] : kind === 'acid' ? [PK.ml100, PK.l1] : [PK.l1, PK.l25],
         attrs: { storage: ['room'] },
       }),
@@ -398,7 +388,7 @@ const other: ProductPreview[] = [];
     other.push(
       make({
         brand: B.various, name, catalogNumber: `RD-${digits(5)}`, category: ['reference-drugs'], cardType: 'other',
-        packs: [pk('1-pack', '1 упаковка')], inStockChance: 0.05, attrs: { storage: ['room'] },
+        packs: [pk('1-pack', '1 упаковка')], attrs: { storage: ['room'] },
       }),
     ),
   );
@@ -417,7 +407,7 @@ const other: ProductPreview[] = [];
   other.push(
     make({
       brand: B.atcc, name: `${name}, lyophilized`, catalogNumber: code, category: ['biological-standards'], cardType: 'other',
-      packs: [PK.vial], inStockChance: 0.1, attrs: { storage: [pick(['2-8', '-80'] as const)] },
+      packs: [PK.vial], attrs: { storage: [pick(['2-8', '-80'] as const)] },
     }),
   ),
 );
@@ -432,7 +422,7 @@ const other: ProductPreview[] = [];
   other.push(
     make({
       brand: b as BrandRef, name: name as string, catalogNumber: `${(b as BrandRef).slug.toUpperCase().slice(0, 2)}-${digits(6)}`,
-      category: ['laboratory-equipment'], cardType: 'equipment', packs: [PK.pcs1], inStockChance: 0.05,
+      category: ['laboratory-equipment'], cardType: 'equipment', packs: [PK.pcs1],
     }),
   ),
 );
@@ -449,7 +439,7 @@ const other: ProductPreview[] = [];
   other.push(
     make({
       brand: b as BrandRef, name: name as string, catalogNumber: `${digits(4)}-${digits(4)}`,
-      category: ['laboratory-glassware'], cardType: 'other', packs: [pack as PackDef], inStockChance: 0.4,
+      category: ['laboratory-glassware'], cardType: 'other', packs: [pack as PackDef],
     }),
   ),
 );
@@ -463,7 +453,7 @@ const other: ProductPreview[] = [];
   other.push(
     make({
       brand: b as BrandRef, name: name as string, catalogNumber: `PH-${digits(5)}`, category: ['pharmacopeias'], cardType: 'other',
-      packs: [PK.pcs1], inStockChance: 0.1,
+      packs: [PK.pcs1],
     }),
   ),
 );

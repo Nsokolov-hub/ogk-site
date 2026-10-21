@@ -1,6 +1,3 @@
-/** «В наличии» | «Под заказ» */
-export type Availability = 'in_stock' | 'on_request';
-
 /** Три типа карточек (ТЗ 5.2): стандарты и реактивы / оборудование и колонки / прочее */
 export type CardType = 'standard' | 'equipment' | 'other';
 
@@ -12,7 +9,6 @@ export interface Packaging {
   label: string;
   /** Свой кат. № фасовки, если есть */
   catalogNumber?: string;
-  availability: Availability;
 }
 
 export interface BrandRef {
@@ -37,8 +33,6 @@ export interface ProductPreview {
   packagings: Packaging[];
   /** «Любая фасовка под запрос» (5.2.2) */
   customPackaging: boolean;
-  /** Сводный статус */
-  availability: Availability;
   image?: { src: string; alt: string; kind: 'photo' | 'structure' };
   discontinued?: boolean;
   /** Значения для фильтров каталога (атрибуты типа, ТЗ 5.1): ключ фильтра → значения */
@@ -50,7 +44,6 @@ export interface ProductPreview {
 /** Фильтры каталога (ТЗ 5.5). Набор задаётся в категории. */
 export type FacetKey =
   | 'brand'
-  | 'availability'
   | 'pack'
   | 'storage'
   | 'purpose'
@@ -63,8 +56,8 @@ export type FacetKey =
 
 export type CatalogFilters = Partial<Record<FacetKey, string[]>>;
 
-/** По популярности (в наличии выше) / по названию A–Z / по наличию */
-export type CatalogSort = 'popular' | 'name' | 'availability';
+/** По популярности / по названию A–Z. Все товары под заказ, поэтому сортировки по наличию нет. */
+export type CatalogSort = 'popular' | 'name';
 
 export interface FacetValue {
   value: string;
