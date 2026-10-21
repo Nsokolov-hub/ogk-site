@@ -45,6 +45,34 @@ export function organizationLd(s: SiteSettings) {
   };
 }
 
+/** BreadcrumbList: у последнего звена ссылки нет — подставляем адрес текущей страницы */
+export function breadcrumbsLd(items: { label: string; href?: string }[], siteUrl: string, locale: string, currentHref: string) {
+  const abs = (href: string) => `${siteUrl}${locale === 'ru' ? '' : `/${locale}`}${href}`;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: item.label,
+      item: abs(item.href ?? currentHref),
+    })),
+  };
+}
+
+/** FAQPage — только там, где вопросы видны на странице (ТЗ SEO-06) */
+export function faqLd(faq: { q: string; a: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faq.map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: f.a },
+    })),
+  };
+}
+
 export function websiteLd(s: SiteSettings, locale: string) {
   const base = locale === 'ru' ? s.siteUrl : `${s.siteUrl}/${locale}`;
   return {

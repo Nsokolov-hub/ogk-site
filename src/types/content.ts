@@ -1,4 +1,40 @@
-import type { BrandRef } from './catalog';
+import type { BrandRef, Category, FacetKey } from './catalog';
+
+/** Контент страницы категории (ТЗ 5.1, 5.5, 10.3). В будущем — из админки. */
+export interface CategoryContent {
+  h1: string;
+  title: string;
+  description: string;
+  /** Краткое описание под заголовком */
+  intro: string;
+  /** Полезная информация (SEO-текст), абзацы */
+  seoText?: string[];
+  /** Условия поставки */
+  delivery?: string[];
+  faq?: { q: string; a: string }[];
+  documents?: { title: string; href: string }[];
+  /** Внутренние ссылки: разделы, услуги, статьи */
+  related?: { label: string; href: string }[];
+  /** Набор фильтров категории */
+  facets: FacetKey[];
+}
+
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+
+export interface CategoryPageData {
+  /** null — корень /catalog/ */
+  category: Category | null;
+  href: string;
+  content: CategoryContent;
+  breadcrumbs: BreadcrumbItem[];
+  /** Блок «Категории» в боковой панели */
+  nav: { title: string; parent?: { label: string; href: string }; items: { label: string; href: string; active: boolean }[] };
+  /** Производители раздела с числом позиций */
+  brands: (BrandRef & { count: number })[];
+}
 
 export interface ImageRef {
   src: string;

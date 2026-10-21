@@ -185,5 +185,107 @@
     "text": "It may have moved or is not ready yet. Find the item you need through search or the catalog.",
     "home": "Home page",
     "catalog": "Go to catalog"
+  },
+  "catalog": {
+    "breadcrumbs": "Breadcrumbs",
+    "home": "Home",
+    "catalog": "Catalog",
+    "categories": "Product categories",
+    "sortLabel": "Sort by",
+    "sortApply": "Apply",
+    "sort": {
+      "popular": "popularity",
+      "name": "name (A–Z)",
+      "availability": "availability"
+    },
+    "filters": "Filters",
+    "filtersTitle": "Filters",
+    "apply": "Apply",
+    "reset": "Reset",
+    "resetAll": "Reset all",
+    "showMore": "Show more ({count})",
+    "showLess": "Show less",
+    "searchValues": "Search the list",
+    "noValues": "Nothing found",
+    "removeFilter": "Remove filter: {label}",
+    "facets": {
+      "brand": "Manufacturer",
+      "availability": "Availability",
+      "pack": "Pack size",
+      "storage": "Storage conditions",
+      "purpose": "Purpose",
+      "type": "Product type",
+      "phase": "Phase",
+      "length": "Length, mm",
+      "diameter": "Inner diameter, mm",
+      "particle": "Particle size, µm",
+      "ph": "pH range"
+    },
+    "values": {
+      "packCustom": "On request",
+      "availability": {
+        "in_stock": "In stock",
+        "on_request": "On request"
+      },
+      "storage": {
+        "room": "Room temperature",
+        "2-8": "+2…+8 °C",
+        "-20": "−20 °C",
+        "-80": "−80 °C"
+      },
+      "purpose": {
+        "assay": "Assay",
+        "identification": "Identification",
+        "impurity-control": "Impurity control",
+        "system-suitability": "System suitability"
+      },
+      "type": {
+        "api": "API standard",
+        "impurity": "Impurity",
+        "metabolite": "Metabolite",
+        "labeled": "Labelled compound"
+      }
+    },
+    "found": "{count, plural, one {# item found} other {# items found}}",
+    "view": "List view",
+    "viewGrid": "Cards",
+    "viewTable": "Table",
+    "tableCaption": "Catalog items",
+    "showMorePage": "Show more",
+    "loading": "Loading…",
+    "loadError": "Could not load items. Please try again.",
+    "pagination": "Catalog pages",
+    "prev": "Previous",
+    "next": "Next",
+    "last": "Last",
+    "page": "Page {n}",
+    "pageTitle": "— page {n}",
+    "empty": {
+      "title": "Nothing matches the selected filters",
+      "text": "Change the filters or send a request: we will order the item from the manufacturer catalogs.",
+      "reset": "Reset filters",
+      "request": "Send a request"
+    },
+    "table": {
+      "catalogNumber": "Cat. No. / P/N",
+      "name": "Name",
+      "cas": "CAS",
+      "brand": "Manufacturer",
+      "packaging": "Pack size",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "sections": {
+      "brands": "Manufacturers",
+      "brandCount": "{count, plural, one {# item} other {# items}}",
+      "info": "Useful information",
+      "delivery": "Delivery terms",
+      "documents": "Documents",
+      "newTab": "(opens in a new tab)",
+      "faq": "FAQ",
+      "related": "See also",
+      "requestTitle": "Could not find the item?",
+      "requestText": "Describe your request or attach a list of items: we will order from the manufacturer catalogs. We reply within 2 business hours."
+    }
   }
 }

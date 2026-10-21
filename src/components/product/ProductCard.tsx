@@ -105,7 +105,7 @@ export function ProductCard({
       <div
         className={cn(
           'relative z-10 col-span-2 mt-3 flex gap-2 sm:mt-0 sm:pt-4',
-          size === 'sm' ? 'flex-row sm:flex-col' : 'flex-row sm:flex-col md:flex-row',
+          'flex-row sm:flex-col',
         )}
       >
         <AddToRfqButton product={product} packagingId={packagingId} place={place} className="min-w-0 flex-1 px-3 sm:flex-none sm:px-6" />

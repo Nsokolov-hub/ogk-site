@@ -41,6 +41,50 @@ export interface ProductPreview {
   availability: Availability;
   image?: { src: string; alt: string; kind: 'photo' | 'structure' };
   discontinued?: boolean;
+  /** Значения для фильтров каталога (атрибуты типа, ТЗ 5.1): ключ фильтра → значения */
+  attributes?: Partial<Record<FacetKey, string[]>>;
+  /** Популярность для сортировки по умолчанию */
+  popularity?: number;
+}
+
+/** Фильтры каталога (ТЗ 5.5). Набор задаётся в категории. */
+export type FacetKey =
+  | 'brand'
+  | 'availability'
+  | 'pack'
+  | 'storage'
+  | 'purpose'
+  | 'type'
+  | 'phase'
+  | 'length'
+  | 'diameter'
+  | 'particle'
+  | 'ph';
+
+export type CatalogFilters = Partial<Record<FacetKey, string[]>>;
+
+/** По популярности (в наличии выше) / по названию A–Z / по наличию */
+export type CatalogSort = 'popular' | 'name' | 'availability';
+
+export interface FacetValue {
+  value: string;
+  label: string;
+  count: number;
+  selected: boolean;
+}
+
+export interface Facet {
+  key: FacetKey;
+  values: FacetValue[];
+}
+
+export interface CatalogListing {
+  items: ProductPreview[];
+  total: number;
+  page: number;
+  pageSize: number;
+  pageCount: number;
+  facets: Facet[];
 }
 
 export interface Category {
