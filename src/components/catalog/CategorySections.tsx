@@ -17,7 +17,7 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
   const h2 = 'text-h3 font-medium text-text';
 
   return (
-    <div className="mt-20 flex flex-col gap-16 md:mt-24 lg:gap-24">
+    <div className="mt-24 flex flex-col gap-20 md:mt-32 lg:gap-28">
       {brands.length ? (
         <section aria-labelledby="cat-brands">
           <h2 id="cat-brands" className={h2}>
@@ -28,7 +28,7 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
               <li key={b.slug}>
                 <Link
                   href={`/brands/${b.slug}/`}
-                  className="glow flex h-28 flex-col items-center justify-center gap-1 overflow-hidden rounded-card bg-surface p-2 text-center transition-colors hover:text-accent"
+                  className="flex h-32 flex-col items-center justify-center gap-1 overflow-hidden rounded-card bg-surface p-3 text-center transition-colors hover:bg-surface-strong"
                 >
                   {b.logo ? (
                     <Image src={b.logo} alt={b.name} width={212} height={172} unoptimized className="h-20 w-auto object-contain" />
@@ -44,11 +44,11 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
       ) : null}
 
       {content.seoText?.length ? (
-        <section aria-labelledby="cat-info" className="max-w-[960px]">
+        <section aria-labelledby="cat-info" className="max-w-[72ch]">
           <h2 id="cat-info" className={h2}>
             {t('info')}
           </h2>
-          <div className="mt-6 flex flex-col gap-4 text-body text-text-secondary md:text-lg">
+          <div className="mt-6 flex flex-col gap-4 text-body text-text md:text-lg">
             {content.seoText.map((p) => (
               <p key={p.slice(0, 24)}>{p}</p>
             ))}
@@ -85,7 +85,7 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
                     href={d.href}
                     target="_blank"
                     rel="noopener"
-                    className="glow flex items-center gap-3 rounded-field bg-surface px-5 py-4 text-body text-text transition-colors hover:text-accent"
+                    className="flex items-center gap-3 rounded-field bg-surface px-5 py-4 text-body text-text transition-colors hover:bg-surface-strong hover:text-accent"
                   >
                     <FileText aria-hidden size={22} strokeWidth={1.5} className="shrink-0 text-accent" />
                     {d.title}

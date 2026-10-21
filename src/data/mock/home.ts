@@ -4,12 +4,6 @@ import { homeBrands } from './brands';
 /** Контент главной. В будущем — из админки (ADM-02), сейчас только RU */
 export const homeContentRu: HomeContent = {
   hero: {
-    badges: {
-      trust: 'Сервис, которому можно',
-      trustAccent: 'доверять',
-      makers: 'мировых производителей',
-      makersAccent: '60+',
-    },
     slides: [
       {
         id: 'main',
@@ -29,7 +23,7 @@ export const homeContentRu: HomeContent = {
       },
       {
         id: 'standards',
-        title: 'Стандартные образцы и реактивы ведущих производителей',
+        title: 'Стандартные образцы ведущих производителей',
         subtitle:
           'EDQM, USP, LGC, Merck и другие бренды — поставка под заказ из каталогов производителей, с документами и соблюдением условий хранения',
         ctas: [{ label: 'Перейти в каталог', href: '/catalog/reference-standards/', variant: 'primary', icon: 'arrow' }],
@@ -57,6 +51,15 @@ export const homeContentRu: HomeContent = {
           height: 824,
         },
       },
+    ],
+    search: {
+      title: 'Найдите позицию по названию, каталожному номеру или CAS',
+      examples: ['Paracetamol', '58-08-2', 'PHR6721', 'XBridge C18'],
+    },
+    facts: [
+      { value: '60+', label: 'мировых производителей' },
+      { value: '23', label: 'страны поставки' },
+      { value: '2 часа', label: 'на ответ по заявке' },
     ],
   },
 
@@ -91,12 +94,6 @@ export const homeContentRu: HomeContent = {
     subtitle: 'Мы предлагаем нашим клиентам только проверенную продукцию',
     items: [
       {
-        id: 'delivery',
-        title: 'Доставка',
-        icon: 'map',
-        text: 'В любой регион страны за счёт отлаженной логистики. Соблюдаем температурный режим, сроки и условия хранения',
-      },
-      {
         id: 'purchase',
         title: 'Закупка',
         icon: 'globe',
@@ -107,6 +104,12 @@ export const homeContentRu: HomeContent = {
         title: 'Документы',
         icon: 'file',
         text: 'Предоставляем всю необходимую документацию. Сертификация и контроль на каждом этапе в соответствии с правилами',
+      },
+      {
+        id: 'delivery',
+        title: 'Доставка',
+        icon: 'map',
+        text: 'В любой регион страны за счёт отлаженной логистики. Соблюдаем температурный режим, сроки и условия хранения',
       },
     ],
   },

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
 import { BrandsSection } from '@/components/home/BrandsSection';
 import { CapabilitiesSection } from '@/components/home/CapabilitiesSection';
+import { HeroSearch } from '@/components/home/HeroSearch';
 import { HeroSlider } from '@/components/home/HeroSlider';
 import { ProductsSection } from '@/components/home/ProductsSection';
 import { QualitySection } from '@/components/home/QualitySection';
@@ -46,7 +47,8 @@ export default async function HomePage({ params }: Props) {
   return (
     <>
       <JsonLd data={[organizationLd(settings), websiteLd(settings, locale)]} />
-      <HeroSlider badges={content.hero.badges} slides={content.hero.slides} />
+      <HeroSlider slides={content.hero.slides} />
+      <HeroSearch search={content.hero.search} facts={content.hero.facts} />
       <ProductsSection content={content.products} locale={locale} />
       <BrandsSection brands={content.brands} promo={content.promo} />
       <QualitySection quality={content.quality} />

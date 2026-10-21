@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ServiceItem } from '@/types/content';
 import { Button } from '@/components/ui/Button';
@@ -18,13 +18,13 @@ export function ServicesAccordion({ items }: { items: ServiceItem[] }) {
   const [open, setOpen] = useState(items[0]?.id);
 
   return (
-    <ul className="flex flex-col gap-3 md:gap-6 lg:gap-8">
+    <ul className="flex flex-col gap-3 md:gap-4">
       {items.map((s) => {
         const isOpen = s.id === open;
         const btnId = `svc-btn-${s.id}`;
         const panelId = `svc-panel-${s.id}`;
         return (
-          <li key={s.id} data-active={isOpen} className="glow overflow-hidden rounded-block bg-surface">
+          <li key={s.id} className={cn('overflow-hidden rounded-block transition-colors duration-300', isOpen ? 'bg-surface-strong' : 'bg-surface hover:bg-surface-strong')}>
             <h3>
               <button
                 id={btnId}
@@ -34,20 +34,17 @@ export function ServicesAccordion({ items }: { items: ServiceItem[] }) {
                 aria-disabled={isOpen || undefined}
                 onClick={() => setOpen(s.id)}
                 className={cn(
-                  'flex w-full items-center gap-4 p-5 text-left text-h3 font-medium text-text transition-colors md:gap-6 md:p-8',
+                  'flex w-full items-center justify-between gap-6 p-5 text-left text-h3 font-medium text-text transition-colors md:p-8',
                   !isOpen && 'hover:text-accent',
                 )}
               >
-                <span
-                  aria-hidden
-                  className={cn(
-                    'grid size-10 shrink-0 place-items-center rounded-full border transition-colors md:size-12',
-                    isOpen ? 'border-accent text-accent' : 'border-text text-text',
-                  )}
-                >
-                  <ArrowRight size={20} strokeWidth={1.5} className={cn('transition-transform duration-300', isOpen && 'rotate-90')} />
-                </span>
                 {s.title}
+                <ChevronDown
+                  aria-hidden
+                  size={28}
+                  strokeWidth={1.5}
+                  className={cn('shrink-0 transition-transform duration-300', isOpen ? 'rotate-180 text-accent' : 'text-text-secondary')}
+                />
               </button>
             </h3>
             <div
@@ -57,12 +54,18 @@ export function ServicesAccordion({ items }: { items: ServiceItem[] }) {
               inert={!isOpen}
               className={cn('grid transition-[grid-template-rows] duration-500 ease-out', isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]')}
             >
-              <div className="min-h-0 overflow-hidden">
+              {/* Свёрнутая панель невидима (после анимации) — её текст остаётся в HTML для поисковиков */}
+              <div
+                className={cn(
+                  'min-h-0 overflow-hidden',
+                  isOpen ? 'visible [transition:visibility_0s]' : 'invisible [transition:visibility_0s_linear_0.5s]',
+                )}
+              >
                 <div className="grid gap-6 px-5 pb-6 md:px-8 md:pb-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_380px]">
-                  <div className="min-w-0 lg:pl-[72px]">
+                  <div className="min-w-0">
                     <p className="max-w-[880px] text-body text-text md:text-lg">{s.text}</p>
                     <p className="mt-6 text-small font-medium text-accent md:text-body">{s.captionLabel}</p>
-                    <ul className="scroll-row -mx-5 mt-3 gap-2 px-5 md:-mx-8 md:px-8 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+                    <ul className="mt-3 flex flex-wrap gap-2">
                       {s.chips.map((c) => (
                         <li key={c.label}>
                           <Chip label={c.label} href={c.href} />
@@ -70,10 +73,10 @@ export function ServicesAccordion({ items }: { items: ServiceItem[] }) {
                       ))}
                     </ul>
                     <div className="mt-8 flex flex-wrap gap-3">
-                      <Button href={s.href} size="m" icon={<ArrowRight aria-hidden size={20} strokeWidth={2} />}>
+                      <Button href={s.href} size="m">
                         {t('more')}
                       </Button>
-                      <Button href={`${s.href}#form`} variant="secondary" size="m" icon={<span aria-hidden className="size-1.5 rounded-full bg-current" />}>
+                      <Button href={`${s.href}#form`} variant="secondary" size="m">
                         {t('order')}
                       </Button>
                     </div>

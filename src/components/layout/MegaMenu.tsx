@@ -16,10 +16,10 @@ export function MegaMenu({ id, tree, onNavigate }: { id: string; tree: Category[
   return (
     <div
       id={id}
-      className="absolute inset-x-0 top-full mt-2 animate-fade-in rounded-block border border-border bg-surface-raised p-6 shadow-[0_24px_80px_rgb(0_0_0/0.45)] xl:p-8"
+      className="absolute inset-x-0 top-full mt-2 animate-fade-in rounded-block bg-surface-raised p-6 shadow-[0_16px_48px_rgb(0_0_0/0.45)] xl:p-8" // taste-skill-ignore: выпадающее меню поверх страницы
     >
       <div className="grid grid-cols-[minmax(280px,380px)_1fr] gap-8">
-        <ul aria-label={t('title')} className="flex flex-col gap-1 border-r border-border pr-6">
+        <ul aria-label={t('title')} className="flex flex-col gap-1 pr-6">
           {tree.map((c, i) => (
             <li key={c.slug}>
               <Link
@@ -63,7 +63,7 @@ export function MegaMenu({ id, tree, onNavigate }: { id: string; tree: Category[
         </div>
       </div>
 
-      <div className="mt-6 border-t border-border pt-5">
+      <div className="mt-8">
         <Link
           href="/catalog/"
           onClick={onNavigate}

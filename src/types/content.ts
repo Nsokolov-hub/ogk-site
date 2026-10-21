@@ -88,8 +88,11 @@ export interface Capability {
 
 export interface HomeContent {
   hero: {
-    badges: { trust: string; trustAccent: string; makers: string; makersAccent: string };
     slides: HeroSlide[];
+    /** Большой поиск под слайдами: главный вход для тех, кто ищет по кат. № и CAS (ТЗ 3) */
+    search: { title: string; examples: string[] };
+    /** Факты рядом с поиском: только подтверждённые цифры компании */
+    facts: { value: string; label: string }[];
   };
   products: { title: string; accent: string; subtitle: string };
   brands: { title: string; accent: string; subtitle: string; items: BrandRef[] };

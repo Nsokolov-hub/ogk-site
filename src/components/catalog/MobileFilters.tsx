@@ -50,7 +50,7 @@ export function MobileFilters({
           aria-describedby={undefined}
           className="fixed inset-x-0 bottom-0 z-[151] flex max-h-[90svh] flex-col rounded-t-block bg-base data-[state=open]:animate-sheet-up"
         >
-          <div className="flex items-center justify-between border-b border-border px-5 py-3">
+          <div className="flex items-center justify-between bg-surface-raised px-5 py-3">
             <RD.Title className="text-h4 font-medium">{t('filters')}</RD.Title>
             <RD.Close aria-label={tc('close')} className="grid size-11 place-items-center rounded-full text-text-secondary hover:text-text">
               <X aria-hidden size={22} strokeWidth={1.5} />

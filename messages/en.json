@@ -25,7 +25,14 @@
   "search": {
     "label": "Search the catalog",
     "placeholder": "Name, cat. no. or CAS",
-    "submit": "Search"
+    "submit": "Search",
+    "loading": "Searching…",
+    "error": "Suggestions failed to load. Press “Search” to see all results.",
+    "empty": "No “{q}” in the catalog",
+    "emptyAction": "Send a request — we'll source it from the manufacturer",
+    "catalogNumber": "Cat. No.",
+    "found": "{n, plural, one {# item found} other {# items found}}",
+    "allResults": "All results ({n})"
   },
   "megaMenu": {
     "title": "Catalog sections",
@@ -176,13 +183,23 @@
     },
     "request": {
       "toContacts": "Go to contacts"
+    },
+    "heroSearch": {
+      "examples": "Try:",
+      "exampleLabel": "Search for “{q}”",
+      "list": "Send us your list of items — we'll quote them all at once",
+      "listAction": "Send a list"
     }
   },
   "notFound": {
     "title": "Page not found",
-    "text": "It may have moved or is not ready yet. Find the item you need through search or the catalog.",
+    "text": "The page may have moved or is not ready yet. Find an item by name, catalogue number or CAS, or open a catalog section.",
     "home": "Home page",
-    "catalog": "Go to catalog"
+    "catalog": "Go to catalog",
+    "code": "Error 404",
+    "sections": "Catalog sections",
+    "request": "Can't find it? Send a request and we'll source it from the manufacturer.",
+    "requestAction": "Send a request"
   },
   "catalog": {
     "breadcrumbs": "Breadcrumbs",

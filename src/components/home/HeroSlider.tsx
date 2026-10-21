@@ -1,21 +1,15 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Globe, Plus, ShieldCheck } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { Cta, HomeContent, HeroSlide } from '@/types/content';
+import type { HomeContent, HeroSlide } from '@/types/content';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { RoundArrowButton } from '@/components/ui/RoundArrowButton';
 import { cn } from '@/lib/cn';
 
-function CtaIcon({ icon }: { icon?: Cta['icon'] }) {
-  if (icon === 'plus') return <Plus aria-hidden size={20} strokeWidth={2} />;
-  if (icon === 'arrow') return <ArrowRight aria-hidden size={20} strokeWidth={2} />;
-  if (icon === 'dot') return <span aria-hidden className="size-1.5 rounded-full bg-current" />;
-  return null;
-}
+const enter = (i: number) => ({ '--enter-i': i }) as CSSProperties;
 
 function SlideVisual({ slide, priority }: { slide: HeroSlide; priority: boolean }) {
   if (slide.imageMode === 'cover') {
@@ -29,27 +23,27 @@ function SlideVisual({ slide, priority }: { slide: HeroSlide; priority: boolean 
           sizes="100vw"
           className="animate-hero-zoom object-cover object-[60%_25%] md:object-[55%_20%]"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-base via-base/40 to-base/10" />
-        <div className="absolute inset-0 bg-gradient-to-r from-base/70 via-transparent to-transparent" />
+        {/* Нейтральная подложка под текстом поверх фото — для читаемости */}
+        <div className="absolute inset-0 bg-gradient-to-t from-base via-base/45 to-base/10" /* taste-skill-ignore */ />
+        <div className="absolute inset-0 bg-gradient-to-r from-base/75 via-base/20 to-transparent" /* taste-skill-ignore */ />
       </div>
     );
   }
   return (
     <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute right-[-10%] top-[8%] size-[min(110vw,900px)] rounded-full bg-[radial-gradient(circle,rgb(130_238_141/0.16)_0%,transparent_62%)]" />
-      <div className="absolute right-4 top-[22%] h-[30%] w-[60%] md:right-[5%] md:top-[30%] md:h-[48%] md:w-[38%]">
+      <div className="absolute right-4 top-[20%] h-[30%] w-[58%] md:right-[4%] md:top-[24%] md:h-[58%] md:w-[38%]">
         <Image src={slide.image.src} alt="" fill sizes="(min-width: 768px) 38vw, 60vw" className="object-contain object-right" />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-base via-base/30 to-transparent" />
     </div>
   );
 }
 
 /**
  * Первый экран (ТЗ 11.2): несколько слайдов, переключение по клику, без автопрокрутки.
- * Заголовок первого слайда — единственный h1 страницы.
+ * Заголовок первого слайда — единственный h1 страницы (текст из ТЗ 10.3).
+ * Поиск по кат. № и CAS — отдельным блоком сразу под слайдами (HeroSearch).
  */
-export function HeroSlider({ badges, slides }: HomeContent['hero']) {
+export function HeroSlider({ slides }: Pick<HomeContent['hero'], 'slides'>) {
   const t = useTranslations('home.hero');
   const [index, setIndex] = useState(0);
   const total = slides.length;
@@ -62,7 +56,7 @@ export function HeroSlider({ badges, slides }: HomeContent['hero']) {
         role="region"
         aria-roledescription="carousel"
         aria-label={t('region')}
-        className="relative grid min-h-[clamp(640px,100svh,940px)] touch-pan-y"
+        className="relative grid min-h-[clamp(560px,70svh,780px)] touch-pan-y"
         onKeyDown={(e) => {
           if (e.key === 'ArrowRight') go(index + 1);
           if (e.key === 'ArrowLeft') go(index - 1);
@@ -88,20 +82,30 @@ export function HeroSlider({ badges, slides }: HomeContent['hero']) {
               aria-label={t('slide', { current: i + 1, total })}
               inert={!active}
               className={cn(
-                'relative isolate col-start-1 row-start-1 flex transition-opacity duration-700 ease-out',
-                active ? 'z-10 opacity-100' : 'z-0 opacity-0',
+                'relative isolate col-start-1 row-start-1 flex',
+                // Неактивный слайд сначала гаснет, потом становится невидимым — и не перекрывает текст активного
+                // При «уменьшении движения» смены нет — неактивные слайды просто не показываются
+                active
+                  ? 'visible z-10 opacity-100 [transition:opacity_0.6s_ease-out,visibility_0s]'
+                  : 'invisible z-0 opacity-0 [transition:opacity_0.6s_ease-out,visibility_0s_linear_0.6s] motion-reduce:hidden',
               )}
             >
               <SlideVisual slide={s} priority={i === 0} />
-              <Container className="flex flex-col justify-end pb-32 pt-44 md:pb-36 lg:pb-40 lg:pt-56">
-                <div className={cn('max-w-[1080px]', s.imageMode === 'object' && 'md:max-w-[56%]')}>
-                  <Heading id={i === 0 ? 'hero-title' : undefined} className="text-h1 font-medium uppercase text-text">
+              <Container className="flex flex-col justify-end pb-24 pt-40 md:pb-28 lg:pt-48">
+                <div className={cn(s.imageMode === 'cover' ? 'max-w-[1120px]' : 'max-w-[1120px] md:max-w-[60%]')}>
+                  <Heading
+                    id={i === 0 ? 'hero-title' : undefined}
+                    style={enter(0)}
+                    className="enter text-h1 font-medium text-text"
+                  >
                     {s.title}
                   </Heading>
-                  <p className="mt-4 max-w-[620px] text-lead text-text-secondary md:mt-6">{s.subtitle}</p>
-                  <div className="mt-8 flex flex-wrap gap-3 md:mt-10">
+                  <p style={enter(1)} className="enter mt-4 max-w-[620px] text-lead text-text md:mt-5">
+                    {s.subtitle}
+                  </p>
+                  <div style={enter(2)} className="enter mt-7 flex flex-wrap gap-3 md:mt-8">
                     {s.ctas.map((c) => (
-                      <Button key={c.label} href={c.href} variant={c.variant} size="m" icon={<CtaIcon icon={c.icon} />}>
+                      <Button key={c.label} href={c.href} variant={c.variant} size="m">
                         {c.label}
                       </Button>
                     ))}
@@ -112,32 +116,8 @@ export function HeroSlider({ badges, slides }: HomeContent['hero']) {
           );
         })}
 
-        {/* Бейджи сверху */}
-        <Container className="pointer-events-none absolute inset-x-0 top-0 z-20 flex justify-between gap-6 pt-[104px] lg:pt-[164px]">
-          <p className="flex items-center gap-3 text-small text-text md:text-body">
-            <span className="grid size-10 shrink-0 place-items-center rounded-full border border-accent/50 md:size-12">
-              <ShieldCheck aria-hidden size={22} strokeWidth={1.5} className="text-accent" />
-            </span>
-            <span>
-              {badges.trust}
-              <br />
-              <span className="text-accent">{badges.trustAccent}</span>
-            </span>
-          </p>
-          <p className="hidden items-center gap-3 text-right text-body text-text sm:flex">
-            <span>
-              <span className="text-accent">{badges.makersAccent}</span> {badges.makers.split(' ')[0]}
-              <br />
-              {badges.makers.split(' ').slice(1).join(' ')}
-            </span>
-            <span className="grid size-12 shrink-0 place-items-center rounded-full border border-accent/50">
-              <Globe aria-hidden size={22} strokeWidth={1.5} className="text-accent" />
-            </span>
-          </p>
-        </Container>
-
-        {/* Управление слайдами */}
-        <Container className="absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-4 pb-8 md:pb-10">
+        {/* Переключение слайдов: точки и стрелки */}
+        <Container className="absolute inset-x-0 bottom-0 z-20 flex items-center justify-between gap-4 pb-6 md:pb-8">
           <div className="flex items-center gap-1">
             {slides.map((s, i) => (
               <button
@@ -150,7 +130,7 @@ export function HeroSlider({ badges, slides }: HomeContent['hero']) {
               >
                 <span
                   className={cn(
-                    'block h-1.5 rounded-pill transition-all duration-300',
+                    'block h-1.5 rounded-pill transition-[width,background-color] duration-300',
                     i === index ? 'w-10 bg-accent' : 'w-4 bg-text-secondary/50 group-hover:bg-text-secondary',
                   )}
                 />

@@ -16,7 +16,7 @@ export async function Footer({ settings }: { settings: SiteSettings }) {
   const linkCls = 'transition-colors hover:text-accent';
 
   return (
-    <footer className="mt-20 border-t border-border pb-8 pt-12 md:mt-30 lg:mt-40 lg:pt-16">
+    <footer className="mt-24 bg-base-deep pb-10 pt-14 md:mt-32 lg:mt-40 lg:pt-20">
       <Container>
         <Link href="/" aria-label={th('home')} className="inline-block rounded-sm">
           <Logo alt="" className="h-12 md:h-16 lg:h-20" />
@@ -36,7 +36,7 @@ export async function Footer({ settings }: { settings: SiteSettings }) {
           </nav>
 
           {/* Капсула с контактами */}
-          <div className="flex w-fit max-w-full items-center gap-4 rounded-[60px] border border-accent p-2 pr-6 sm:gap-6 sm:rounded-pill sm:p-3 sm:pr-10">
+          <div className="flex w-fit max-w-full items-center gap-4 rounded-[60px] bg-surface-raised p-2 pr-6 sm:gap-6 sm:rounded-pill sm:p-3 sm:pr-10">
             <div aria-hidden className="relative size-24 shrink-0 sm:size-32 lg:size-[156px]">
               <Image src="/images/footer/globe.svg" alt="" fill unoptimized className="object-contain" />
               <Image src="/images/footer/globe-text.svg" alt="" fill unoptimized className="animate-spin-slow object-contain" />
@@ -61,7 +61,7 @@ export async function Footer({ settings }: { settings: SiteSettings }) {
           </div>
 
           <div className="flex flex-col gap-3 text-small text-text lg:items-end lg:text-right">
-            <p className="text-caption uppercase tracking-[0.08em] text-text-secondary">{t('documents')}</p>
+            <p className="font-medium text-text-secondary">{t('documents')}</p>
             <a href={settings.docs.consent} target="_blank" rel="noopener" className={`${linkCls} max-w-[260px]`}>
               {t('consent')}
               <span className="sr-only"> {t('newTab')}</span>
@@ -78,11 +78,11 @@ export async function Footer({ settings }: { settings: SiteSettings }) {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col gap-1 text-small text-text-secondary md:flex-row md:gap-6">
+        <div className="mt-14 flex flex-col gap-1 text-small text-text-secondary md:flex-row md:gap-6">
           <p>{settings.address.full}</p>
           <p>{settings.hours}</p>
         </div>
-        <p className="mt-6 border-t border-border pt-6 text-caption text-text-secondary">
+        <p className="mt-3 text-caption text-text-secondary">
           {t('copyright', {
             year,
             name: settings.legal.name,

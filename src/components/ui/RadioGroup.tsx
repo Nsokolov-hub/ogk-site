@@ -41,7 +41,7 @@ export function RadioGroup<T extends string>({
               onChange={() => onChange(o.value)}
               className={cn(
                 'size-5 shrink-0 cursor-pointer appearance-none rounded-full border border-text-secondary transition-[border-color,box-shadow] duration-200',
-                'hover:border-text checked:border-accent checked:shadow-[inset_0_0_0_4px_var(--color-base),inset_0_0_0_10px_var(--color-accent)]',
+                'hover:border-text checked:border-accent checked:shadow-[inset_0_0_0_4px_var(--color-base),inset_0_0_0_10px_var(--color-accent)]', // taste-skill-ignore: отметка выбранной радиокнопки
               )}
             />
             <label htmlFor={id} className="cursor-pointer text-body text-text">

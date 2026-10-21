@@ -81,6 +81,7 @@ const NAME_SIZE = 7.6;
 /**
  * Фирменная заглушка банки ОГК-ХИМ (ТЗ 5.3): когда нет фото производителя и 2D-структуры.
  * Янтарное стекло, тёмно-зелёная крышка, на этикетке — бренд, название и CAS.
+ * Фон прозрачный: банка стоит на ровной плитке карточки, как экспонат в каталоге образцов.
  */
 export function VialPlaceholder({
   name,
@@ -112,11 +113,7 @@ export function VialPlaceholder({
       className={cn('h-full w-full', className)}
     >
       <defs>
-        <radialGradient id={id('glow')} cx="0.5" cy="0.46" r="0.55">
-          <stop offset="0%" stopColor="#82ee8d" stopOpacity="0.12" />
-          <stop offset="100%" stopColor="#82ee8d" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id={id('shadow')} cx="0.5" cy="0.5" r="0.5">
+        <radialGradient id={id('contact')} cx="0.5" cy="0.5" r="0.5">
           <stop offset="0%" stopColor="#000" stopOpacity="0.6" />
           <stop offset="100%" stopColor="#000" stopOpacity="0" />
         </radialGradient>
@@ -179,8 +176,7 @@ export function VialPlaceholder({
         </clipPath>
       </defs>
 
-      <rect width="200" height="200" fill={url('glow')} />
-      <ellipse cx="100" cy="187" rx="50" ry="5" fill={url('shadow')} />
+      <ellipse cx="100" cy="187" rx="50" ry="5" fill={url('contact')} />
 
       {/* стекло */}
       <path d={BODY} fill={url('glass')} />

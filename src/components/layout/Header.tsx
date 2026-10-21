@@ -88,7 +88,7 @@ export function Header({ settings, tree }: { settings: SiteSettings; tree: Categ
           }}
         >
           {/* Капсула */}
-          <div className="relative flex h-16 items-center gap-1.5 rounded-pill border border-border/60 bg-surface px-3 backdrop-blur-[40px] sm:gap-2 sm:px-4 lg:h-[72px] lg:gap-3 lg:px-5 xl:gap-4">
+          <div className="relative flex h-16 items-center gap-1.5 rounded-pill border border-border/60 bg-surface-raised/92 px-3 backdrop-blur-xl sm:gap-2 sm:px-4 lg:h-[72px] lg:gap-3 lg:px-5 xl:gap-4">
             <Link href="/" aria-label={t('home')} className="shrink-0 rounded-sm">
               <Logo alt="" className="h-8 lg:h-10" />
             </Link>
@@ -109,8 +109,11 @@ export function Header({ settings, tree }: { settings: SiteSettings; tree: Categ
               <ChevronDown aria-hidden size={16} strokeWidth={1.5} className={cn('transition-transform', megaOpen && 'rotate-180')} />
             </button>
 
+            {/* На главной поиск в шапке прячется, пока на экране большой поиск первого экрана (HeroSearch) */}
             <div className="hidden min-w-0 flex-1 lg:block">
-              <HeaderSearch />
+              <div className="[html[data-hero-search=in]_&]:hidden">
+                <HeaderSearch />
+              </div>
             </div>
             <div className="flex-1 lg:hidden" />
 
@@ -171,7 +174,7 @@ export function Header({ settings, tree }: { settings: SiteSettings; tree: Categ
             (navHidden || megaOpen) && 'invisible -translate-y-3 opacity-0',
           )}
         >
-          <ul className="flex flex-wrap items-center gap-2">
+          <ul className="flex items-center gap-1 rounded-pill bg-surface-raised/95 p-1">
             {MAIN_NAV.map((item) => {
               const active = isActivePath(pathname, item.href);
               return (
@@ -180,8 +183,8 @@ export function Header({ settings, tree }: { settings: SiteSettings; tree: Categ
                     href={item.href}
                     aria-current={active ? 'page' : undefined}
                     className={cn(
-                      'inline-flex h-9 items-center rounded-pill border border-accent px-5 text-small font-medium backdrop-blur-[20px] transition-colors',
-                      active ? 'bg-accent text-text-on-accent' : 'bg-base/40 text-accent hover:bg-accent hover:text-text-on-accent',
+                      'inline-flex h-9 items-center rounded-pill px-4 text-small font-medium transition-colors',
+                      active ? 'bg-accent text-text-on-accent' : 'text-text hover:text-accent',
                     )}
                   >
                     {t(item.key)}

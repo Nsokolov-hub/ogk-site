@@ -31,7 +31,7 @@ export function ProductTable({ items, caption }: { items: ProductPreview[]; capt
         </thead>
         <tbody>
           {items.map((p, i) => (
-            <tr key={p.id} className={cn('border-t border-border', i % 2 === 1 && 'bg-surface')}>
+            <tr key={p.id} className={cn('border-t border-border', i % 2 === 1 && 'bg-surface')} /* taste-skill-ignore: строки настоящей таблицы */>
               <td className={cn(td, 'whitespace-nowrap tabular-nums text-text')}>{p.catalogNumber}</td>
               <td className={cn(td, 'max-w-[360px]')}>
                 <Link href={`/product/${p.slug}/`} title={p.name} className="chem-wrap line-clamp-2 font-medium text-text transition-colors hover:text-accent">

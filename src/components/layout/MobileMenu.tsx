@@ -47,7 +47,7 @@ export function MobileMenu({
           </div>
 
           <nav aria-label={t('mainNav')} className="mt-6">
-            <details className="group border-b border-border">
+            <details className="group">
               <summary className="flex cursor-pointer list-none items-center justify-between py-4 text-h4 font-medium text-text [&::-webkit-details-marker]:hidden">
                 {t('catalog')}
                 <ChevronDown aria-hidden size={22} strokeWidth={1.5} className="text-accent transition-transform group-open:rotate-180" />
@@ -59,7 +59,7 @@ export function MobileMenu({
                       {c.name}
                     </Link>
                     {c.children?.length ? (
-                      <ul className="mb-2 ml-1 flex flex-col border-l border-border pl-4">
+                      <ul className="mb-3 ml-1 flex flex-col pl-4">
                         {c.children.map((sub) => (
                           <li key={sub.slug}>
                             <Link href={sub.href} onClick={close} className="block py-1.5 text-small text-text-secondary hover:text-accent">
@@ -82,7 +82,7 @@ export function MobileMenu({
             <ul>
               {MAIN_NAV.map((item) => (
                 <li key={item.key}>
-                  <Link href={item.href} onClick={close} className="block border-b border-border py-4 text-h4 font-medium text-text hover:text-accent">
+                  <Link href={item.href} onClick={close} className="block py-4 text-h4 font-medium text-text hover:text-accent">
                     {t(item.key)}
                   </Link>
                 </li>

@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
-/** Заголовок секции: последние слова — акцентным цветом, под ним подзаголовок */
+/**
+ * Заголовок секции. Акцентное слово — приём бренда из ТЗ 11.1 («акценты в заголовках»).
+ * Подзаголовок — одна строка пояснения под заголовком, действие (если есть) — сразу под ним, слева:
+ * так заголовок и ссылка читаются вместе, без пустой середины во всю ширину.
+ */
 export function SectionHeading({
   id,
   title,
@@ -20,20 +24,18 @@ export function SectionHeading({
   className?: string;
 }) {
   return (
-    <div className={cn('mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-4 lg:mb-12', className)}>
-      <div className="max-w-[900px]">
-        <Tag id={id} className="text-h2 font-medium text-text">
-          {title}
-          {accent ? (
-            <>
-              {' '}
-              <span className="text-accent">{accent}</span>
-            </>
-          ) : null}
-        </Tag>
-        {subtitle ? <p className="mt-3 text-body text-text-secondary lg:text-lg">{subtitle}</p> : null}
-      </div>
-      {action}
+    <div className={cn('mb-8 max-w-[880px] lg:mb-12', className)}>
+      <Tag id={id} className="text-h2 font-medium text-text">
+        {title}
+        {accent ? (
+          <>
+            {' '}
+            <span className="text-accent">{accent}</span>
+          </>
+        ) : null}
+      </Tag>
+      {subtitle ? <p className="mt-3 text-lead text-text-secondary md:mt-4">{subtitle}</p> : null}
+      {action ? <div className="mt-5">{action}</div> : null}
     </div>
   );
 }

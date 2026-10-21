@@ -37,7 +37,7 @@ export function Dialog({
           {...(description ? {} : { 'aria-describedby': undefined })}
           onCloseAutoFocus={onCloseAutoFocus}
           className={cn(
-            'fixed z-[201] flex flex-col overflow-hidden bg-surface-raised text-text shadow-[0_24px_80px_rgb(0_0_0/0.5)] outline-none',
+            'fixed z-[201] flex flex-col overflow-hidden bg-surface-raised text-text shadow-[0_24px_80px_rgb(0_0_0/0.5)] outline-none', // taste-skill-ignore: модальное окно поверх страницы
             'inset-x-0 bottom-0 max-h-[92svh] rounded-t-block data-[state=open]:animate-sheet-up',
             'md:inset-auto md:left-1/2 md:top-1/2 md:max-h-[90svh] md:w-[min(680px,calc(100vw-48px))] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-block md:data-[state=open]:animate-fade-in',
             className,

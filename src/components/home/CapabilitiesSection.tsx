@@ -64,8 +64,13 @@ export function CapabilitiesSection({ capabilities }: { capabilities: HomeConten
                     key={c.id}
                     inert={!active}
                     className={cn(
-                      'col-start-1 row-start-1 text-h3 font-medium text-text transition-[transform,opacity] duration-500 ease-out',
-                      active ? 'translate-y-0 opacity-100' : before ? '-translate-y-6 opacity-0' : 'translate-y-6 opacity-0',
+                      'col-start-1 row-start-1 text-h3 font-medium text-text ease-out',
+                      active
+                        ? 'visible translate-y-0 opacity-100 [transition:transform_0.5s,opacity_0.5s,visibility_0s]'
+                        : cn(
+                            'invisible opacity-0 [transition:transform_0.5s,opacity_0.5s,visibility_0s_linear_0.5s]',
+                            before ? '-translate-y-6' : 'translate-y-6',
+                          ),
                     )}
                   >
                     <Link href={c.href} className="transition-colors hover:text-accent-hover">

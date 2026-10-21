@@ -27,30 +27,43 @@
   --color-warning: #f5c451;
   --color-success: #82ee8d;
 
-  /* Шрифт: LT Superior подключим, когда будут файлы; до этого — Manrope */
-  --font-sans: 'LT Superior', var(--font-manrope), system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /*
+   * Шрифт бренда — LT Superior (ТЗ 11.1). Пока нет файлов и веб-лицензии, работает запасной Manrope
+   * с близкими метриками. Когда файлы появятся: next/font/local в layout и его переменная первой в списке.
+   */
+  --font-sans: var(--font-manrope), system-ui, -apple-system, 'Segoe UI', sans-serif;
 
-  /* Типографика: резиновые размеры между 360 и 1440 px */
-  /* h1 от 28 px: длинные слова вроде «ФАРМАЦЕВТИЧЕСКИХ» помещаются на 360 px */
-  --text-h1: clamp(1.75rem, 1.125rem + 2.778vw, 3.625rem);
-  --text-h1--line-height: 1.1;
-  --text-h2: clamp(2rem, 1.458rem + 2.407vw, 3.625rem);
-  --text-h2--line-height: 1.2;
-  /* Заголовок внутренних страниц (категория, товар): 28 → 46 px */
-  --text-title: clamp(1.75rem, 1.375rem + 1.667vw, 2.875rem);
-  --text-title--line-height: 1.15;
-  --text-h3: clamp(1.375rem, 1.083rem + 1.296vw, 2.25rem);
-  --text-h3--line-height: 1.1;
-  --text-h4: clamp(1.125rem, 1rem + 0.556vw, 1.5rem);
-  --text-h4--line-height: 1.2;
-  --text-lead: clamp(1rem, 0.833rem + 0.741vw, 1.5rem);
-  --text-lead--line-height: 1.3;
+  /*
+   * Типографика: шесть ступеней на всю страницу, резиновые между 360 и 1440 px.
+   * Самое крупное — первый экран, дальше заметно мельче: так видна иерархия.
+   */
+  /* Первый экран: 28 → 52 px; H1 главной из ТЗ 10.3 укладывается в 2 строки от 768 px */
+  --text-h1: clamp(1.75rem, 1.2rem + 2.27vw, 3.375rem);
+  --text-h1--line-height: 1.08;
+  --text-h1--letter-spacing: -0.02em;
+  /* Заголовок секции: 28 → 44 px */
+  --text-h2: clamp(1.75rem, 1.35rem + 1.6vw, 2.75rem);
+  --text-h2--line-height: 1.12;
+  --text-h2--letter-spacing: -0.015em;
+  /* Заголовок рабочих страниц (категория, товар): 28 → 36 px — товары начинаются выше */
+  --text-title: clamp(1.75rem, 1.55rem + 0.75vw, 2.25rem);
+  --text-title--line-height: 1.12;
+  --text-title--letter-spacing: -0.015em;
+  /* Название пункта, карточки услуги: 20 → 28 px */
+  --text-h3: clamp(1.25rem, 1.05rem + 0.9vw, 1.75rem);
+  --text-h3--line-height: 1.2;
+  --text-h4: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  --text-h4--line-height: 1.3;
+  /* Подзаголовок под крупным заголовком: 17 → 20 px */
+  --text-lead: clamp(1.0625rem, 1rem + 0.28vw, 1.25rem);
+  --text-lead--line-height: 1.5;
   --text-body: 1rem;
-  --text-body--line-height: 1.5;
+  --text-body--line-height: 1.55;
   --text-small: 0.875rem;
-  --text-small--line-height: 1.4;
-  --text-caption: 0.75rem;
-  --text-caption--line-height: 1.3;
+  --text-small--line-height: 1.45;
+  /* Мельче 13 px на сайте ничего не читается */
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.4;
 
   /* Скругления: кнопки / блоки / поля и мелкие элементы */
   --radius-pill: 100px;
@@ -61,6 +74,7 @@
 
   /* Анимации */
   --animate-hero-zoom: hero-zoom 20s ease-in-out infinite alternate;
+  --animate-rise: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-spin-slow: spin 20s linear infinite;
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-sheet-up: sheet-up 0.25s ease-out;
@@ -72,6 +86,16 @@
     }
     to {
       transform: scale(1.05);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
   @keyframes fade-in {
@@ -142,36 +166,19 @@
   input[type='search']::-webkit-search-cancel-button {
     display: none;
   }
+
+  /* Заголовки делятся на строки ровно, без одинокого слова в конце */
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
 }
 
 @layer components {
-  /* Мягкое зеленоватое свечение на правой половине блока (hover и активное состояние) */
-  .glow {
-    position: relative;
-    isolation: isolate;
-  }
-  .glow::before {
-    content: '';
-    position: absolute;
-    inset-block: 0;
-    right: 0;
-    width: 60%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, rgb(255 255 255 / 0) 0%, rgb(243 255 244 / 0.1) 100%);
-    opacity: 0;
-    transition: opacity 0.4s;
-    pointer-events: none;
-    z-index: -1;
-  }
-  .glow[data-active='true']::before {
-    opacity: 1;
-  }
-  @media (hover: hover) {
-    .glow:hover::before {
-      opacity: 1;
-    }
-  }
-
   /* Горизонтальная лента без видимого скроллбара */
   .scroll-row {
     display: flex;
@@ -186,6 +193,17 @@
   .scroll-row > * {
     scroll-snap-align: start;
     flex-shrink: 0;
+  }
+
+  /*
+   * Одно появление первого экрана при загрузке: заголовок, текст, действия — по очереди (--enter-i).
+   * Начальное скрытое состояние только при разрешённом движении, поэтому без анимации всё видно сразу.
+   */
+  @media (prefers-reduced-motion: no-preference) {
+    .enter {
+      animation: var(--animate-rise);
+      animation-delay: calc(var(--enter-i, 0) * 90ms);
+    }
   }
 
   /* Длинные химические названия не выходят за карточку */

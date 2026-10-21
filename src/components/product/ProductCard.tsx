@@ -39,7 +39,7 @@ export function ProductCard({
   return (
     <article
       aria-labelledby={titleId}
-      className="glow relative grid h-full grid-cols-[96px_minmax(0,1fr)] gap-x-3 rounded-card bg-surface p-3 sm:flex sm:flex-col sm:p-4 md:rounded-block md:p-5"
+      className="relative grid h-full grid-cols-[96px_minmax(0,1fr)] gap-x-3 rounded-card bg-surface p-3 transition-colors duration-300 hover:bg-surface-strong sm:flex sm:flex-col sm:p-4 md:rounded-block md:p-5"
     >
       <div className="relative w-full self-start">
         <ProductImage product={product} sizes={IMAGE_SIZES[size]} priority={priority} className="rounded-sm sm:rounded-field" />
@@ -48,7 +48,7 @@ export function ProductCard({
       <div className="flex min-w-0 flex-1 flex-col sm:mt-4">
         <Link
           href={`/brands/${product.brand.slug}/`}
-          className="relative z-10 w-fit text-caption font-medium uppercase tracking-[0.08em] text-text-secondary transition-colors hover:text-accent"
+          className="relative z-10 w-fit text-small text-text-secondary transition-colors hover:text-accent"
         >
           {product.brand.name}
         </Link>

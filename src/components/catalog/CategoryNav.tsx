@@ -8,7 +8,7 @@ import { cn } from '@/lib/cn';
 export function CategoryNav({ nav, className }: { nav: CategoryPageData['nav']; className?: string }) {
   const t = useTranslations('catalog');
   return (
-    <nav aria-label={t('categories')} className={cn('border-b border-border pb-4', className)}>
+    <nav aria-label={t('categories')} className={cn('pb-2', className)}>
       <details open className="group">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-2 text-body font-medium text-text [&::-webkit-details-marker]:hidden">
           {nav.title}

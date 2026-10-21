@@ -22,7 +22,7 @@ export function ProductImage({
   const img = product.image;
 
   return (
-    <div className={cn('relative aspect-square overflow-hidden rounded-field bg-surface-strong', className)}>
+    <div className={cn('relative aspect-square overflow-hidden rounded-field bg-surface-raised', className)}>
       {img && !failed ? (
         <Image
           src={img.src}

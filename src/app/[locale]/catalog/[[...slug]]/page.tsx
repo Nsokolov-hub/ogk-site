@@ -82,18 +82,18 @@ export default async function CatalogPage({ params, searchParams }: Props) {
           <h1 className="text-title font-medium text-text">{data.content.h1}</h1>
           <SortControl key={`sort-${queryKey}`} basePath={data.href} query={query} />
         </div>
-        <p className="mt-3 max-w-[880px] text-body text-text-secondary">{data.content.intro}</p>
+        <p className="mt-3 max-w-[80ch] text-body text-text">{data.content.intro}</p>
 
-        {/* Разделы на телефоне и планшете — лентой; на десктопе они в боковой панели */}
-        <ul className="scroll-row -mx-4 mt-6 gap-2 px-4 md:-mx-6 md:px-6 lg:hidden">
+        {/* Разделы на телефоне и планшете — кнопками в несколько строк; на десктопе они в боковой панели */}
+        <ul className="mt-6 flex flex-wrap gap-2 lg:hidden">
           {data.nav.items.map((item) => (
             <li key={item.href}>
               <Link
                 href={item.href}
                 aria-current={item.active ? 'page' : undefined}
                 className={cn(
-                  'inline-flex h-9 items-center whitespace-nowrap rounded-pill border px-4 text-small transition-colors',
-                  item.active ? 'border-accent bg-accent text-text-on-accent' : 'border-border text-text hover:border-accent hover:text-accent',
+                  'inline-flex h-10 items-center whitespace-nowrap rounded-pill px-4 text-small transition-colors',
+                  item.active ? 'bg-accent text-text-on-accent' : 'bg-surface-strong text-text hover:text-accent',
                 )}
               >
                 {item.label}
@@ -104,7 +104,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
 
         <div className="mt-6 grid gap-8 lg:mt-10 lg:grid-cols-[260px_minmax(0,1fr)] xl:grid-cols-[290px_minmax(0,1fr)] 2xl:gap-10">
           <aside className="hidden lg:block">
-            <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto overscroll-contain pr-3 [scrollbar-width:thin]">
+            <div className="sticky top-24 max-h-[calc(100svh-7rem)] overflow-y-auto overscroll-contain rounded-block bg-surface px-5 pt-4 [scrollbar-width:thin]">
               <CategoryNav nav={data.nav} />
               <CatalogFilters key={`filters-${queryKey}`} facets={listing.facets} basePath={data.href} query={query} />
             </div>

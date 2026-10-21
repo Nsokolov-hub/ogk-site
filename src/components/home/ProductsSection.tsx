@@ -1,4 +1,3 @@
-import { ArrowRight } from 'lucide-react';
 import { getTranslations } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
 import type { HomeContent } from '@/types/content';
@@ -18,21 +17,16 @@ export async function ProductsSection({ content, locale }: { content: HomeConten
   ]);
 
   return (
-    <section aria-labelledby="products-title" className="mt-16 md:mt-24 lg:mt-30">
+    <section aria-labelledby="products-title" className="mt-24 md:mt-32 lg:mt-40">
       <Container>
         <SectionHeading
           id="products-title"
           title={content.title}
           accent={content.accent}
           subtitle={content.subtitle}
-          action={
-            <Button href="/catalog/" variant="ghost" size="m" icon={<ArrowRight aria-hidden size={20} strokeWidth={1.5} />}>
-              {t('allCatalog')}
-            </Button>
-          }
         />
         <nav aria-label={t('categories')}>
-          <ul className="scroll-row -mx-4 gap-2 px-4 md:-mx-6 md:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0">
+          <ul className="flex flex-wrap gap-2">
             {tree.map((c) => (
               <li key={c.slug}>
                 <Button href={c.href} variant="menu" size="s">
@@ -42,7 +36,16 @@ export async function ProductsSection({ content, locale }: { content: HomeConten
             ))}
           </ul>
         </nav>
-        <ProductsGrid initial={initial.items} initialTotal={initial.total} locale={locale} />
+        <ProductsGrid
+          initial={initial.items}
+          initialTotal={initial.total}
+          locale={locale}
+          extraAction={
+            <Button href="/catalog/" variant="secondary" size="m">
+              {t('allCatalog')}
+            </Button>
+          }
+        />
       </Container>
     </section>
   );

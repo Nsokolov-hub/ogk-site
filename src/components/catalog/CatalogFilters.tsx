@@ -60,13 +60,13 @@ export function CatalogFilters({
       }}
       className={cn('flex flex-col', className)}
     >
-      <h2 className="pt-4 text-body font-medium text-text">{t('filtersTitle')}</h2>
+      <h2 className="pt-6 text-body font-medium text-text">{t('filtersTitle')}</h2>
       {facets.map((f) => (
         <FacetGroup key={f.key} facet={f} selected={draft[f.key] ?? []} onToggle={(v) => toggle(f.key, v)} />
       ))}
       {query.sort !== 'popular' ? <input type="hidden" name="sort" value={query.sort} /> : null}
 
-      <div className="sticky bottom-0 z-10 -mx-1 mt-4 flex gap-2 bg-base/90 px-1 py-3 backdrop-blur-md">
+      <div className="sticky bottom-0 z-10 -mx-5 mt-2 flex gap-2 bg-surface-raised px-5 py-4">
         <Button type="submit" size="s" className="flex-1">
           {t('apply')}
           {countSelected(draft) ? ` (${countSelected(draft)})` : ''}
@@ -101,12 +101,12 @@ function FacetGroup({ facet, selected, onToggle }: { facet: Facet; selected: str
   const hiddenCount = matched.length - visible.length;
 
   return (
-    <details open className="group border-b border-border py-3">
+    <details open className="group border-b border-border py-3" /* taste-skill-ignore: граница группы в форме фильтров */>
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 py-1.5 text-small font-medium text-text [&::-webkit-details-marker]:hidden">
         <span className="inline-flex items-center gap-2">
           {title}
           {selected.length ? (
-            <span className="grid h-5 min-w-5 place-items-center rounded-pill bg-accent px-1.5 text-[11px] font-semibold text-text-on-accent">
+            <span className="grid h-6 min-w-6 place-items-center rounded-pill bg-accent px-1.5 text-caption font-semibold text-text-on-accent">
               {selected.length}
             </span>
           ) : null}

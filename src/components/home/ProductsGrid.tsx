@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import type { Locale } from '@/i18n/routing';
 import type { ProductPreview } from '@/types/catalog';
@@ -13,7 +13,18 @@ const PAGE = 12;
 const SORTS: HomeProductsSort[] = ['popular', 'alpha'];
 
 /** Переключатель «Популярные / По алфавиту» (URL не меняется), сетка и «Загрузить ещё» по 12 */
-export function ProductsGrid({ initial, initialTotal, locale }: { initial: ProductPreview[]; initialTotal: number; locale: Locale }) {
+export function ProductsGrid({
+  initial,
+  initialTotal,
+  locale,
+  extraAction,
+}: {
+  initial: ProductPreview[];
+  initialTotal: number;
+  locale: Locale;
+  /** Второе действие под сеткой рядом с «Загрузить ещё» (на главной — «Весь каталог») */
+  extraAction?: ReactNode;
+}) {
   const t = useTranslations('home.products');
   const [sort, setSort] = useState<HomeProductsSort>('popular');
   const [items, setItems] = useState(initial);
@@ -46,7 +57,7 @@ export function ProductsGrid({ initial, initialTotal, locale }: { initial: Produ
 
   return (
     <>
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 lg:mt-10">
+      <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 lg:mt-10">
         <div role="group" aria-label={t('sortLabel')} className="inline-flex rounded-pill bg-surface p-1">
           {SORTS.map((s) => (
             <button
@@ -95,8 +106,8 @@ export function ProductsGrid({ initial, initialTotal, locale }: { initial: Produ
         </p>
       ) : null}
 
-      {items.length < total ? (
-        <div className="mt-10 flex justify-center">
+      <div className="mt-10 flex flex-wrap justify-center gap-3">
+        {items.length < total ? (
           <Button
             variant="menu"
             size="m"
@@ -107,8 +118,9 @@ export function ProductsGrid({ initial, initialTotal, locale }: { initial: Produ
           >
             {loading === 'more' ? t('loading') : t('loadMore')}
           </Button>
-        </div>
-      ) : null}
+        ) : null}
+        {extraAction}
+      </div>
     </>
   );
 }

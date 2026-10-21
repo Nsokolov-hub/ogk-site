@@ -44,7 +44,7 @@ export function BrandsRow({ items }: { items: BrandRef[] }) {
             <Link
               href={`/brands/${b.slug}/`}
               aria-label={t('brandLink', { brand: b.name })}
-              className="glow grid h-[100px] w-[124px] place-items-center overflow-hidden rounded-card bg-surface md:h-[140px] md:w-[172px] md:rounded-block lg:h-[172px] lg:w-[212px]"
+              className="grid h-[100px] w-[124px] place-items-center overflow-hidden rounded-card bg-surface md:h-[140px] md:w-[172px] md:rounded-block lg:h-[172px] lg:w-[212px] transition-colors duration-300 hover:bg-surface-strong"
             >
               {b.logo ? (
                 <Image src={b.logo} alt="" width={212} height={172} unoptimized className="h-full w-full object-contain" />
