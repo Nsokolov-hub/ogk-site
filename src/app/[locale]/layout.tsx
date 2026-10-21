@@ -1,0 +1,63 @@
+import type { Metadata, Viewport } from 'next';
+import type { ReactNode } from 'react';
+import { Manrope } from 'next/font/google';
+import { notFound } from 'next/navigation';
+import { hasLocale, NextIntlClientProvider } from 'next-intl';
+import { setRequestLocale } from 'next-intl/server';
+import { routing } from '@/i18n/routing';
+import { CookieBanner } from '@/components/layout/CookieBanner';
+import { Footer } from '@/components/layout/Footer';
+import { Header } from '@/components/layout/Header';
+import { Providers } from '@/components/layout/Providers';
+import { SkipLink } from '@/components/layout/SkipLink';
+import { OneClickOrderDialog } from '@/components/product/OneClickOrderDialog';
+import { getCatalogTree, getSiteSettings } from '@/lib/api';
+import '../globals.css';
+
+// Временный шрифт до подключения LT Superior (ТЗ 11.1)
+const manrope = Manrope({
+  subsets: ['latin', 'cyrillic'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-manrope',
+  display: 'swap',
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL('https://www.ogk-chem.ru'),
+  icons: { icon: '/images/brand/favicon.svg' },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#1c1c1c',
+  colorScheme: 'dark',
+};
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
+
+export default async function LocaleLayout({ children, params }: { children: ReactNode; params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  setRequestLocale(locale);
+
+  const [settings, tree] = await Promise.all([getSiteSettings(), getCatalogTree(locale)]);
+
+  return (
+    <html lang={locale} className={manrope.variable}>
+      <body>
+        <NextIntlClientProvider>
+          <Providers />
+          <SkipLink />
+          <Header settings={settings} tree={tree} />
+          <main id="main" tabIndex={-1} className="outline-none">
+            {children}
+          </main>
+          <Footer settings={settings} />
+          <OneClickOrderDialog docs={settings.docs} />
+          <CookieBanner privacyHref={settings.docs.privacy} />
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
+}

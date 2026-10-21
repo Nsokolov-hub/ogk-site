@@ -1,0 +1,189 @@
+{
+  "common": {
+    "skipToContent": "Skip to content",
+    "close": "Close"
+  },
+  "header": {
+    "home": "OGK-CHEM — home page",
+    "catalog": "Catalog",
+    "brands": "Brands",
+    "services": "Services",
+    "articles": "Articles",
+    "about": "About",
+    "contacts": "Contacts",
+    "order": "Request a quote",
+    "phoneLabel": "Call {phone}",
+    "cartLabel": "Quote cart, items: {count}",
+    "openSearch": "Open search",
+    "closeSearch": "Close search",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menuTitle": "Site menu",
+    "mainNav": "Main menu",
+    "langLabel": "Site language"
+  },
+  "search": {
+    "label": "Search the catalog",
+    "placeholder": "Name, cat. no. or CAS",
+    "submit": "Search"
+  },
+  "megaMenu": {
+    "title": "Catalog sections",
+    "allInSection": "All products in this section",
+    "allCatalog": "Full catalog"
+  },
+  "footer": {
+    "nav": "Site sections",
+    "documents": "Documents",
+    "consent": "Consent to personal data processing",
+    "privacy": "Privacy policy",
+    "card": "Company details and files",
+    "newTab": "(opens in a new tab)",
+    "copyright": "© {year} {name} · INN {inn} · KPP {kpp} · OGRN {ogrn}",
+    "menu": {
+      "home": "Home",
+      "catalog": "Catalog",
+      "brands": "Brands",
+      "services": "Services",
+      "articles": "Articles",
+      "about": "About",
+      "contacts": "Contacts",
+      "order": "Request a quote"
+    }
+  },
+  "cookie": {
+    "label": "Cookie consent",
+    "text": "We use cookies to make the site work and, with your consent, for analytics (Yandex Metrica, Google Analytics).",
+    "privacy": "Privacy policy",
+    "acceptAll": "Accept all",
+    "necessary": "Necessary only"
+  },
+  "product": {
+    "inStock": "In stock",
+    "onRequest": "On request",
+    "catalogNumber": "Cat. No.",
+    "partNumber": "P/N",
+    "packaging": "Pack size",
+    "anyPackaging": "Any pack size on request",
+    "customPackaging": "Custom pack size",
+    "addToRfq": "Add to cart",
+    "inRfq": "In cart",
+    "added": "Added to the quote cart: {name}",
+    "oneClick": "One-click order",
+    "analogue": "Alternatives",
+    "analogueNone": "This product only",
+    "analogueAllowed": "Alternatives are acceptable",
+    "analogueRequested": "Please suggest an alternative"
+  },
+  "oneClick": {
+    "title": "One-click order",
+    "quantity": "Number of packs",
+    "decrease": "Decrease quantity",
+    "increase": "Increase quantity",
+    "amount": "Amount per pack",
+    "unit": "Unit",
+    "units": {
+      "mg": "mg",
+      "g": "g",
+      "ml": "ml",
+      "pcs": "pcs"
+    },
+    "contacts": "Contact details",
+    "submit": "Send request",
+    "note": "We will reply within 2 business hours. Price and lead time will come in a commercial offer.",
+    "successTitle": "Request No. {number} sent",
+    "successText": "A manager will contact you within 2 business hours.",
+    "close": "Close"
+  },
+  "form": {
+    "requiredHint": "Fields marked with an asterisk are required",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "John Smith",
+    "name": "Name",
+    "company": "Company name",
+    "companyShort": "Company",
+    "companyPlaceholder": "Example Pharma LLC",
+    "email": "Email",
+    "emailPlaceholder": "name@company.com",
+    "phone": "Phone",
+    "phonePlaceholder": "+44 20 7946 0958",
+    "message": "Describe your request",
+    "messagePlaceholder": "Service or product: manufacturer, cat. no., CAS, pack size, quantity, etc.",
+    "attach": "Attach a list of items",
+    "attachHint": "xlsx, csv, pdf or docx, up to 10 MB",
+    "attachRemove": "Remove file",
+    "consentPersonalData": "I give my <consent>consent to personal data processing</consent> and have read the <privacy>Privacy policy</privacy>",
+    "consentMarketing": "I agree to receive news and marketing emails from OGK-CHEM LLC. You can unsubscribe at any time using the link in the email",
+    "submit": "Send",
+    "sending": "Sending…",
+    "successTitle": "Request No. {number} received",
+    "successText": "We will reply within 2 business hours to clarify the details and send a commercial offer.",
+    "newRequest": "Send another request",
+    "errorTitle": "Could not send",
+    "errorText": "Check your connection and try again. Your data has been kept."
+  },
+  "errors": {
+    "required": "Please fill in this field",
+    "tooShort": "Too short",
+    "messageShort": "Please add a little more detail, at least 10 characters",
+    "email": "Check the email: it should look like name@company.com",
+    "phone": "Check the phone number",
+    "consent": "Your consent is required",
+    "fileType": "Supported files: xlsx, csv, pdf or docx",
+    "fileSize": "The file is larger than 10 MB",
+    "positive": "Enter an amount greater than zero"
+  },
+  "subscribe": {
+    "email": "Email for the newsletter",
+    "placeholder": "name@company.com",
+    "submit": "Subscribe",
+    "success": "Done! Please check your inbox."
+  },
+  "home": {
+    "meta": {
+      "title": "Reference standards, reagents and equipment for pharmaceutical labs — OGK-CHEM",
+      "description": "Supply of EDQM, USP and LGC reference standards, reagents, HPLC consumables and laboratory equipment for pharmaceutical laboratories. Request a quote and get a reply within 2 business hours."
+    },
+    "hero": {
+      "region": "Featured offers",
+      "slide": "{current} of {total}",
+      "prev": "Previous slide",
+      "next": "Next slide",
+      "goTo": "Show slide {n}"
+    },
+    "products": {
+      "allCatalog": "Full catalog",
+      "categories": "Catalog sections",
+      "sortLabel": "Product order",
+      "popular": "Popular",
+      "alpha": "A–Z",
+      "loading": "Loading products…",
+      "shown": "Showing {shown} of {total}",
+      "loadMore": "Load more",
+      "error": "Could not load products. Please try again."
+    },
+    "brands": {
+      "brandLink": "{brand} products",
+      "prev": "Scroll logos back",
+      "next": "Scroll logos forward"
+    },
+    "services": {
+      "all": "All services",
+      "more": "About the service",
+      "order": "Order the service"
+    },
+    "capabilities": {
+      "pause": "Pause rotating lines",
+      "play": "Resume rotating lines"
+    },
+    "request": {
+      "toContacts": "Go to contacts"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "It may have moved or is not ready yet. Find the item you need through search or the catalog.",
+    "home": "Home page",
+    "catalog": "Go to catalog"
+  }
+}

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 215" fill="none" stroke="#E7E7E7" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Парацетамол, N-(4-гидроксифенил)ацетамид — схематичная 2D-структура для мока -->
+  <path d="M110 40 L144 60 L144 100 L110 120 L76 100 L76 60 Z"/>
+  <path d="M84 65 L84 95 M110 111 L136 96 M136 64 L110 49" stroke-width="2.5"/>
+  <path d="M110 40 L110 22"/>
+  <path d="M110 120 L110 137"/>
+  <path d="M123 150 L146 162"/>
+  <path d="M143 165 L143 185 M149 165 L149 185"/>
+  <path d="M146 162 L172 148"/>
+  <g fill="#E7E7E7" stroke="none" font-family="sans-serif" text-anchor="middle">
+    <text x="110" y="17" font-size="15">OH</text>
+    <text x="110" y="153" font-size="15">NH</text>
+    <text x="146" y="203" font-size="15">O</text>
+    <text x="188" y="149" font-size="14">CH₃</text>
+  </g>
+</svg>
