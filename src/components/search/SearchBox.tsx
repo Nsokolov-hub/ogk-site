@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { Formula } from '@/components/content/Formula';
 import { useFieldIds } from '@/components/ui/Field';
 import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
@@ -27,7 +28,8 @@ function Highlight({ text, query }: { text: string; query: string }) {
 type State = { status: 'idle' } | { status: 'loading' } | { status: 'done'; result: SuggestResult } | { status: 'error' };
 
 /**
- * Строка поиска с подсказками (SRCH-01): после 2 символов — до 6 позиций, точный кат. № или CAS первым.
+ * Строка поиска с подсказками (SRCH-01): после 2 символов — до 6 позиций (точный кат. № или CAS первым),
+ * затем группы «Субстанции», «Категории», «Бренды».
  * Без JS работает как обычная GET-форма на /search/. Подсказки — список ссылок:
  * ↓ из поля переходит в список, ↑/↓ — по пунктам, Esc — обратно в поле.
  */
@@ -81,7 +83,7 @@ export function SearchBox({
     const timer = window.setTimeout(async () => {
       setState({ status: 'loading' });
       try {
-        const res = await fetch(`/api/search/suggest/?q=${encodeURIComponent(q)}`, { signal: ctrl.signal });
+        const res = await fetch(`/api/search/suggest/?q=${encodeURIComponent(q)}&lang=${locale}`, { signal: ctrl.signal });
         if (!res.ok) throw new Error(String(res.status));
         const result = (await res.json()) as SuggestResult;
         setState({ status: 'done', result });
@@ -94,7 +96,7 @@ export function SearchBox({
       ctrl.abort();
       window.clearTimeout(timer);
     };
-  }, [query, place]);
+  }, [query, place, locale]);
 
   // Закрываем по клику вне формы
   useEffect(() => {
@@ -144,26 +146,37 @@ export function SearchBox({
       panel = <p className="px-5 py-4 text-small text-text-secondary">{t('loading')}</p>;
     } else if (state.status === 'error') {
       panel = <p className="px-5 py-4 text-small text-text-secondary">{t('error')}</p>;
-    } else if (state.status === 'done' && state.result.total === 0) {
-      panel = (
-        <div className="px-5 py-4">
-          <p className="text-body text-text">{t('empty', { q: query.trim() })}</p>
-          {requestHref.startsWith('#') ? (
-            <a href={requestHref} onClick={() => setOpen(false)} className="mt-2 inline-block text-body font-medium text-accent hover:text-accent-hover">
-              {t('emptyAction')}
-            </a>
-          ) : (
-            <Link href={requestHref} onClick={() => setOpen(false)} className="mt-2 inline-block text-body font-medium text-accent hover:text-accent-hover">
-              {t('emptyAction')}
-            </Link>
-          )}
-        </div>
-      );
     } else if (state.status === 'done') {
-      const { items, total } = state.result;
+      const { items, total, corrected, substances = [], categories = [], brands = [] } = state.result;
+      const hasGroups = substances.length + categories.length + brands.length > 0;
+      const hl = corrected ?? query;
+      const groupLink = 'block px-5 py-2 text-body text-text outline-offset-[-2px] transition-colors hover:bg-surface-strong focus-visible:bg-surface-strong';
+      const group = (title: string, children: ReactNode) => (
+        <li className="pt-2">
+          <p className="px-5 pb-1 text-small text-text-secondary">{title}</p>
+          <ul>{children}</ul>
+        </li>
+      );
       panel = (
         <>
-          <ul ref={listRef} className="py-2">
+          {corrected ? (
+            <p className="px-5 pt-3 text-small text-text-secondary">{t('corrected', { q: corrected })}</p>
+          ) : null}
+          {total === 0 ? (
+            <div className="px-5 pt-4">
+              <p className="text-body text-text">{t('empty', { q: query.trim() })}</p>
+              {requestHref.startsWith('#') ? (
+                <a href={requestHref} onClick={() => setOpen(false)} className="mt-2 inline-block text-body font-medium text-accent hover:text-accent-hover">
+                  {t('emptyAction')}
+                </a>
+              ) : (
+                <Link href={requestHref} onClick={() => setOpen(false)} className="mt-2 inline-block text-body font-medium text-accent hover:text-accent-hover">
+                  {t('emptyAction')}
+                </Link>
+              )}
+            </div>
+          ) : null}
+          <ul ref={listRef} className={cn('py-2', total === 0 && !hasGroups && 'hidden')}>
             {items.map((it) => (
               <li key={it.id}>
                 <Link
@@ -173,22 +186,64 @@ export function SearchBox({
                   className="block px-5 py-2.5 outline-offset-[-2px] transition-colors hover:bg-surface-strong focus-visible:bg-surface-strong"
                 >
                   <span className="chem-wrap line-clamp-1 text-body text-text">
-                    <Highlight text={it.name} query={it.match === 'name' ? query : ''} />
+                    <Highlight text={it.name} query={it.match === 'name' ? hl : ''} />
                   </span>
                   <span className="mt-0.5 flex flex-wrap gap-x-4 text-small text-text-secondary">
                     <span>{it.brand}</span>
                     <span className="tabular-nums">
-                      {t('catalogNumber')} <Highlight text={it.catalogNumber} query={it.match === 'catalogNumber' ? query : ''} />
+                      {t('catalogNumber')} <Highlight text={it.catalogNumber} query={it.match === 'catalogNumber' ? hl : ''} />
                     </span>
                     {it.cas ? (
                       <span className="tabular-nums">
-                        CAS <Highlight text={it.cas} query={it.match === 'cas' ? query : ''} />
+                        CAS <Highlight text={it.cas} query={it.match === 'cas' ? hl : ''} />
+                      </span>
+                    ) : null}
+                    {it.formula ? (
+                      <span className="text-accent">
+                        <Formula value={it.formula} />
                       </span>
                     ) : null}
                   </span>
                 </Link>
               </li>
             ))}
+            {substances.length
+              ? group(
+                  t('groups.substances'),
+                  substances.map((g) => (
+                    <li key={g.slug}>
+                      <Link data-suggest href={`/substances/${g.slug}/`} onClick={() => setOpen(false)} className={groupLink}>
+                        {locale === 'en' ? g.nameEn : g.name}
+                        <span className="text-text-secondary"> · {t('groups.substanceHint')}</span>
+                      </Link>
+                    </li>
+                  )),
+                )
+              : null}
+            {categories.length
+              ? group(
+                  t('groups.categories'),
+                  categories.map((g) => (
+                    <li key={g.href}>
+                      <Link data-suggest href={g.href} onClick={() => setOpen(false)} className={groupLink}>
+                        {g.name}
+                      </Link>
+                    </li>
+                  )),
+                )
+              : null}
+            {brands.length
+              ? group(
+                  t('groups.brands'),
+                  brands.map((g) => (
+                    <li key={g.slug}>
+                      <Link data-suggest href={`/brands/${g.slug}/`} onClick={() => setOpen(false)} className={groupLink}>
+                        {g.name}
+                      </Link>
+                    </li>
+                  )),
+                )
+              : null}
           </ul>
           {total > items.length ? (
             <button
@@ -197,6 +252,8 @@ export function SearchBox({
             >
               {t('allResults', { n: total })}
             </button>
+          ) : total === 0 ? (
+            <div className="h-3" />
           ) : null}
         </>
       );

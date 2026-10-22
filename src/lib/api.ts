@@ -7,28 +7,28 @@ import type { Category, ProductPreview } from '@/types/catalog';
 import type { HomeContent } from '@/types/content';
 import type { SiteRequestPayload, SiteRequestResult } from '@/types/requests';
 import type { SiteSettings } from '@/types/settings';
-import { catalogTree } from '@/data/mock/categories';
+import { localizedTree } from '@/data/mock/categories';
+import { homeContentEn } from '@/data/mock/en/home';
 import { homeContentRu } from '@/data/mock/home';
 import { catalogProducts } from '@/data/mock/catalog-products';
-import { siteSettings } from '@/data/mock/settings';
+import { siteSettings, siteSettingsEn } from '@/data/mock/settings';
+import { localizeProduct } from './pack-label';
 
 /** Имитация сети только в браузере, чтобы не тормозить серверный рендер */
 async function networkDelay(ms = 300) {
   if (typeof window !== 'undefined') await new Promise((r) => setTimeout(r, ms));
 }
 
-export async function getSiteSettings(): Promise<SiteSettings> {
-  return siteSettings;
+export async function getSiteSettings(locale: Locale = 'ru'): Promise<SiteSettings> {
+  return locale === 'en' ? siteSettingsEn : siteSettings;
 }
 
 export async function getHomeContent(locale: Locale): Promise<HomeContent> {
-  void locale; // EN-контент главной добавим вместе с переводами
-  return homeContentRu;
+  return locale === 'en' ? homeContentEn : homeContentRu;
 }
 
 export async function getCatalogTree(locale: Locale): Promise<Category[]> {
-  void locale;
-  return catalogTree;
+  return localizedTree(locale);
 }
 
 export type HomeProductsSort = 'popular' | 'alpha';
@@ -49,7 +49,7 @@ export async function getHomeProducts(p: {
 }): Promise<{ items: ProductPreview[]; total: number }> {
   await networkDelay();
   const list = buildMockList(p.sort);
-  return { items: list.slice(p.offset, p.offset + p.limit), total: list.length };
+  return { items: list.slice(p.offset, p.offset + p.limit).map((x) => localizeProduct(x, p.locale)), total: list.length };
 }
 
 let requestCounter = 122;

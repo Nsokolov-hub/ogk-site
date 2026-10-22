@@ -1,5 +1,7 @@
 import type { BrandRef, CardType, FacetKey, Packaging, ProductPreview, SubstanceRole } from '@/types/catalog';
 import { mockProducts } from './products';
+import { matchControlled } from './controlled';
+import { catalogSettings } from './settings';
 import { SUBSTANCE_SLUGS } from './substances';
 
 /**
@@ -475,4 +477,23 @@ const isDuplicate = (g: ProductPreview) =>
       (norm(f.catalogNumber) === norm(g.catalogNumber) || (f.name === g.name && !!f.cas && f.cas === g.cas)),
   );
 
-export const catalogProducts: ProductPreview[] = [...mockProducts, ...generated.filter((g) => !isDuplicate(g))];
+// Позиции из перечней ПП № 681 и № 964 — в выгрузке они есть, на витрине Релиза 1 их нет (ТЗ 5.2.1)
+const controlledSamples: ProductPreview[] = [
+  make({ brand: B.edqm, name: 'Morphine hydrochloride CRS', catalogNumber: 'M2180000', cas: '6055-06-7', category: [RS, 'edqm'], cardType: 'standard', packs: [PK.mg100] }),
+  make({ brand: B.edqm, name: 'Diazepam CRS', catalogNumber: 'D0350000', cas: '439-14-5', category: [RS, 'edqm'], cardType: 'standard', packs: [PK.mg100] }),
+  make({ brand: B.usp, name: 'Tramadol Hydrochloride Reference Standard', catalogNumber: '1672502', cas: '36282-47-0', category: [RS, 'usp'], cardType: 'standard', packs: [PK.mg200] }),
+];
+
+/** Весь ассортимент с автопроверкой по перечням — для админки, импорта и проверок */
+export const allCatalogProducts: ProductPreview[] = [...mockProducts, ...generated.filter((g) => !isDuplicate(g)), ...controlledSamples].map((p) => {
+  const hit = matchControlled(p);
+  return hit ? { ...p, controlled: hit.list } : p;
+});
+
+/**
+ * Витрина: всё, что видят посетители, поиск, Sitemap и рекламный фид. Подконтрольные позиции скрыты
+ * одной настройкой (ТЗ 5.2.1); режим «запрос с документами» включается ей же.
+ */
+export const catalogProducts: ProductPreview[] = catalogSettings.hideControlled
+  ? allCatalogProducts.filter((p) => !p.controlled)
+  : allCatalogProducts;

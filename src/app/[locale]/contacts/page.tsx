@@ -10,13 +10,15 @@ import { TrackedLink } from '@/components/layout/TrackedLink';
 import { breadcrumbsLd, JsonLd, organizationLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
 import { getSiteSettings } from '@/lib/api';
-import { contactsPage as page } from '@/data/mock/pages';
+import { contactsPageEn } from '@/data/mock/en/pages';
+import { contactsPage } from '@/data/mock/pages';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  const page = locale === 'en' ? contactsPageEn : contactsPage;
   return pageMetadata({ locale, path: '/contacts/', title: page.title, description: page.description, hasEn: page.hasEn });
 }
 
@@ -26,12 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  */
 export default async function ContactsPage({ params }: Props) {
   const { locale } = await params;
+  const page = locale === 'en' ? contactsPageEn : contactsPage;
   setRequestLocale(locale);
   const t = await getTranslations('trust');
   const tc = await getTranslations('catalog');
-  const settings = await getSiteSettings();
+  const settings = await getSiteSettings(locale);
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: page.h1 }];
-  const mapHref = `https://yandex.ru/maps/?text=${encodeURIComponent(settings.address.full)}`;
+  const mapHref = `https://yandex.ru/maps/?text=${encodeURIComponent(settings.address.mapQuery)}`;
   const big = 'text-h3 font-medium text-text transition-colors hover:text-accent';
 
   return (

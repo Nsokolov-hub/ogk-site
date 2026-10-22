@@ -14,7 +14,7 @@ type Props = { params: Promise<{ locale: Locale }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'substancePage.list' });
-  return pageMetadata({ locale, path: '/substances/', title: t('title'), description: t('description') });
+  return pageMetadata({ locale, path: '/substances/', title: t('title'), description: t('description'), hasEn: true });
 }
 
 /** Указатель субстанций А–Я: вход в страницы «стандарты и примеси к одному API» (ТЗ 4.1, SC-05) */
@@ -23,13 +23,13 @@ export default async function SubstancesIndex({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations('substancePage.list');
   const tc = await getTranslations('catalog');
-  const list = getSubstanceList().sort((a, b) => a.nameRu.localeCompare(b.nameRu, 'ru'));
+  const list = getSubstanceList(locale).sort((a, b) => a.name.localeCompare(b.name, locale));
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: t('breadcrumb') }];
 
-  // Группы по первой букве русского названия
+  // Группы по первой букве названия на языке страницы
   const groups = new Map<string, typeof list>();
   for (const s of list) {
-    const letter = s.nameRu[0].toUpperCase();
+    const letter = s.name[0].toUpperCase();
     groups.set(letter, [...(groups.get(letter) ?? []), s]);
   }
 
@@ -62,7 +62,8 @@ export default async function SubstancesIndex({ params }: Props) {
                   <li key={s.slug}>
                     <Link href={`/substances/${s.slug}/`} className="group flex items-baseline justify-between gap-4 rounded-sm py-1.5 text-body text-text transition-colors hover:text-accent">
                       <span>
-                        {s.nameRu} <span className="text-small text-text-secondary group-hover:text-accent">{s.nameEn}</span>
+                        {s.name}
+                      {locale === 'ru' ? <span className="text-small text-text-secondary group-hover:text-accent"> {s.nameEn}</span> : null}
                       </span>
                       <span className="shrink-0 text-small tabular-nums text-text-secondary">{s.count}</span>
                     </Link>

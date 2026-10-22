@@ -15,6 +15,7 @@ import { Select } from '@/components/ui/Select';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { useOneClickStore } from '@/lib/one-click-store';
+import { openCartDrawer } from '@/lib/cart-drawer';
 import { rfqKey, useRfqStore } from '@/lib/rfq-store';
 
 const UNITS: PackUnit[] = ['mg', 'g', 'ml', 'pcs'];
@@ -178,7 +179,7 @@ export function ProductOrderPanel({
       <div className="mt-7 grid gap-2 sm:grid-cols-2">
         {inCart ? (
           <span ref={linkWrapRef} className="contents">
-            <Button href="/rfq/" variant="menu" size="m" iconStart={<Check aria-hidden size={18} strokeWidth={2} />}>
+            <Button href="/rfq/" onClick={openCartDrawer} aria-haspopup="dialog" variant="menu" size="m" iconStart={<Check aria-hidden size={18} strokeWidth={2} />}>
               {t('inCart')}
             </Button>
           </span>

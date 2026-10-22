@@ -120,6 +120,7 @@ const DESCRIPTIONS: Record<string, { synonyms?: string[]; text: string[] }> = {
 
 export const substances: Substance[] = ROWS.map(([slug, nameEn, nameRu, cas, formula, molecularWeight]) => ({
   slug,
+  name: nameRu,
   nameEn,
   nameRu,
   cas,

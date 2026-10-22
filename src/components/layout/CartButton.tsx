@@ -3,17 +3,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { ShoppingCart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Link } from '@/i18n/navigation';
+import { Link, usePathname } from '@/i18n/navigation';
+import { openCartDrawer } from '@/lib/cart-drawer';
 import { cn } from '@/lib/cn';
 import { selectRfqCount, useRfqStore } from '@/lib/rfq-store';
 
-/** Иконка корзины запроса со счётчиком (RFQ-01). Счётчик появляется после восстановления корзины из хранилища. */
+/** Иконка корзины запроса со счётчиком (RFQ-01): открывает выдвижную панель. Счётчик появляется после восстановления корзины из хранилища. */
 export function CartButton({ className }: { className?: string }) {
   const t = useTranslations('header');
   const count = useRfqStore(selectRfqCount);
   const hydrated = useRfqStore((s) => s.hydrated);
   const [bump, setBump] = useState(false);
   const prev = useRef(count);
+  // На самой странице корзины панель не нужна
+  const onRfqPage = usePathname().replace(/\/$/, '') === '/rfq';
 
   useEffect(() => {
     if (!hydrated) return;
@@ -31,6 +34,8 @@ export function CartButton({ className }: { className?: string }) {
   return (
     <Link
       href="/rfq/"
+      onClick={onRfqPage ? undefined : openCartDrawer}
+      aria-haspopup={onRfqPage ? undefined : 'dialog'}
       aria-label={t('cartLabel', { count: visibleCount })}
       className={cn('relative inline-grid size-11 shrink-0 place-items-center rounded-full text-text transition-colors hover:text-accent', className)}
     >

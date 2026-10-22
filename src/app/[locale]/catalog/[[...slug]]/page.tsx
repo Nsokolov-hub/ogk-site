@@ -16,7 +16,7 @@ import { Link } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
 import { catalogHref, countSelected, parseCatalogQuery, type SearchParams } from '@/lib/catalog';
 import { getCatalogListing } from '@/lib/catalog-api';
-import { getCategoryPage } from '@/lib/category-page';
+import { getCategoryPage, isLandingIndexable } from '@/lib/category-page';
 import { cn } from '@/lib/cn';
 import { pageMetadata } from '@/lib/seo';
 
@@ -33,6 +33,7 @@ async function load(locale: Locale, slug: string[]) {
 /**
  * SEO (ТЗ URL-06, URL-08): фильтры и сортировка — noindex, follow и canonical на категорию;
  * пагинация — canonical на себя и «— страница N» в Title.
+ * Посадочная из среза (URL-07) — своя каноническая страница; индексируется, если в срезе достаточно позиций.
  */
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug = [] } = await params;
@@ -50,7 +51,8 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title,
     description: data.content.description,
     // Фильтры и сортировка — noindex, follow, canonical на категорию; пагинация — canonical на себя
-    index: !filtered,
+    index: !filtered && (!data.landing || isLandingIndexable(data.landing)),
+    hasEn: data.hasEn,
     canonicalQuery: paged ? `page=${q.page}` : undefined,
   });
 }
@@ -60,11 +62,20 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const data = await load(locale, slug);
   if (!data) notFound();
+  const t = await getTranslations({ locale, namespace: 'catalog' });
 
   const query = parseCatalogQuery(await searchParams);
   const [listing, settings] = await Promise.all([
-    getCatalogListing({ path: slug, filters: query.filters, sort: query.sort, page: query.page, facetKeys: data.content.facets, locale }),
-    getSiteSettings(),
+    getCatalogListing({
+      path: data.landing ? data.landing.parent.split('/') : slug,
+      preset: data.preset,
+      filters: query.filters,
+      sort: query.sort,
+      page: query.page,
+      facetKeys: data.content.facets,
+      locale,
+    }),
+    getSiteSettings(locale),
   ]);
   if (query.page > listing.pageCount && listing.total > 0) notFound();
 
@@ -84,6 +95,26 @@ export default async function CatalogPage({ params, searchParams }: Props) {
           <SortControl key={`sort-${queryKey}`} basePath={data.href} query={query} />
         </div>
         <p className="mt-3 max-w-[80ch] text-body text-text">{data.content.intro}</p>
+
+        {/* Подборки — SEO-посадочные раздела (URL-07): короткий путь к частым запросам и перелинковка */}
+        {data.landings.length ? (
+          <nav aria-label={t('landings')} className="mt-5 flex flex-wrap items-center gap-2">
+            <span className="mr-1 text-small text-text-secondary">{t('landings')}:</span>
+            {data.landings.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                aria-current={l.active ? 'page' : undefined}
+                className={cn(
+                  'inline-flex h-9 items-center whitespace-nowrap rounded-pill px-4 text-small transition-colors',
+                  l.active ? 'bg-accent text-text-on-accent' : 'bg-surface-strong text-text hover:text-accent',
+                )}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
 
         {/* Разделы на телефоне и планшете — кнопками в несколько строк; на десктопе они в боковой панели */}
         <ul className="mt-6 flex flex-wrap gap-2 lg:hidden">
@@ -125,7 +156,14 @@ export default async function CatalogPage({ params, searchParams }: Props) {
               ) : null}
               <ActiveFilters facets={listing.facets} basePath={data.href} query={query} />
             </div>
-            <ProductListing key={`list-${queryKey}`} initial={listing} path={slug} basePath={data.href} query={query} />
+            <ProductListing
+              key={`list-${queryKey}`}
+              initial={listing}
+              path={data.landing ? data.landing.parent.split('/') : slug}
+              preset={data.preset}
+              basePath={data.href}
+              query={query}
+            />
           </div>
         </div>
 

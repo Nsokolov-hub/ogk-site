@@ -18,7 +18,7 @@ type Props = { params: Promise<{ locale: Locale; slug: string }> };
 /** Метатеги по шаблону ТЗ 10.2; index — при ≥ 3 позициях и тексте (ТЗ 4.1) */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const data = await getSubstancePage(slug);
+  const data = await getSubstancePage(slug, locale);
   if (!data) return {};
   const t = await getTranslations({ locale, namespace: 'substancePage.meta' });
   const s = data.substance;
@@ -26,16 +26,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return pageMetadata({
     locale,
     path: `/substances/${s.slug}/`,
-    title: t('title', { name: s.nameRu }),
-    description: t('description', { name: s.nameRu, count: impurities, brands: data.brands.slice(0, 4).join(', ') }),
+    title: t('title', { name: s.name }),
+    description: t('description', { name: s.name, count: impurities, brands: data.brands.slice(0, 4).join(', ') }),
     index: data.indexable,
+    hasEn: s.hasEn,
   });
 }
 
 export default async function SubstancePage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [data, settings] = await Promise.all([getSubstancePage(slug), getSiteSettings()]);
+  const [data, settings] = await Promise.all([getSubstancePage(slug, locale), getSiteSettings(locale)]);
   if (!data) notFound();
   const t = await getTranslations('substancePage');
   const tc = await getTranslations('catalog');
@@ -45,14 +46,14 @@ export default async function SubstancePage({ params }: Props) {
   const breadcrumbs: BreadcrumbItem[] = [
     { label: tc('home'), href: '/' },
     { label: t('list.breadcrumb'), href: '/substances/' },
-    { label: s.nameRu },
+    { label: s.name },
   ];
 
   const facts = [
     { label: t('facts.inn'), value: s.nameEn },
     ...(s.cas ? [{ label: 'CAS', value: s.cas }] : []),
     ...(s.formula ? [{ label: t('facts.formula'), value: <Formula value={s.formula} /> }] : []),
-    ...(s.molecularWeight ? [{ label: t('facts.mw'), value: `${s.molecularWeight} г/моль` }] : []),
+    ...(s.molecularWeight ? [{ label: t('facts.mw'), value: t('facts.mwValue', { value: s.molecularWeight }) }] : []),
     { label: t('facts.items'), value: String(data.items.length) },
     { label: t('facts.brands'), value: data.brands.join(', ') },
   ];
@@ -61,7 +62,7 @@ export default async function SubstancePage({ params }: Props) {
     <>
       <JsonLd data={breadcrumbsLd(breadcrumbs, SITE_URL, locale, path)} />
       <Container>
-        <PageHeader breadcrumbs={breadcrumbs} title={t('h1', { name: s.nameRu })} lead={s.description?.[0]} />
+        <PageHeader breadcrumbs={breadcrumbs} title={t('h1', { name: s.name })} lead={s.description?.[0]} />
 
         <dl className="mt-10 grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
           {facts.map((f) => (
@@ -81,7 +82,7 @@ export default async function SubstancePage({ params }: Props) {
         {s.description && s.description.length > 1 ? (
           <section aria-labelledby="substance-about" className="mt-20 max-w-[72ch] lg:mt-28">
             <h2 id="substance-about" className="text-h3 font-medium text-text">
-              {t('about', { name: s.nameRu })}
+              {t('about', { name: s.name })}
             </h2>
             <div className="mt-6 flex flex-col gap-4 text-body text-text md:text-lg">
               {s.description.slice(1).map((p) => (
@@ -98,11 +99,11 @@ export default async function SubstancePage({ params }: Props) {
 
         <RequestBlock
           className="mt-20 lg:mt-28"
-          title={t('requestTitle', { name: s.nameRu })}
+          title={t('requestTitle', { name: s.name })}
           text={t('requestText')}
           docs={settings.docs}
           formType="substance_request"
-          defaultMessage={t('requestMessage', { name: s.nameRu, cas: s.cas ?? '' })}
+          defaultMessage={t('requestMessage', { name: s.name, cas: s.cas ?? '' })}
         />
       </Container>
     </>

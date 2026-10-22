@@ -1,4 +1,4 @@
-import type { BrandRef, Category, FacetKey } from './catalog';
+import type { BrandRef, CatalogFilters, Category, FacetKey } from './catalog';
 
 /** Контент страницы категории (ТЗ 5.1, 5.5, 10.3). В будущем — из админки. */
 export interface CategoryContent {
@@ -19,6 +19,21 @@ export interface CategoryContent {
   facets: FacetKey[];
 }
 
+/**
+ * SEO-посадочная из среза фильтров (ТЗ URL-07): отдельный ЧПУ внутри категории со своими H1, Title и текстом,
+ * например /catalog/chromatography/hplc-columns/waters-c18/. Создаётся вручную в админке.
+ */
+export interface SeoLanding extends CategoryContent {
+  /** Путь родительской категории без /catalog/: 'chromatography/hplc-columns' */
+  parent: string;
+  slug: string;
+  /** Короткая подпись для чипов «Подборки» и хлебных крошек */
+  name: string;
+  /** Фиксированные фильтры среза */
+  preset: CatalogFilters;
+  updatedAt: string;
+}
+
 export interface BreadcrumbItem {
   label: string;
   href?: string;
@@ -34,6 +49,10 @@ export interface CategoryPageData {
   nav: { title: string; parent?: { label: string; href: string }; items: { label: string; href: string; active: boolean }[] };
   /** Производители раздела с числом позиций */
   brands: (BrandRef & { count: number })[];
+  /** Посадочная из среза фильтров: фиксированные фильтры (URL-07) */
+  preset?: CatalogFilters;
+  /** Подборки раздела: посадочные этой категории или соседние посадочные */
+  landings: { label: string; href: string; active: boolean }[];
 }
 
 export interface ImageRef {
@@ -171,6 +190,28 @@ export interface ServiceContent extends SeoFields {
   form: { title: string; text: string; fields: ServiceFieldKind[] };
   /** Картинка из лендинга, если есть */
   image?: ImageRef;
+}
+
+/**
+ * Отраслевое решение /solutions/{slug}/ (ТЗ 4.1): что нужно лаборатории определённого типа — разделы каталога,
+ * популярные позиции, услуги и статьи на одной странице.
+ */
+export interface SolutionContent extends SeoFields {
+  slug: string;
+  /** Короткое название для списков */
+  name: string;
+  summary: string;
+  intro: string;
+  /** Задачи, с которыми приходят на страницу */
+  tasks: string[];
+  /** Группы товаров: описание, ссылки на разделы и посадочные, разделы каталога для счётчика позиций */
+  groups: { title: string; text: string; links: LinkItem[]; scope: string[] }[];
+  /** Разделы для блока «Часто заказывают» */
+  featured: string[];
+  /** Услуги и статьи — по slug */
+  services: string[];
+  articles: string[];
+  faq?: Faq[];
 }
 
 export type ArticleBlock =

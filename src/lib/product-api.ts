@@ -5,9 +5,11 @@
 import type { Locale } from '@/i18n/routing';
 import type { Category, ProductDetail, ProductPreview, Substance, SubstanceRole } from '@/types/catalog';
 import { catalogProducts } from '@/data/mock/catalog-products';
-import { catalogTree } from '@/data/mock/categories';
+import { localizedTree } from '@/data/mock/categories';
+import { DOCUMENT_TITLES_EN, productEnrichmentEn, substanceTextEn } from '@/data/mock/en/product-details';
 import { productEnrichment } from '@/data/mock/product-details';
 import { substances } from '@/data/mock/substances';
+import { localizeProduct } from './pack-label';
 
 /** Порог индексации по полноте (ТЗ 5.6: стартовое значение 70, настраивается в админке) */
 export const INDEX_THRESHOLD = 70;
@@ -18,9 +20,9 @@ const bySlug = new Map(catalogProducts.map((p) => [p.slug, p]));
 const substanceBySlug = new Map(substances.map((s) => [s.slug, s]));
 
 /** Основная категория товара: [раздел, подраздел?] — для хлебных крошек (ТЗ 5.4) */
-export function categoryPath(categorySlug: string): Category[] {
+export function categoryPath(categorySlug: string, locale: string = 'ru'): Category[] {
   const [topSlug, subSlug] = categorySlug.split('/');
-  const top = catalogTree.find((c) => c.slug === topSlug);
+  const top = localizedTree(locale).find((c) => c.slug === topSlug);
   if (!top) return [];
   const sub = subSlug ? top.children?.find((c) => c.slug === subSlug) : undefined;
   return sub ? [top, sub] : [top];
@@ -32,9 +34,23 @@ const ROLE_LABEL: Record<SubstanceRole, string> = {
   metabolite: 'стандарт метаболита',
   labeled: 'меченое соединение',
 };
+const ROLE_LABEL_EN: Record<SubstanceRole, string> = {
+  api: 'API reference standard',
+  impurity: 'impurity standard',
+  metabolite: 'metabolite standard',
+  labeled: 'labelled compound',
+};
 
 /** Короткий шаблонный текст для карточек без собственного описания. Такие карточки не индексируются (ТЗ 10.4). */
-function templateDescription(p: ProductPreview, substance?: Substance): string[] {
+function templateDescription(p: ProductPreview, substance: Substance | undefined, locale: string): string[] {
+  if (locale !== 'ru') {
+    const kind = p.substance ? ROLE_LABEL_EN[p.substance.role] : p.cardType === 'equipment' ? 'item' : 'product';
+    const ids = [`cat. No. ${p.catalogNumber}`, p.cas ? `CAS ${p.cas}` : null].filter(Boolean).join(', ');
+    return [
+      `${p.name} — ${p.brand.name} ${kind}${substance ? ` (${substance.nameEn.toLowerCase()})` : ''}, ${ids}.`,
+      'Supplied to order from the manufacturer’s catalogue. We will send the price, lead time and accompanying documents in a quotation within 2 business hours.',
+    ];
+  }
   const kind = p.substance ? ROLE_LABEL[p.substance.role] : p.cardType === 'equipment' ? 'позиция' : 'товар';
   const ids = [`кат. № ${p.catalogNumber}`, p.cas ? `CAS ${p.cas}` : null].filter(Boolean).join(', ');
   const first = `${p.name} — ${kind} ${p.brand.name}${substance ? ` (${substance.nameRu.toLowerCase()})` : ''}, ${ids}.`;
@@ -42,6 +58,20 @@ function templateDescription(p: ProductPreview, substance?: Substance): string[]
     first,
     'Поставляем под заказ из каталога производителя. Цену, срок поставки и состав сопроводительных документов пришлём в коммерческом предложении в течение 2 рабочих часов.',
   ];
+}
+
+/** Субстанция на языке страницы: название и описание */
+export function localizeSubstance(s: Substance, locale: string): Substance & { hasEn: boolean } {
+  const en = substanceTextEn[s.slug];
+  if (locale === 'ru') return { ...s, hasEn: !!en };
+  return {
+    ...s,
+    name: s.nameEn,
+    synonyms: en?.synonyms,
+    description: en?.description,
+    molecularWeight: s.molecularWeight?.replace(',', '.'),
+    hasEn: !!en,
+  };
 }
 
 /**
@@ -60,31 +90,52 @@ function completeness(p: ProductPreview, d: { description?: string[]; documents?
   return score;
 }
 
-export function getProductDetail(slug: string): ProductDetail | null {
+export function getProductDetail(slug: string, locale: string = 'ru'): ProductDetail | null {
   const base = bySlug.get(slug);
   if (!base) return null;
   const e = productEnrichment[slug] ?? {};
+  const en = productEnrichmentEn[slug];
   const substance = base.substance ? substanceBySlug.get(base.substance.slug) : undefined;
   const isApi = base.substance?.role === 'api';
   const storage = e.storage ?? (base.attributes?.storage?.[0] as ProductDetail['storage'] | undefined);
   const unique = !!e.description?.length;
   const score = completeness(base, { description: e.description, documents: e.documents, storage });
+  // Английская версия есть, если описание шаблонное (собирается на любом языке) или переведено (EN-05)
+  const hasEn = !unique || !!en;
+  const ru = locale === 'ru';
 
-  return {
+  const detail: ProductDetail = {
     ...base,
     ...e,
     // Формула и масса API — из справочника субстанций, если в карточке их нет
     formula: e.formula ?? (isApi ? substance?.formula : undefined),
     molecularWeight: e.molecularWeight ?? (isApi ? substance?.molecularWeight : undefined),
     storage,
-    description: unique ? e.description! : templateDescription(base, substance),
+    description: unique ? e.description! : templateDescription(base, substance, 'ru'),
     uniqueDescription: unique,
     documents: e.documents ?? [],
     completeness: score,
     // Ручное переопределение индексации в админке — поле is_indexed (SEO-07)
     indexable: score >= INDEX_THRESHOLD && !base.discontinued,
+    hasEn,
     updatedAt: e.updatedAt ?? IMPORT_DATE,
   };
+  if (ru) return detail;
+
+  // EN: только переведённые поля; русские тексты без перевода не выводим
+  return localizeProduct(
+    {
+      ...detail,
+      description: unique && en ? en.description : templateDescription(base, substance, locale),
+      nameRu: undefined,
+      molecularWeight: detail.molecularWeight?.replace(',', '.'),
+      monograph: en?.monograph,
+      specs: en?.specs ?? (e.specs ? [] : undefined),
+      documents: detail.documents.map((d, i) => ({ ...d, title: en?.documents?.[i] ?? DOCUMENT_TITLES_EN[d.type] })),
+      faq: en?.faq,
+    },
+    locale,
+  );
 }
 
 /** Порядок ролей в блоках субстанции: сначала стандарты API, затем примеси, метаболиты, меченые */
@@ -111,10 +162,10 @@ const columnKey = (p: ProductPreview) => {
 };
 
 export async function getProductPage(slug: string, locale: Locale): Promise<ProductPageData | null> {
-  void locale; // EN-контент карточек — вместе с переводами (EN-04)
-  const product = getProductDetail(slug);
+  const product = getProductDetail(slug, locale);
   if (!product) return null;
-  const substance = product.substance ? substanceBySlug.get(product.substance.slug) : undefined;
+  const rawSubstance = product.substance ? substanceBySlug.get(product.substance.slug) : undefined;
+  const substance = rawSubstance ? localizeSubstance(rawSubstance, locale) : undefined;
 
   const sameSubstanceAll = substance
     ? catalogProducts.filter((p) => p.substance?.slug === substance.slug && p.id !== product.id).sort(byRoleThenPopularity)
@@ -153,29 +204,30 @@ export async function getProductPage(slug: string, locale: Locale): Promise<Prod
     accessories = [...guards.slice(0, 3), ...filters];
   }
 
+  const loc = (list: ProductPreview[]) => list.map((x) => localizeProduct(x, locale));
   return {
     product,
-    categories: categoryPath(product.categorySlug),
+    categories: categoryPath(product.categorySlug, locale),
     substance,
-    sameSubstance: sameSubstanceAll.slice(0, 8),
+    sameSubstance: loc(sameSubstanceAll.slice(0, 8)),
     sameSubstanceTotal: sameSubstanceAll.length,
-    analogues,
-    accessories,
+    analogues: loc(analogues),
+    accessories: loc(accessories),
   };
 }
 
 /** Индексируемые карточки для Sitemap (SEO-04, SEO-07): только канонические URL с index */
-export function getIndexableProducts(): { slug: string; updatedAt: string }[] {
+export function getIndexableProducts(): { slug: string; updatedAt: string; hasEn: boolean }[] {
   return catalogProducts
     .map((p) => getProductDetail(p.slug)!)
     .filter((p) => p.indexable)
-    .map((p) => ({ slug: p.slug, updatedAt: p.updatedAt }));
+    .map((p) => ({ slug: p.slug, updatedAt: p.updatedAt, hasEn: p.hasEn }));
 }
 
 // ── субстанции ──
 
 export interface SubstancePageData {
-  substance: Substance;
+  substance: Substance & { hasEn: boolean };
   items: ProductPreview[];
   groups: { role: SubstanceRole; items: ProductPreview[] }[];
   brands: string[];
@@ -183,10 +235,14 @@ export interface SubstancePageData {
   indexable: boolean;
 }
 
-export async function getSubstancePage(slug: string): Promise<SubstancePageData | null> {
-  const substance = substanceBySlug.get(slug);
-  if (!substance) return null;
-  const items = catalogProducts.filter((p) => p.substance?.slug === slug).sort(byRoleThenPopularity);
+export async function getSubstancePage(slug: string, locale: string = 'ru'): Promise<SubstancePageData | null> {
+  const raw = substanceBySlug.get(slug);
+  if (!raw) return null;
+  const substance = localizeSubstance(raw, locale);
+  const items = catalogProducts
+    .filter((p) => p.substance?.slug === slug)
+    .sort(byRoleThenPopularity)
+    .map((p) => localizeProduct(p, locale));
   if (!items.length) return null;
   const groups = ROLE_ORDER.map((role) => ({ role, items: items.filter((p) => p.substance!.role === role) })).filter(
     (g) => g.items.length,
@@ -195,9 +251,10 @@ export async function getSubstancePage(slug: string): Promise<SubstancePageData 
   return { substance, items, groups, brands, indexable: items.length >= 3 && !!substance.description?.length };
 }
 
-export function getSubstanceList(): (Substance & { count: number; indexable: boolean })[] {
+export function getSubstanceList(locale: string = 'ru'): (Substance & { count: number; indexable: boolean; hasEn: boolean })[] {
   return substances
-    .map((s) => {
+    .map((raw) => {
+      const s = localizeSubstance(raw, locale);
       const count = catalogProducts.filter((p) => p.substance?.slug === s.slug).length;
       return { ...s, count, indexable: count >= 3 && !!s.description?.length };
     })

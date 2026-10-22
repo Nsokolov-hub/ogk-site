@@ -4,23 +4,29 @@ import { useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
-import { Button, type ButtonSize } from '@/components/ui/Button';
+import { Button, type ButtonSize, type ButtonVariant } from '@/components/ui/Button';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { openCartDrawer } from '@/lib/cart-drawer';
 import { rfqKey, useRfqStore } from '@/lib/rfq-store';
 
-/** «В корзину» → «В корзине» (ведёт в /rfq/). Состояние берётся из стора и переживает перезагрузку. */
+/** «В корзину» → «В корзине» (открывает панель корзины, без JS — /rfq/). Состояние берётся из стора и переживает перезагрузку. */
 export function AddToRfqButton({
   product,
   packagingId,
   place,
   size = 's',
+  variant = 'primary',
+  inCartVariant = 'menu',
   className,
 }: {
   product: ProductPreview;
   packagingId: string | null;
   place: 'list' | 'card' | 'search';
   size?: ButtonSize;
+  /** Вид кнопки «В корзину» и состояния «В корзине»: в карточке — контур, после добавления — заливка */
+  variant?: ButtonVariant;
+  inCartVariant?: ButtonVariant;
   className?: string;
 }) {
   const t = useTranslations('product');
@@ -65,12 +71,12 @@ export function AddToRfqButton({
     <>
       {inCart ? (
         <span ref={linkWrapRef} className="contents">
-          <Button href="/rfq/" variant="menu" size={size} className={cn('w-full', className)} iconStart={<Check aria-hidden size={18} strokeWidth={2} />}>
+          <Button href="/rfq/" onClick={openCartDrawer} aria-haspopup="dialog" variant={inCartVariant} size={size} className={cn('w-full', className)} iconStart={<Check aria-hidden size={18} strokeWidth={2} />}>
             {t('inRfq')}
           </Button>
         </span>
       ) : (
-        <Button variant="primary" size={size} className={cn('w-full', className)} onClick={handleAdd}>
+        <Button variant={variant} size={size} className={cn('w-full', className)} onClick={handleAdd}>
           {t('addToRfq')}
         </Button>
       )}

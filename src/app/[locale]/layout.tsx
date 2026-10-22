@@ -41,7 +41,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const [settings, tree] = await Promise.all([getSiteSettings(), getCatalogTree(locale)]);
+  const [settings, tree] = await Promise.all([getSiteSettings(locale), getCatalogTree(locale)]);
 
   return (
     <html lang={locale} className={manrope.variable}>

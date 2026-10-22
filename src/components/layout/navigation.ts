@@ -13,6 +13,7 @@ export const FOOTER_NAV = [
   { key: 'catalog', href: '/catalog/' },
   { key: 'brands', href: '/brands/' },
   { key: 'services', href: '/services/' },
+  { key: 'solutions', href: '/solutions/' },
   { key: 'articles', href: '/articles/' },
   { key: 'about', href: '/about/' },
   { key: 'contacts', href: '/contacts/' },

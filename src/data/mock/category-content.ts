@@ -11,14 +11,14 @@ const STANDARD_FACETS: FacetKey[] = ['brand', 'pack', 'storage', 'purpose', 'typ
 const COLUMN_FACETS: FacetKey[] = ['brand', 'phase', 'length', 'diameter', 'particle', 'ph'];
 const BASIC_FACETS: FacetKey[] = ['brand'];
 
-const DELIVERY_STANDARDS = [
+export const DELIVERY_STANDARDS = [
   'Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении',
   'Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд',
   'Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)',
   'Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ',
 ];
 
-const DELIVERY_GENERAL = [
+export const DELIVERY_GENERAL = [
   'Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении',
   'Доставка в любой регион России',
   'Документы для закупок по 44-ФЗ и 223-ФЗ',
@@ -39,12 +39,12 @@ const FAQ_COMMON = [
   },
 ];
 
-const DOCS = [
+export const DOCS = [
   { title: 'Карточка организации и реквизиты', href: '/files/kartochka.pdf' },
   { title: 'Политика конфиденциальности', href: '/files/politika.pdf' },
 ];
 
-const RELATED_SERVICES = [
+export const RELATED_SERVICES = [
   { label: 'Холодовая цепь', href: '/services/cold-chain/' },
   { label: 'Таможенное оформление', href: '/services/customs-clearance/' },
   { label: 'Разрешения на ввоз', href: '/services/import-permits/' },

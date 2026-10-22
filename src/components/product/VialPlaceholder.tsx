@@ -19,12 +19,13 @@ function charEm(ch: string) {
   return 0.6;
 }
 
-const textWidth = (text: string, size: number, spacing = 0) =>
-  [...text].reduce((w, ch) => w + charEm(ch) * size + spacing, 0);
+// Жирное начертание (600) шире обычного примерно на 4 %
+const textWidth = (text: string, size: number, spacing = 0, bold = false) =>
+  [...text].reduce((w, ch) => w + charEm(ch) * size * (bold ? 1.04 : 1) + spacing, 0);
 
 /** Переносит текст по ширине (длинное слово режет), не больше maxLines строк; лишнее — в многоточие */
 function wrapLines(text: string, size: number, maxWidth: number, maxLines = 2): string[] {
-  const fits = (s: string) => textWidth(s, size) <= maxWidth;
+  const fits = (s: string) => textWidth(s, size, 0, true) <= maxWidth;
   // glue — чем строка соединяется с предыдущей: пробел или ничего (кусок разрезанного слова)
   const lines: { text: string; glue: string }[] = [];
   let cur = { text: '', glue: '' };
@@ -57,172 +58,226 @@ function wrapLines(text: string, size: number, maxWidth: number, maxLines = 2): 
   return [...lines.slice(0, maxLines - 1).map((l) => l.text), `${last.replace(/[\s,(–-]+$/, '')}…`];
 }
 
-/** Бренд в одну строку: длинный сжимается до minSize, дальше — многоточие */
+/** Бренд на бейдже: длинный сжимается до 6, дальше — многоточие */
 function fitBrand(text: string, maxWidth: number) {
-  const size = 6.6;
-  const spacing = 0.5;
-  if (textWidth(text, size, spacing) <= maxWidth) return { text, size, spacing };
-  // floor — чтобы ширина после уменьшения не превысила предел на погрешность округления
-  const shrunk = Math.max(5.2, Math.floor(((size * maxWidth) / textWidth(text, size)) * 100) / 100);
-  if (textWidth(text, shrunk) <= maxWidth) return { text, size: shrunk, spacing: 0 };
+  const size = 7.5;
+  const spacing = 0.225; // 0.03em из эталона
+  if (textWidth(text, size, spacing, true) <= maxWidth) return { text, size, spacing };
+  const shrunk = Math.max(6, Math.floor(((size * maxWidth) / textWidth(text, size, spacing, true)) * 100) / 100);
+  if (textWidth(text, shrunk, 0, true) <= maxWidth) return { text, size: shrunk, spacing: 0 };
   let cut = text;
-  while (cut.length > 1 && textWidth(`${cut}…`, shrunk) > maxWidth) cut = cut.slice(0, -1);
+  while (cut.length > 1 && textWidth(`${cut}…`, shrunk, 0, true) > maxWidth) cut = cut.slice(0, -1);
   return { text: `${cut.trimEnd()}…`, size: shrunk, spacing: 0 };
 }
 
-// Контур банки: горлышко, плечи, корпус со скруглённым дном
-const BODY = 'M69 50H131V57C131 61 143 62 143 73V172Q143 185 130 185H70Q57 185 57 172V73C57 62 69 61 69 57Z';
-const CAP = 'M64 28Q64 19 73 19H127Q136 19 136 28V48Q136 51 133 51H67Q64 51 64 48Z';
-const LABEL = { x: 57, width: 86, top: 94, band: 13, bottom: 160 };
-const TEXT_X = 64;
-const TEXT_WIDTH = 72;
-const NAME_SIZE = 7.6;
+/** Детерминированный штрихкод из идентификаторов: одинаковый на сервере и в браузере */
+function barcode(seed: string, from: number, to: number) {
+  let h = 2166136261;
+  for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+  const next = () => {
+    h = Math.imul(h ^ (h >>> 15), 2246822519);
+    h = Math.imul(h ^ (h >>> 13), 3266489917);
+    return ((h ^= h >>> 16) >>> 0) / 4294967296;
+  };
+  // Высоты штрихов и шаг — как в эталоне: 1–2,5 при шаге около 3
+  const HEIGHTS = [1, 1.2, 1.8, 2, 2.2, 2.5];
+  const bars: { y: number; h: number }[] = [];
+  let y = from;
+  while (y < to) {
+    const bh = HEIGHTS[Math.floor(next() * HEIGHTS.length)];
+    bars.push({ y, h: Math.min(bh, to - y + 1) });
+    y += bh + 1.8 + Math.round(next()) * 0.4;
+  }
+  return bars;
+}
+
+// Геометрия эталона (viewBox 240 × 260): этикетка, текст и штрихкод
+const LABEL = { x: 65, y: 124, w: 110, h: 84, r: 5 };
+const TEXT_X = 71;
+const NAME_SIZE = 10.5;
+const NAME_MIN = 8.5;
+const NAME_WIDTH = 90; // от 71 до штрихкода на 166 с запасом
+const BAR = { x: 166, w: 6, top: 148, bottom: 194 };
 
 /**
- * Фирменная заглушка банки ОГК-ХИМ (ТЗ 5.3): когда нет фото производителя и 2D-структуры.
- * Янтарное стекло, тёмно-зелёная крышка, на этикетке — бренд, название и CAS.
- * Фон прозрачный: банка стоит на ровной плитке карточки, как экспонат в каталоге образцов.
+ * Фирменная заглушка флакона ОГК-ХИМ (ТЗ 5.3): когда нет фото производителя и 2D-структуры.
+ * Разметка — по эталону заказчика: матовая тёмно-зелёная ребристая крышка, янтарное стекло,
+ * этикетка из тёплой матовой бумаги с отступом от края стекла и цилиндрической светотенью,
+ * тёмная шапка с оранжевым бейджем бренда, название, CAS и штрихкод. Свечение фона — внутри SVG.
  */
 export function VialPlaceholder({
   name,
   cas,
   brand,
+  code,
   className,
 }: {
   name: string;
   cas?: string;
   brand?: string;
+  /** Каталожный номер — из него строится штрихкод */
+  code?: string;
   className?: string;
 }) {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const id = (s: string) => `${uid}-${s}`;
   const url = (s: string) => `url(#${id(s)})`;
-  // Длинное слово («Hydrochlorothiazide») не рвём, а чуть уменьшаем шрифт
-  const longestWord = Math.max(...name.split(/\s+/).map((w) => textWidth(w, NAME_SIZE)));
-  const nameSize = longestWord > TEXT_WIDTH ? Math.max(6.6, (NAME_SIZE * TEXT_WIDTH) / longestWord) : NAME_SIZE;
+
+  // Длинное слово («Hydrochlorothiazide») не рвём, а уменьшаем шрифт
+  const longestWord = Math.max(...name.split(/\s+/).map((w) => textWidth(w, NAME_SIZE, 0, true)));
+  const nameSize = longestWord > NAME_WIDTH ? Math.max(NAME_MIN, (NAME_SIZE * NAME_WIDTH) / longestWord) : NAME_SIZE;
+  const lineHeight = nameSize * 1.22;
   // Без CAS на этикетке есть место под третью строку названия
-  const nameLines = wrapLines(name, nameSize, TEXT_WIDTH, cas ? 2 : 3);
-  const brandLine = fitBrand((brand ?? 'OGK CHEM').toUpperCase(), TEXT_WIDTH);
-  const bandBottom = LABEL.top + LABEL.band;
+  const nameLines = wrapLines(name, nameSize, NAME_WIDTH, cas ? 2 : 3);
+  const brandLine = fitBrand((brand ?? 'OGK-CHEM').toUpperCase(), 88);
+  const badgeW = Math.max(32, textWidth(brandLine.text, brandLine.size, brandLine.spacing, true) + 6);
+  const bars = barcode(`${code ?? ''}|${cas ?? ''}|${name}`, BAR.top, BAR.bottom);
 
   return (
     <svg
-      viewBox="0 0 200 200"
+      viewBox="0 0 240 260"
+      fill="none"
       role="img"
       aria-label={cas ? `${name}, CAS ${cas}` : name}
       className={cn('h-full w-full', className)}
     >
       <defs>
-        <radialGradient id={id('contact')} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor="#000" stopOpacity="0.6" />
-          <stop offset="100%" stopColor="#000" stopOpacity="0" />
+        {/* Свечение на фоне */}
+        <radialGradient id={id('bgGlow')} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#2E5C3A" stopOpacity="0.45" />
+          <stop offset="100%" stopColor="#141714" stopOpacity="0" />
         </radialGradient>
-        {/* стекло: тёмные края, тёплая середина */}
-        <linearGradient id={id('glass')} x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="#1c0b03" />
-          <stop offset="9%" stopColor="#3d1b08" />
-          <stop offset="24%" stopColor="#6c3411" />
-          <stop offset="44%" stopColor="#8a4519" />
-          <stop offset="56%" stopColor="#8e481b" />
-          <stop offset="74%" stopColor="#683110" />
-          <stop offset="91%" stopColor="#371705" />
-          <stop offset="100%" stopColor="#170902" />
-        </linearGradient>
-        <linearGradient id={id('depth')} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#000" stopOpacity="0.15" />
-          <stop offset="12%" stopColor="#000" stopOpacity="0" />
-          <stop offset="82%" stopColor="#000" stopOpacity="0" />
-          <stop offset="100%" stopColor="#000" stopOpacity="0.5" />
-        </linearGradient>
-        <radialGradient id={id('warm')} cx="0.5" cy="0.5" r="0.5">
-          <stop offset="0%" stopColor="#c8743a" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#d07a3c" stopOpacity="0" />
+        {/* Тень под дном банки */}
+        <radialGradient id={id('floorShadow')} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#000000" stopOpacity="0.85" />
+          <stop offset="60%" stopColor="#000000" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0" />
         </radialGradient>
-        {/* крышка */}
-        <linearGradient id={id('cap')} x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="#0b1a10" />
-          <stop offset="10%" stopColor="#183221" />
-          <stop offset="30%" stopColor="#274b33" />
-          <stop offset="48%" stopColor="#2f5c3d" />
-          <stop offset="63%" stopColor="#2a5237" />
-          <stop offset="84%" stopColor="#183221" />
-          <stop offset="100%" stopColor="#0a170e" />
+        {/* Матовая тёмно-зелёная крышка (цилиндрический градиент) */}
+        <linearGradient id={id('capGrad')} x1="68" y1="0" x2="172" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#122416" />
+          <stop offset="22%" stopColor="#294A30" />
+          <stop offset="45%" stopColor="#355B3D" />
+          <stop offset="75%" stopColor="#1A3220" />
+          <stop offset="100%" stopColor="#0E1C11" />
         </linearGradient>
-        <linearGradient id={id('capShade')} x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.1" />
-          <stop offset="30%" stopColor="#fff" stopOpacity="0" />
-          <stop offset="85%" stopColor="#000" stopOpacity="0.1" />
-          <stop offset="100%" stopColor="#000" stopOpacity="0.35" />
+        {/* Янтарное стекло корпуса */}
+        <linearGradient id={id('glassBody')} x1="62" y1="0" x2="178" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#1E0901" />
+          <stop offset="18%" stopColor="#5A2006" />
+          <stop offset="38%" stopColor="#8C380F" />
+          <stop offset="65%" stopColor="#4A1804" />
+          <stop offset="88%" stopColor="#2B0D02" />
+          <stop offset="100%" stopColor="#160600" />
         </linearGradient>
-        {/* этикетка: светлее в центре, темнее к краям — читается как цилиндр */}
-        <linearGradient id={id('paper')} x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="#9f9e96" />
-          <stop offset="6%" stopColor="#d6d5cc" />
-          <stop offset="18%" stopColor="#ebeae2" />
-          <stop offset="50%" stopColor="#f3f2eb" />
-          <stop offset="82%" stopColor="#e7e6dd" />
-          <stop offset="94%" stopColor="#cccbc2" />
-          <stop offset="100%" stopColor="#9c9b93" />
+        {/* Блик стекла слева */}
+        <linearGradient id={id('glassHighlight')} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
         </linearGradient>
-        <linearGradient id={id('band')} x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0%" stopColor="#040404" />
-          <stop offset="14%" stopColor="#1b1b1b" />
-          <stop offset="50%" stopColor="#252525" />
-          <stop offset="86%" stopColor="#1a1a1a" />
-          <stop offset="100%" stopColor="#030303" />
+        {/* Цилиндрическая светотень для матовой этикетки */}
+        <linearGradient id={id('labelShade')} x1="65" y1="0" x2="175" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stopColor="#000000" stopOpacity="0.28" />
+          <stop offset="14%" stopColor="#000000" stopOpacity="0.04" />
+          <stop offset="35%" stopColor="#FFFFFF" stopOpacity="0.08" />
+          <stop offset="72%" stopColor="#000000" stopOpacity="0.08" />
+          <stop offset="90%" stopColor="#000000" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#000000" stopOpacity="0.45" />
         </linearGradient>
+        {/* Рёбра на крышке */}
+        <pattern id={id('capRibs')} width="6" height="46" patternUnits="userSpaceOnUse">
+          <rect x="0" y="0" width="2" height="46" fill="#000000" fillOpacity="0.22" />
+          <rect x="2" y="0" width="1.5" height="46" fill="#FFFFFF" fillOpacity="0.06" />
+        </pattern>
+        {/* Текст не выходит за этикетку, даже если оценка ширины ошиблась */}
         <clipPath id={id('labelClip')}>
-          <rect x={LABEL.x} y={LABEL.top} width={LABEL.width} height={LABEL.bottom - LABEL.top} />
+          <rect x={LABEL.x} y={LABEL.y} width={LABEL.w} height={LABEL.h} rx={LABEL.r} />
         </clipPath>
       </defs>
 
-      <ellipse cx="100" cy="187" rx="50" ry="5" fill={url('contact')} />
+      {/* Фоновое свечение */}
+      <circle cx="120" cy="135" r="95" fill={url('bgGlow')} />
 
-      {/* стекло */}
-      <path d={BODY} fill={url('glass')} />
-      <ellipse cx="100" cy="77" rx="34" ry="14" fill={url('warm')} />
-      <path d={BODY} fill={url('depth')} />
-      <path d="M62 178Q100 183 138 178" fill="none" stroke="#c06a2e" strokeOpacity="0.22" strokeWidth="1" />
-      {/* венчик горлышка */}
-      <rect x="67" y="49" width="66" height="5" rx="2" fill="#3a1907" />
-      <rect x="67" y="53.5" width="66" height="1" fill="#000" opacity="0.35" />
+      {/* Контактная тень на полу */}
+      <ellipse cx="120" cy="236" rx="68" ry="10" fill={url('floorShadow')} />
 
-      {/* крышка */}
-      <path d={CAP} fill={url('cap')} />
-      <path d={CAP} fill={url('capShade')} />
-      <path d="M71 20.6H129" stroke="#6fae7f" strokeOpacity="0.55" strokeWidth="1.1" strokeLinecap="round" />
-      <rect x="64" y="47.6" width="72" height="1" fill="#000" opacity="0.3" />
+      {/* Горловина: тёмное янтарное стекло под крышкой */}
+      <rect x="76" y="76" width="88" height="18" rx="3" fill={url('glassBody')} />
+      <rect x="76" y="76" width="88" height="6" fill="#000000" fillOpacity="0.5" />
+      <path d="M76 84 H164" stroke="#A84B18" strokeWidth="1" strokeOpacity="0.5" />
 
-      {/* этикетка */}
-      <g clipPath={url('labelClip')}>
-        <rect x={LABEL.x} y={LABEL.top} width={LABEL.width} height={LABEL.band} fill={url('band')} />
-        <rect x={LABEL.x} y={bandBottom} width={LABEL.width} height={LABEL.bottom - bandBottom} fill={url('paper')} />
-        <text
-          x={TEXT_X}
-          y={LABEL.top + 6.5 + brandLine.size * 0.41}
-          fontSize={brandLine.size}
-          fontWeight="600"
-          letterSpacing={brandLine.spacing}
-          fill="#7fdf8a"
-        >
-          {brandLine.text}
-        </text>
-        {nameLines.map((line, i) => (
-          <text key={i} x={TEXT_X} y={bandBottom + 14 + i * 10.5} fontSize={nameSize} fontWeight="500" fill="#262626">
-            {line}
+      {/* Корпус стеклянной банки */}
+      <path
+        d="M62 114 C62 98, 76 92, 80 90 H160 C164 92, 178 98, 178 114 V218 C178 229, 170 235, 158 235 H82 C70 235, 62 229, 62 218 Z"
+        fill={url('glassBody')}
+      />
+
+      {/* Янтарные рефлексы на плечиках и дне */}
+      <ellipse cx="120" cy="105" rx="46" ry="8" fill="#B84B14" fillOpacity="0.25" />
+      <ellipse cx="120" cy="228" rx="48" ry="5" fill="#B84B14" fillOpacity="0.3" />
+      <path d="M66 220 C85 226, 155 226, 174 220" stroke="#FF8A47" strokeOpacity="0.2" strokeWidth="1.5" fill="none" />
+
+      {/* Этикетка */}
+      <g>
+        {/* Тень от этикетки на стекле */}
+        <rect x="64" y="125" width="112" height="86" rx="5" fill="#000000" fillOpacity="0.45" />
+        {/* Основа: тёплая матовая бумага */}
+        <rect x={LABEL.x} y={LABEL.y} width={LABEL.w} height={LABEL.h} rx={LABEL.r} fill="#EAE7DF" />
+        {/* Тёмная шапка этикетки */}
+        <path d="M65 129 C65 126.2, 67.2 124, 70 124 H170 C172.8 124, 175 126.2, 175 129 V142 H65 Z" fill="#1A1A1A" />
+
+        <g clipPath={url('labelClip')}>
+          {/* Оранжевый бейдж бренда */}
+          <rect x="71" y="127.5" width={badgeW} height="11" rx="2" fill="#C86428" />
+          <text
+            x="74"
+            y="135.5"
+            fill="#FFFFFF"
+            fontSize={brandLine.size}
+            fontWeight="600"
+            letterSpacing={brandLine.spacing}
+          >
+            {brandLine.text}
           </text>
-        ))}
-        {cas ? (
-          <text x={TEXT_X} y={LABEL.bottom - 8} fontSize="6.2" fontWeight="500" fill="#4f4f4f">
-            CAS {cas}
-          </text>
-        ) : null}
+
+          {/* Название */}
+          {nameLines.map((line, i) => (
+            <text key={i} x={TEXT_X} y={158 + i * lineHeight} fill="#181818" fontSize={nameSize} fontWeight="600">
+              {line}
+            </text>
+          ))}
+
+          {/* CAS внизу этикетки */}
+          {cas ? (
+            <text x={TEXT_X} y="198" fill="#3A3A3A" fontSize="8" fontWeight="500">
+              CAS {cas}
+            </text>
+          ) : null}
+
+          {/* Штрихкод справа */}
+          <g fill="#222222" opacity="0.75">
+            {bars.map((b, i) => (
+              <rect key={i} x={BAR.x} y={b.y} width={BAR.w} height={b.h} />
+            ))}
+          </g>
+        </g>
+
+        {/* Главный слой: цилиндрическое затенение поверх всей этикетки */}
+        <rect x={LABEL.x} y={LABEL.y} width={LABEL.w} height={LABEL.h} rx={LABEL.r} fill={url('labelShade')} />
       </g>
 
-      {/* блики на стекле */}
-      <path d="M61.5 73C62 67 67 63.5 74 62.5" fill="none" stroke="#fff" strokeOpacity="0.2" strokeWidth="1.4" strokeLinecap="round" />
-      <rect x="61.5" y="76" width="3.5" height="96" rx="1.75" fill="#fff" opacity="0.09" />
-      <rect x="136.5" y="78" width="1.8" height="90" rx="0.9" fill="#ffb877" opacity="0.12" />
+      {/* Продольные блики стекла */}
+      <rect x="68" y="98" width="12" height="128" rx="6" fill={url('glassHighlight')} />
+      <rect x="164" y="100" width="4" height="124" rx="2" fill="#FFFFFF" fillOpacity="0.06" />
+
+      {/* Крышка */}
+      <g>
+        <rect x="68" y="32" width="104" height="44" rx="6" fill={url('capGrad')} />
+        <rect x="70" y="34" width="100" height="36" rx="3" fill={url('capRibs')} />
+        <rect x="67" y="70" width="106" height="7" rx="2.5" fill={url('capGrad')} />
+        <path d="M68 70 H172" stroke="#0B160D" strokeWidth="1" />
+        <path d="M74 33.5 H166" stroke="#FFFFFF" strokeOpacity="0.18" strokeWidth="1.2" strokeLinecap="round" />
+      </g>
     </svg>
   );
 }

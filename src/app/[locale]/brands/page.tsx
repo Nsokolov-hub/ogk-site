@@ -17,7 +17,7 @@ type Props = { params: Promise<{ locale: Locale }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'brands.list' });
-  return pageMetadata({ locale, path: '/brands/', title: t('title'), description: t('description') });
+  return pageMetadata({ locale, path: '/brands/', title: t('title'), description: t('description'), hasEn: true });
 }
 
 /** Все производители (ТЗ 4.1): плитка бренда ведёт на его страницу */
@@ -26,7 +26,7 @@ export default async function BrandsPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations('brands');
   const tc = await getTranslations('catalog');
-  const [brands, settings] = await Promise.all([getBrands(locale), getSiteSettings()]);
+  const [brands, settings] = await Promise.all([getBrands(locale), getSiteSettings(locale)]);
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: t('list.breadcrumb') }];
   const sorted = [...brands].sort((a, b) => a.wave - b.wave || b.count - a.count);
 

@@ -14,6 +14,7 @@ import { Link } from '@/i18n/navigation';
 import { getCatalogTree, getSiteSettings } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { getBrands } from '@/lib/content-api';
+import { localizeProduct } from '@/lib/pack-label';
 import { getSubstanceList } from '@/lib/product-api';
 import { searchCatalog } from '@/lib/search';
 import { serviceMetadata } from '@/lib/seo';
@@ -43,14 +44,15 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   const t = await getTranslations('searchPage');
   const tc = await getTranslations('catalog');
-  const [tree, settings, brands] = await Promise.all([getCatalogTree(locale), getSiteSettings(), getBrands(locale)]);
+  const [tree, settings, brands] = await Promise.all([getCatalogTree(locale), getSiteSettings(locale), getBrands(locale)]);
   const categoryNames = Object.fromEntries(tree.map((c) => [c.slug, c.name]));
   const result = searchCatalog({ query: q, brand, category, page, categoryNames });
+  const items = result.items.map((p) => localizeProduct(p, locale));
 
   // Совпадения по субстанциям и брендам — отдельные группы над товарами (SRCH-01)
-  const ql = q.toLowerCase();
+  const ql = (result.corrected ?? q).toLowerCase();
   const substanceHits = q.length >= 3
-    ? getSubstanceList().filter((s) => s.nameRu.toLowerCase().includes(ql) || s.nameEn.toLowerCase().includes(ql) || s.cas === q).slice(0, 4)
+    ? getSubstanceList(locale).filter((s) => s.nameRu.toLowerCase().includes(ql) || s.nameEn.toLowerCase().includes(ql) || s.cas === q).slice(0, 4)
     : [];
   const brandHits = q.length >= 2 ? brands.filter((b) => b.name.toLowerCase().includes(ql)).slice(0, 4) : [];
 
@@ -79,6 +81,9 @@ export default async function SearchPage({ params, searchParams }: Props) {
         lead={q ? (noResults ? t('emptyLead') : t('found', { count: result.total })) : t('lead')}
       />
       <SearchBox key={q} size="lg" place="search_page" defaultValue={q} requestHref="#search-request" className="mt-8 max-w-[880px]" />
+      {result.corrected ? (
+        <p className="mt-4 text-body text-text-secondary">{t('corrected', { q: result.corrected })}</p>
+      ) : null}
 
       {substanceHits.length || brandHits.length ? (
         <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
@@ -89,7 +94,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
                 {substanceHits.map((s) => (
                   <li key={s.slug}>
                     <Link href={`/substances/${s.slug}/`} className={cn(chip, 'bg-surface-strong text-text hover:text-accent')}>
-                      {s.nameRu}
+                      {s.name}
                       <span className="text-text-secondary">{s.count}</span>
                     </Link>
                   </li>
@@ -171,7 +176,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
             {result.items.length ? (
               <ul className="grid gap-3 sm:grid-cols-2 md:gap-6 xl:grid-cols-3">
-                {result.items.map((p) => (
+                {items.map((p) => (
                   <li key={p.id}>
                     <ProductCard product={p} size="md" place="search" />
                   </li>

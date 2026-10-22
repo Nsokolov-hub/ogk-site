@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleCheck, ListPlus, Plus } from 'lucide-react';
@@ -60,6 +60,22 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
   const hydrated = useRfqStore((s) => s.hydrated);
   const { addFree, setAllAnalogue, clear } = useRfqStore.getState();
   const [showBulk, setShowBulk] = useState(false);
+
+  // /rfq/#bulk (из панели корзины и пустой выдачи) сразу открывает загрузку списка
+  useEffect(() => {
+    const sync = () => {
+      if (window.location.hash === '#bulk') setShowBulk(true);
+    };
+    sync();
+    window.addEventListener('hashchange', sync);
+    return () => window.removeEventListener('hashchange', sync);
+  }, []);
+
+  useEffect(() => {
+    if (hydrated && showBulk && window.location.hash === '#bulk') {
+      document.getElementById('rfq-bulk')?.scrollIntoView({ block: 'start' });
+    }
+  }, [hydrated, showBulk]);
   const [file, setFile] = useState<File | undefined>();
   const [fileError, setFileError] = useState<string | undefined>();
   const [failed, setFailed] = useState(false);
@@ -196,7 +212,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
       </div>
 
       {showBulk ? (
-        <div id="rfq-bulk">
+        <div id="rfq-bulk" className="scroll-mt-28">
           <BulkAdd onAttach={(f) => setFile(f)} />
         </div>
       ) : null}

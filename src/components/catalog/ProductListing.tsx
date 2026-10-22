@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { LayoutGrid, List, SearchX } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { Locale } from '@/i18n/routing';
-import type { CatalogListing } from '@/types/catalog';
+import type { CatalogFilters, CatalogListing } from '@/types/catalog';
 import { ProductCard, ProductCardSkeleton } from '@/components/product/ProductCard';
 import { Button } from '@/components/ui/Button';
 import { catalogHref, countSelected, type CatalogQuery } from '@/lib/catalog';
@@ -24,11 +24,14 @@ type View = 'grid' | 'table';
 export function ProductListing({
   initial,
   path,
+  preset,
   basePath,
   query,
 }: {
   initial: CatalogListing;
   path: string[];
+  /** Фиксированные фильтры SEO-посадочной */
+  preset?: CatalogFilters;
   basePath: string;
   query: CatalogQuery;
 }) {
@@ -66,7 +69,7 @@ export function ProductListing({
     setLoading(true);
     setError(false);
     try {
-      const res = await getCatalogListing({ path, filters: query.filters, sort: query.sort, page: lastPage + 1, facetKeys: [], locale });
+      const res = await getCatalogListing({ path, preset, filters: query.filters, sort: query.sort, page: lastPage + 1, facetKeys: [], locale });
       setItems((prev) => [...prev, ...res.items]);
       setLastPage(res.page);
     } catch {

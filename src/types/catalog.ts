@@ -41,6 +41,8 @@ export interface ProductPreview {
   attributes?: Partial<Record<FacetKey, string[]>>;
   /** Популярность для сортировки по умолчанию */
   popularity?: number;
+  /** Подконтрольное вещество (ТЗ 5.2.1): перечень ПП № 681 или № 964. В Релизе 1 скрыто с витрины */
+  controlled?: 'pp681' | 'pp964';
 }
 
 /** Фильтры каталога (ТЗ 5.5). Набор задаётся в категории. */
@@ -99,6 +101,8 @@ export type ShippingCondition = 'ambient' | 'cold-chain' | 'dry-ice';
 /** Субстанция (МНН): родитель для стандартов, примесей, метаболитов и меченых соединений (ТЗ 5.1) */
 export interface Substance {
   slug: string;
+  /** Название на языке страницы: в данных — русское, для EN подставляется английское */
+  name: string;
   nameRu: string;
   nameEn: string;
   cas?: string;
@@ -150,5 +154,7 @@ export interface ProductDetail extends ProductPreview {
   /** Полнота 0–100 (ТЗ 5.6) и итог для индексации (SEO-07) */
   completeness: number;
   indexable: boolean;
+  /** Есть английская версия карточки (EN-05): шаблонный текст или переведённое описание */
+  hasEn: boolean;
   updatedAt: string;
 }

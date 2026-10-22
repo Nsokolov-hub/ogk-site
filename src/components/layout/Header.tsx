@@ -11,6 +11,7 @@ import { Logo } from '@/components/ui/Logo';
 import { Link, usePathname } from '@/i18n/navigation';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { CartDrawer } from '@/components/rfq/CartDrawer';
 import { CartButton } from './CartButton';
 import { HeaderSearch } from './HeaderSearch';
 import { LangSwitcher } from './LangSwitcher';
@@ -197,6 +198,7 @@ export function Header({ settings, tree }: { settings: SiteSettings; tree: Categ
       </Container>
 
       <MobileMenu open={menuOpen} onOpenChange={setMenuOpen} tree={tree} settings={settings} />
+      <CartDrawer />
     </header>
   );
 }

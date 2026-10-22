@@ -10,6 +10,7 @@ export const siteSettings: SiteSettings = {
     city: 'Москва',
     street: 'ул. Касаткина, д. 8, помещ. 1/1',
     full: '129301, Москва, ул. Касаткина, д. 8, помещ. 1/1',
+    mapQuery: '129301, Москва, ул. Касаткина, д. 8',
   },
   hours: 'пн–пт 9:00–18:00',
   legal: {
@@ -23,5 +24,30 @@ export const siteSettings: SiteSettings = {
     consent: '/files/soglasie.pdf',
     privacy: '/files/politika.pdf',
     card: '/files/kartochka.pdf',
+  },
+};
+
+/** Поля контактов на английском (EN-04): адрес, часы работы, название организации */
+export const siteSettingsEn: SiteSettings = {
+  ...siteSettings,
+  address: {
+    ...siteSettings.address,
+    city: 'Moscow',
+    street: '8 Kasatkina St., premises 1/1',
+    full: '8 Kasatkina St., premises 1/1, Moscow 129301, Russia',
+  },
+  hours: 'Mon–Fri 9:00–18:00 (Moscow time)',
+  legal: { ...siteSettings.legal, name: 'OGK-CHEM LLC', shortName: 'OGK-CHEM' },
+};
+
+/** Настройки каталога и фида — в проде из админки (ТЗ 5.2.1, 13 «Фиды») */
+export const catalogSettings = {
+  /** Скрывать позиции из перечней ПП № 681 и № 964 с витрины, из поиска, Sitemap и фида */
+  hideControlled: true,
+  feed: {
+    /** Разделы каталога в фиде Директа: префиксы пути категории */
+    categories: ['reference-standards', 'chromatography', 'reagents', 'biological-standards', 'laboratory-equipment'],
+    /** Бренды в фиде; пустой список — все бренды выбранных разделов */
+    brands: [] as string[],
   },
 };

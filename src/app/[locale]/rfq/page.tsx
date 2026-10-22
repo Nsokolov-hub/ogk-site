@@ -22,7 +22,7 @@ export default async function RfqRoute({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations('rfq');
   const tc = await getTranslations('catalog');
-  const settings = await getSiteSettings();
+  const settings = await getSiteSettings(locale);
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: t('h1') }];
 
   return (

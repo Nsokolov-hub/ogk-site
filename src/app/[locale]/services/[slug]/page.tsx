@@ -32,7 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ServicePage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [s, all, settings] = await Promise.all([getService(slug, locale), getServices(locale), getSiteSettings()]);
+  const [s, all, settings] = await Promise.all([getService(slug, locale), getServices(locale), getSiteSettings(locale)]);
   if (!s) notFound();
   const t = await getTranslations('services');
   const tc = await getTranslations('catalog');

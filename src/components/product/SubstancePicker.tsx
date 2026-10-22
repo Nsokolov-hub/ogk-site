@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { openCartDrawer } from '@/lib/cart-drawer';
 import { rfqKey, useRfqStore } from '@/lib/rfq-store';
 
 /**
@@ -160,7 +161,7 @@ export function SubstancePicker({
         ) : added ? (
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-pill bg-surface-raised p-2 pl-6 shadow-[0_12px_40px_rgb(0_0_0/0.45)]" /* taste-skill-ignore: панель плавает над списком */>
             <p className="text-body text-text">{t('added', { count: added })}</p>
-            <Button href="/rfq/" variant="menu" size="m">
+            <Button href="/rfq/" onClick={openCartDrawer} aria-haspopup="dialog" variant="menu" size="m">
               {t('toCart')}
             </Button>
           </div>

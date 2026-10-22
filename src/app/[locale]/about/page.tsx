@@ -10,23 +10,26 @@ import { breadcrumbsLd, JsonLd, organizationLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
-import { aboutPage as page } from '@/data/mock/pages';
+import { aboutPageEn } from '@/data/mock/en/pages';
+import { aboutPage } from '@/data/mock/pages';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  const page = locale === 'en' ? aboutPageEn : aboutPage;
   return pageMetadata({ locale, path: '/about/', title: page.title, description: page.description, hasEn: page.hasEn });
 }
 
 /** О компании (ТЗ 10.4): чем занимаемся, как работаем, для кого, реквизиты */
 export default async function AboutPage({ params }: Props) {
   const { locale } = await params;
+  const page = locale === 'en' ? aboutPageEn : aboutPage;
   setRequestLocale(locale);
   const t = await getTranslations('trust');
   const tc = await getTranslations('catalog');
-  const settings = await getSiteSettings();
+  const settings = await getSiteSettings(locale);
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: page.h1 }];
   const h2 = 'text-h3 font-medium text-text';
 

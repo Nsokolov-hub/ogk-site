@@ -32,7 +32,14 @@
     "emptyAction": "Send a request — we'll source it from the manufacturer",
     "catalogNumber": "Cat. No.",
     "found": "{n, plural, one {# item found} other {# items found}}",
-    "allResults": "All results ({n})"
+    "allResults": "All results ({n})",
+    "corrected": "Showing results for “{q}”",
+    "groups": {
+      "substances": "Substances",
+      "substanceHint": "standards and impurities",
+      "categories": "Catalogue sections",
+      "brands": "Brands"
+    }
   },
   "megaMenu": {
     "title": "Catalog sections",
@@ -55,7 +62,8 @@
       "articles": "Articles",
       "about": "About",
       "contacts": "Contacts",
-      "order": "Request a quote"
+      "order": "Request a quote",
+      "solutions": "Solutions"
     }
   },
   "cookie": {
@@ -295,7 +303,8 @@
       "related": "See also",
       "requestTitle": "Could not find the item?",
       "requestText": "Describe your request or attach a list of items: we will order from the manufacturer catalogs. We reply within 2 business hours."
-    }
+    },
+    "landings": "Popular selections"
   },
   "productPage": {
     "meta": {
@@ -400,7 +409,8 @@
       "formula": "Molecular formula",
       "mw": "Molecular weight",
       "items": "Items in catalog",
-      "brands": "Manufacturers"
+      "brands": "Manufacturers",
+      "mwValue": "{value} g/mol"
     },
     "groups": {
       "api": "API standards",
@@ -712,6 +722,59 @@
     "requestTitle": "Didn't find it?",
     "requestTitleEmpty": "We'll source it to order",
     "requestText": "Your query is already in the request — add quantity and contacts. We'll find the item and reply within 2 business hours.",
-    "requestMessage": "Looking for: {q}. Quantity and pack size: "
+    "requestMessage": "Looking for: {q}. Quantity and pack size: ",
+    "corrected": "Keyboard layout corrected: showing results for “{q}”"
+  },
+  "cartDrawer": {
+    "title": "Quote cart",
+    "summary": "{items, plural, one {# item} other {# items}}, {packs, plural, one {# pack} other {# packs}}",
+    "note": "We will send prices and lead times in a quotation within 2 business hours.",
+    "checkout": "Proceed to request",
+    "continue": "Continue browsing",
+    "close": "Close cart",
+    "quantity": "Packs",
+    "decrease": "Fewer",
+    "increase": "More",
+    "remove": "Remove “{name}”",
+    "freeRow": "Item not in catalogue",
+    "freePack": "To be specified",
+    "analogue": {
+      "allowed": "Alternatives accepted",
+      "requested": "Suggest an alternative"
+    },
+    "empty": {
+      "title": "Your cart is empty",
+      "text": "Find an item by name, catalogue number or CAS — or upload a list of up to 200 lines and we will match it to the catalogue.",
+      "catalog": "Go to catalogue",
+      "bulk": "Upload a list"
+    }
+  },
+  "solutions": {
+    "list": {
+      "breadcrumb": "Solutions",
+      "h1": "Solutions for pharmaceutical laboratories",
+      "lead": "Products and services grouped by laboratory task, from quality control to R&D and microbiology. Put everything in one cart and get a single quotation.",
+      "title": "Solutions for pharmaceutical laboratories — OGK-CHEM",
+      "description": "Supplies for QC, HPLC, R&D and microbiology laboratories: reference standards, columns, reagents, strains and delivery services.",
+      "more": "Learn more",
+      "requestTitle": "Can’t find your task?",
+      "requestText": "Describe your laboratory and methods — we will select items and send a quotation within 2 business hours."
+    },
+    "page": {
+      "ctaList": "Send a list",
+      "ctaAsk": "Ask a question",
+      "tasks": "Typical tasks",
+      "groups": "What we supply",
+      "positions": "{count, plural, one {# item} other {# items}} in the catalogue",
+      "featured": "Frequently ordered",
+      "allCatalog": "Full catalogue",
+      "services": "End-to-end service",
+      "articles": "Useful reading",
+      "readingTime": "{minutes} min read",
+      "faq": "FAQ",
+      "requestTitle": "We will put together a supply for your laboratory",
+      "requestText": "Send a list of items or describe the task — we reply within 2 business hours.",
+      "requestMessage": "Solution: {name}. "
+    }
   }
 }

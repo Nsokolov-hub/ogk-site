@@ -10,23 +10,26 @@ import { Requisites } from '@/components/content/Requisites';
 import { breadcrumbsLd, JsonLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
 import { getSiteSettings } from '@/lib/api';
-import { documentsPage as page } from '@/data/mock/pages';
+import { documentsPageEn } from '@/data/mock/en/pages';
+import { documentsPage } from '@/data/mock/pages';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
+  const page = locale === 'en' ? documentsPageEn : documentsPage;
   return pageMetadata({ locale, path: '/documents/', title: page.title, description: page.description, hasEn: page.hasEn });
 }
 
 /** Документы (ТЗ 10.4): реквизиты, юридические документы (те же адреса /files/*.pdf), ЭДО, сопроводительные документы */
 export default async function DocumentsPage({ params }: Props) {
   const { locale } = await params;
+  const page = locale === 'en' ? documentsPageEn : documentsPage;
   setRequestLocale(locale);
   const t = await getTranslations('trust');
   const tc = await getTranslations('catalog');
-  const settings = await getSiteSettings();
+  const settings = await getSiteSettings(locale);
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: page.h1 }];
   const h2 = 'text-h3 font-medium text-text';
   const legal = [

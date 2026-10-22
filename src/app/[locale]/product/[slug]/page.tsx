@@ -56,13 +56,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     logistics: p.storage && COLD.has(p.storage) ? t('cold') : t('ambient'),
   });
 
-  return pageMetadata({ locale, path: `/product/${p.slug}/`, title, description, index: p.indexable });
+  return pageMetadata({ locale, path: `/product/${p.slug}/`, title, description, index: p.indexable, hasEn: p.hasEn });
 }
 
 export default async function ProductPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [data, settings] = await Promise.all([getProductPage(slug, locale), getSiteSettings()]);
+  const [data, settings] = await Promise.all([getProductPage(slug, locale), getSiteSettings(locale)]);
   if (!data) notFound();
 
   const t = await getTranslations('productPage');
@@ -86,7 +86,7 @@ export default async function ProductPage({ params }: Props) {
   const brandNamedSub = categories.length === 2 && categories[0].slug === 'reference-standards' && deepest?.slug !== 'impurity-standards';
   const kindLabel =
     substance && p.substance
-      ? `${t(`roles.${p.substance.role}`)}: ${substance.nameRu.toLowerCase()}`
+      ? `${t(`roles.${p.substance.role}`)}: ${substance.name.toLowerCase()}`
       : (brandNamedSub ? categories[0].name : deepest?.name) ?? '';
   const ld: Record<string, unknown>[] = [
     breadcrumbsLd(breadcrumbs, SITE_URL, locale, path),
@@ -131,7 +131,7 @@ export default async function ProductPage({ params }: Props) {
             label: t('ids.substance'),
             value: (
               <Link href={`/substances/${substance.slug}/`} className="text-accent underline-offset-2 hover:underline">
-                {substance.nameRu} — {tc(`values.type.${p.substance.role}`).toLowerCase()}
+                {substance.name} — {tc(`values.type.${p.substance.role}`).toLowerCase()}
               </Link>
             ),
           },
@@ -256,7 +256,7 @@ export default async function ProductPage({ params }: Props) {
             <section aria-labelledby="product-substance">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <h2 id="product-substance" className={h2}>
-                  {t('sections.substance', { name: substance.nameRu })}
+                  {t('sections.substance', { name: substance.name })}
                 </h2>
                 <Link
                   href={`/substances/${substance.slug}/`}
@@ -267,7 +267,7 @@ export default async function ProductPage({ params }: Props) {
                 </Link>
               </div>
               <div className="mt-6">
-                <ProductTable items={data.sameSubstance} caption={t('sections.substance', { name: substance.nameRu })} />
+                <ProductTable items={data.sameSubstance} caption={t('sections.substance', { name: substance.name })} />
               </div>
             </section>
           ) : null}

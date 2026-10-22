@@ -21,13 +21,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home.meta' });
   // EN-контент главной ещё не переведён: /en/ — noindex с canonical на русскую версию (EN-05)
-  return pageMetadata({ locale, path: '/', title: t('title'), description: t('description') });
+  return pageMetadata({ locale, path: '/', title: t('title'), description: t('description'), hasEn: true });
 }
 
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [content, settings] = await Promise.all([getHomeContent(locale), getSiteSettings()]);
+  const [content, settings] = await Promise.all([getHomeContent(locale), getSiteSettings(locale)]);
 
   return (
     <>

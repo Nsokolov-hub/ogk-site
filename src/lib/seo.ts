@@ -13,6 +13,7 @@ import type { Locale } from '@/i18n/routing';
 
 export const SITE_URL = 'https://www.ogk-chem.ru';
 export const SITE_NAME = 'ОГК-ХИМ';
+export const SITE_NAME_EN = 'OGK-CHEM';
 
 export function localizedPath(locale: Locale | string, path: string) {
   return locale === 'ru' ? path : `/${locale}${path}`;
@@ -56,7 +57,7 @@ export function pageMetadata(p: {
     openGraph: {
       type: p.ogType ?? 'website',
       url: canonical,
-      siteName: SITE_NAME,
+      siteName: locale === 'ru' ? SITE_NAME : SITE_NAME_EN,
       title: p.title,
       description: p.description,
       locale: locale === 'ru' ? 'ru_RU' : 'en_US',

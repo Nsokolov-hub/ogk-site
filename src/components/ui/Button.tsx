@@ -2,7 +2,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/cn';
 
-export type ButtonVariant = 'menu' | 'primary' | 'secondary' | 'ghost';
+export type ButtonVariant = 'menu' | 'primary' | 'secondary' | 'ghost' | 'card' | 'cardActive';
 export type ButtonSize = 's' | 'm' | 'l';
 
 const base =
@@ -16,6 +16,9 @@ const variants: Record<ButtonVariant, string> = {
   primary: 'border-accent bg-accent text-text-on-accent hover:border-accent-hover hover:bg-accent-hover',
   secondary: 'border-transparent bg-surface-strong text-accent hover:text-accent-hover',
   ghost: 'border-transparent bg-transparent px-0 text-text hover:text-accent',
+  // Кнопка карточки товара по эталону: тонкий зелёный контур, скругление 8 px; «В корзине» — заливка
+  card: 'rounded-lg border-card-green-line bg-transparent text-card-green hover:bg-card-green-line/12',
+  cardActive: 'rounded-lg border-card-green-line bg-card-green-line text-base-deep hover:border-card-green hover:bg-card-green',
 };
 
 const sizes: Record<ButtonSize, string> = {

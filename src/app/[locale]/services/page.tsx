@@ -18,7 +18,7 @@ type Props = { params: Promise<{ locale: Locale }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'services.list' });
-  return pageMetadata({ locale, path: '/services/', title: t('title'), description: t('description') });
+  return pageMetadata({ locale, path: '/services/', title: t('title'), description: t('description'), hasEn: true });
 }
 
 /** Список услуг (ТЗ 4.1): каждая строка — ссылка на страницу услуги с формой расчёта */
@@ -27,7 +27,7 @@ export default async function ServicesPage({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations('services');
   const tc = await getTranslations('catalog');
-  const [list, settings] = await Promise.all([getServices(locale), getSiteSettings()]);
+  const [list, settings] = await Promise.all([getServices(locale), getSiteSettings(locale)]);
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: t('list.breadcrumb') }];
   const [featured, ...rest] = [list.find((s) => s.slug === 'cold-chain')!, ...list.filter((s) => s.slug !== 'cold-chain')];
 

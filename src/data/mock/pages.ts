@@ -7,6 +7,7 @@ import type { Faq, LinkItem, SeoFields } from '@/types/content';
  */
 
 const D = '2026-10-20';
+// hasEn: true — у страниц есть английская версия (src/data/mock/en/pages.ts), ставим hreflang
 
 export const aboutPage: SeoFields & {
   lead: string;
@@ -44,6 +45,7 @@ export const aboutPage: SeoFields & {
     { title: 'Закупщикам', text: 'Одно КП по списку, сроки, реквизиты и документы для закупок по 44-ФЗ и 223-ФЗ.' },
     { title: 'Специалистам ВЭД', text: 'Холодовая цепь, таможня, коды ТН ВЭД и разрешения на ввоз.' },
   ],
+  hasEn: true,
   updatedAt: D,
 };
 
@@ -105,6 +107,7 @@ export const deliveryPage: SeoFields & {
     { label: 'Документы', href: '/documents/' },
     { label: 'Контакты', href: '/contacts/' },
   ],
+  hasEn: true,
   updatedAt: D,
 };
 
@@ -129,6 +132,7 @@ export const documentsPage: SeoFields & {
   ],
   edo: 'Работаем с электронным документооборотом. Оператора и идентификатор участника ЭДО сообщит менеджер.',
   licenses: 'Копии лицензий, сертификатов и дистрибьюторских писем производителей пришлём по запросу.',
+  hasEn: true,
   updatedAt: D,
 };
 
@@ -138,5 +142,6 @@ export const contactsPage: SeoFields & { lead: string } = {
   description:
     'Контакты ОГК-ХИМ: +7 495 234 28 63, info@ogk-chem.ru, order@ogk-chem.ru. Москва, ул. Касаткина, д. 8. Пн–пт 9:00–18:00. Реквизиты ООО «ОГК-ХИМ».',
   lead: 'Позвоните, напишите или отправьте запрос через форму — ответим в течение 2 рабочих часов.',
+  hasEn: true,
   updatedAt: D,
 };

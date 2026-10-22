@@ -15,6 +15,15 @@
   --color-surface: rgb(53 61 49 / 0.2);
   --color-surface-strong: rgb(53 61 49 / 0.3);
   --color-surface-raised: #2a2d29;
+  /* Карточка товара — по эталону заказчика: подложка, контур, окно превью, приглушённые подписи, зелёная кнопка */
+  --color-card: #202320;
+  --color-card-line: #333833;
+  --color-well: #141714;
+  --color-card-muted: #7c827c;
+  --color-card-text: #eaeaea;
+  --color-card-green: #68c276;
+  --color-card-green-line: #58a665;
+  --color-glow: rgb(46 92 58 / 0.45);
   --color-accent: #82ee8d;
   --color-accent-hover: #c4ffca;
   --color-text: #e7e7e7;
@@ -79,6 +88,7 @@
   --animate-fade-in: fade-in 0.2s ease-out;
   --animate-sheet-up: sheet-up 0.25s ease-out;
   --animate-bump: bump 0.4s ease-out;
+  --animate-drawer-in: drawer-in 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
 
   @keyframes hero-zoom {
     from {
@@ -109,6 +119,16 @@
   @keyframes sheet-up {
     from {
       transform: translateY(24px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes drawer-in {
+    from {
+      transform: translateX(40px);
       opacity: 0;
     }
     to {

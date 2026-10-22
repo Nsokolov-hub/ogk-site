@@ -9,15 +9,24 @@ export interface SuggestItem {
   brand: string;
   catalogNumber: string;
   cas?: string;
+  /** Брутто-формула — когда совпадение по формуле */
+  formula?: string;
   cardType: CardType;
   /** По какому полю совпало — подсвечиваем в выдаче */
-  match: 'catalogNumber' | 'cas' | 'name';
+  match: 'catalogNumber' | 'cas' | 'formula' | 'name' | 'brand';
 }
 
 export interface SuggestResult {
   query: string;
+  /** Запрос в исправленной раскладке, если по исходному ничего не нашлось */
+  corrected?: string;
   items: SuggestItem[];
+  /** Всего товаров по запросу */
   total: number;
+  /** Группы подсказок (SRCH-01): субстанции, категории, бренды */
+  substances: { slug: string; name: string; nameEn: string }[];
+  categories: { name: string; href: string }[];
+  brands: { slug: string; name: string }[];
 }
 
 export const SUGGEST_MIN = 2;
