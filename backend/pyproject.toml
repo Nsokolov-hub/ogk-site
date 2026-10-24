@@ -1,0 +1,48 @@
+[project]
+name = "ogk-site-backend"
+version = "0.1.0"
+description = "API и фоновый worker сайта ogk-chem.ru: приём заявок и доставка в CRM"
+requires-python = ">=3.13"
+# The same stack as the CRM (TZ 12.1); requirements.lock pins everything the Docker image installs.
+# After any change here run: uv pip compile pyproject.toml -o requirements.lock
+dependencies = [
+    "alembic>=1.16",
+    "fastapi>=0.115",
+    "httpx>=0.28",
+    "psycopg[binary]>=3.2",
+    "pydantic>=2.11",
+    "pydantic-settings>=2.9",
+    "python-multipart>=0.0.20",
+    "sqlalchemy>=2.0.40",
+    "uvicorn[standard]>=0.34",
+]
+
+[dependency-groups]
+dev = [
+    # Contract test: the F1 body is validated against the schema pinned from the CRM.
+    "jsonschema>=4.23",
+    "mypy>=1.15",
+    "pytest>=8.3",
+    "ruff>=0.11",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[tool.mypy]
+python_version = "3.13"
+ignore_missing_imports = true
+check_untyped_defs = true
+plugins = ["pydantic.mypy"]

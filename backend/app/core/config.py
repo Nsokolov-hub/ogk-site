@@ -1,0 +1,61 @@
+from pathlib import Path
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file='.env', extra='ignore')
+
+    environment: str = 'development'
+    database_url: str = 'postgresql+psycopg://site:site@127.0.0.1:54330/site'
+    site_url: str = 'https://www.ogk-chem.ru'
+    # Private storage of customer attachments until they are delivered to the CRM.
+    storage_dir: Path = Path('.runtime/files')
+    max_attachment_bytes: int = 10 * 1024 * 1024
+    company_timezone: str = 'Europe/Moscow'
+
+    # ── CRM, flow F1 (my-crm-project docs/site-integration.md) ──
+    crm_url: str = ''
+    crm_token: str = ''
+    crm_signing_secret: str = ''
+    # False keeps requests in the queue (they are still saved and mailed to sales): the CRM module is not ready
+    # yet, or the CRM is being maintained. Undelivered alerts are off while delivery is off.
+    crm_delivery_enabled: bool = False
+    crm_timeout_seconds: float = 15.0
+
+    # ── mail ──
+    smtp_host: str = ''
+    smtp_port: int = 587
+    smtp_user: str = ''
+    smtp_password: str = ''
+    smtp_starttls: bool = True
+    mail_from: str = 'ОГК-ХИМ <noreply@ogk-chem.ru>'
+    mail_reply_to: str = 'order@ogk-chem.ru'
+    sales_email: str = 'order@ogk-chem.ru'
+    # Full content of undelivered requests goes here (comma-separated); Telegram gets no personal data.
+    alert_emails: str = 'order@ogk-chem.ru'
+
+    # ── alerts ──
+    telegram_bot_token: str = ''
+    telegram_chat_id: str = ''
+    alert_after_minutes: int = 15
+
+    # ── antispam (RFQ-06) ──
+    min_fill_ms: int = 3000
+    # Soft limit: above it a request needs SmartCaptcha; hard limit: refused for the window.
+    rate_soft_limit: int = 5
+    rate_soft_window_minutes: int = 10
+    rate_hard_limit: int = 20
+    rate_hard_window_minutes: int = 60
+    smartcaptcha_server_key: str = ''
+
+    def verify(self) -> None:
+        if self.environment == 'production':
+            if not self.database_url.startswith('postgresql'):
+                raise RuntimeError('Production requires PostgreSQL')
+            if self.crm_delivery_enabled and not (self.crm_url and self.crm_token and self.crm_signing_secret):
+                raise RuntimeError('CRM_DELIVERY_ENABLED needs CRM_URL, CRM_TOKEN and CRM_SIGNING_SECRET')
+
+
+settings = Settings()
+settings.verify()

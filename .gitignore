@@ -7,3 +7,13 @@ out/
 next-env.d.ts
 .env*.local
 .DS_Store
+.env
+
+# backend
+backend/.venv/
+backend/.runtime/
+backend/.env
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
