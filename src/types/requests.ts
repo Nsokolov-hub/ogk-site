@@ -43,10 +43,18 @@ export interface SiteRequestPayload {
     elapsedMs: number;
   };
   pageUrl: string;
+  /** Форма-источник: rfq, one_click, service, home, category, product, search… — для отчётов и «спроса без товара» */
+  formType?: string;
+  /** Желаемый срок поставки, YYYY-MM-DD */
+  desiredDate?: string;
   /** Заявка на услугу (RFQ-08): slug услуги и значения её полей */
   service?: { slug: string; name: string; fields: Record<string, string> };
-  /** UTM, ClientID и т. п. — подключим вместе с модулем атрибуции */
-  attribution?: unknown;
+  /** Токен SmartCaptcha; его добавляет submitSiteRequest после ответа 428 */
+  captchaToken?: string;
+  /*
+   * Источник визита (UTM, первое и последнее касание, ClientID) форма не передаёт: middleware хранит его
+   * в cookie ogk_attr, а API читает её сам (ТЗ 15.3).
+   */
 }
 
 export interface SiteRequestResult {

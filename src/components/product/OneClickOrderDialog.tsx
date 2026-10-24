@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/Input';
 import { QuantityStepper } from '@/components/ui/QuantityStepper';
 import { Select } from '@/components/ui/Select';
 import { submitSiteRequest } from '@/lib/api';
+import { submitErrorKey } from '@/lib/submit-error';
 import { track } from '@/lib/analytics';
 import { useFormMeta } from '@/lib/hooks';
 import { useOneClickStore } from '@/lib/one-click-store';
@@ -103,7 +104,7 @@ function OneClickForm({
   const locale = useLocale() as 'ru' | 'en';
   const { onFocusCapture, elapsedMs } = useFormMeta('one_click');
   const [result, setResult] = useState<{ number: string } | null>(null);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
 
   const firstPackaging = initialPackagingId ?? product.packagings[0]?.id ?? (product.customPackaging ? CUSTOM_PACKAGING : '');
 
@@ -137,7 +138,7 @@ function OneClickForm({
   const numberLabel = product.cardType === 'equipment' ? tp('partNumber') : tp('catalogNumber');
 
   const onSubmit = async (v: Values) => {
-    setFailed(false);
+    setFailed(null);
     const pk = product.packagings.find((p) => p.id === v.packagingId);
     const custom = v.packagingId === CUSTOM_PACKAGING;
     try {
@@ -171,12 +172,13 @@ function OneClickForm({
             personalDataConsent: true,
             antispam: { website: v.website ?? '', elapsedMs: elapsedMs() },
             pageUrl: window.location.href,
+            formType: 'one_click',
           });
       track('product_request', { sku: product.catalogNumber, brand: product.brand.name, category: product.categorySlug });
       track('form_submit', { form_type: 'one_click', page: window.location.pathname });
       setResult({ number: res.number });
-    } catch {
-      setFailed(true);
+    } catch (error) {
+      setFailed(submitErrorKey(error));
     }
   };
 
@@ -302,7 +304,7 @@ function OneClickForm({
       <ConsentCheckbox kind="personalData" docs={docs} error={err(errors.consent?.message)} {...register('consent')} />
       <Honeypot {...register('website')} />
 
-      {failed ? <FormStatus kind="error" title={tf('errorTitle')}>{tf('errorText')}</FormStatus> : null}
+      {failed ? <FormStatus kind="error" title={tf('errorTitle')}>{tf(failed)}</FormStatus> : null}
 
       <div className="flex flex-col gap-3">
         <Button type="submit" size="l" aria-disabled={isSubmitting || undefined}>

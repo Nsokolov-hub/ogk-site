@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import { CaptchaHost } from '@/components/forms/CaptchaHost';
 import { CookieBanner } from '@/components/layout/CookieBanner';
 import { Footer } from '@/components/layout/Footer';
 import { Header } from '@/components/layout/Header';
@@ -55,6 +56,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           </main>
           <Footer settings={settings} />
           <OneClickOrderDialog docs={settings.docs} />
+          <CaptchaHost />
           <CookieBanner privacyHref={settings.docs.privacy} />
         </NextIntlClientProvider>
       </body>

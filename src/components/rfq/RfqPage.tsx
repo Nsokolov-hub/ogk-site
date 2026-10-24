@@ -20,6 +20,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Link } from '@/i18n/navigation';
 import { submitSiteRequest } from '@/lib/api';
+import { submitErrorKey } from '@/lib/submit-error';
 import { track } from '@/lib/analytics';
 import { useFormMeta } from '@/lib/hooks';
 import { toE164 } from '@/lib/phone';
@@ -78,7 +79,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
   }, [hydrated, showBulk]);
   const [file, setFile] = useState<File | undefined>();
   const [fileError, setFileError] = useState<string | undefined>();
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
   const [done, setDone] = useState<{ number: string; items: RfqItem[] } | null>(null);
   const { onFocusCapture, elapsedMs } = useFormMeta('rfq');
 
@@ -99,7 +100,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
 
   const onSubmit = async (v: Values) => {
     if (!items.length || freeInvalid) return;
-    setFailed(false);
+    setFailed(null);
     const payloadItems: SiteRequestItem[] = items.map((i) => ({
       siteProductId: i.free ? undefined : i.productId,
       brand: i.brand || undefined,
@@ -127,7 +128,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
               email: v.email.trim(),
               inn: v.inn || undefined,
               city: v.city || undefined,
-              comment: [v.date ? `${t('form.date')}: ${v.date}` : '', v.comment].filter(Boolean).join('\n') || undefined,
+              comment: v.comment.trim() || undefined,
               marketingConsent: v.marketing,
             },
             items: payloadItems,
@@ -135,14 +136,16 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
             personalDataConsent: true,
             antispam: { website: v.website ?? '', elapsedMs: elapsedMs() },
             pageUrl: window.location.href,
+            formType: 'rfq',
+            desiredDate: v.date || undefined,
           });
       track('quote_request', { items: items.length, brands: Array.from(new Set(items.map((i) => i.brand).filter(Boolean))) });
       track('form_submit', { form_type: 'rfq', page: window.location.pathname });
       setDone({ number: res.number, items });
       clear();
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch {
-      setFailed(true);
+    } catch (error) {
+      setFailed(submitErrorKey(error));
     }
   };
 
@@ -323,7 +326,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
 
             {!items.length ? <p className="text-small text-warning">{t('form.noItems')}</p> : null}
             {freeInvalid ? <p className="text-small text-warning">{t('form.freeInvalid')}</p> : null}
-            {failed ? <FormStatus kind="error" title={tf('errorTitle')}>{tf('errorText')}</FormStatus> : null}
+            {failed ? <FormStatus kind="error" title={tf('errorTitle')}>{tf(failed)}</FormStatus> : null}
 
             <Button type="submit" size="l" aria-disabled={isSubmitting || !items.length || freeInvalid || undefined} className="mt-2">
               {isSubmitting ? tf('sending') : t('form.submit')}

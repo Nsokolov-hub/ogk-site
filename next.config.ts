@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   // URL-01: все адреса со слешем на конце
   trailingSlash: true,
   poweredByHeader: false,
+  // API сайта (backend/): в разработке Next проксирует /api/v1/* на API_ORIGIN, в production его отдаёт Caddy
+  async rewrites() {
+    const api = process.env.API_ORIGIN ?? 'http://127.0.0.1:8001';
+    return [{ source: '/api/v1/:path*', destination: `${api}/api/v1/:path*` }];
+  },
   images: {
     formats: ['image/avif', 'image/webp'],
     dangerouslyAllowSVG: true,

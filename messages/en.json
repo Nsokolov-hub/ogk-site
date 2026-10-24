@@ -133,7 +133,12 @@
     "successText": "We will reply within 2 business hours to clarify the details and send a commercial offer.",
     "newRequest": "Send another request",
     "errorTitle": "Could not send",
-    "errorText": "Check your connection and try again. Your data has been kept."
+    "errorText": "Check your connection and try again. Your data has been kept.",
+    "errorRate": "Too many requests have been sent from your address. Call us at +7 495 234 28 63 or try again in an hour.",
+    "errorFields": "Please check the form fields and send again. Your data has been kept.",
+    "errorFile": "The file is not accepted: use xlsx, csv, pdf or docx up to 10 MB. Remove it or choose another one.",
+    "errorCaptcha": "We could not confirm you are not a robot. Try again or call us at +7 495 234 28 63.",
+    "errorUnavailable": "The service is temporarily unavailable. Try again in a minute or call us at +7 495 234 28 63. Your data has been kept."
   },
   "errors": {
     "required": "Please fill in this field",
@@ -776,5 +781,10 @@
       "requestText": "Send a list of items or describe the task — we reply within 2 business hours.",
       "requestMessage": "Solution: {name}. "
     }
+  },
+  "captcha": {
+    "title": "Confirm you are not a robot",
+    "text": "The form was filled in very quickly — tick the box and your request will be sent.",
+    "close": "Close"
   }
 }

@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { submitSiteRequest } from '@/lib/api';
+import { submitErrorKey } from '@/lib/submit-error';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { useFormMeta } from '@/lib/hooks';
@@ -48,7 +49,7 @@ export function ServiceRequestForm({
   const { onFocusCapture, elapsedMs } = useFormMeta(`service_${service.slug}`);
   const [file, setFile] = useState<File | undefined>();
   const [fileError, setFileError] = useState<string | undefined>();
-  const [status, setStatus] = useState<{ kind: 'success'; number: string } | { kind: 'error' } | null>(null);
+  const [status, setStatus] = useState<{ kind: 'success'; number: string } | { kind: 'error'; key: string } | null>(null);
   const has = (k: ServiceFieldKind) => fieldKinds.includes(k);
 
   const required = z.string().trim().min(1, 'required');
@@ -133,18 +134,24 @@ export function ServiceRequestForm({
               marketingConsent: false,
             },
             items: [{ name: service.name, quantity: 1, unit: 'pack', analogue: 'none', customPackaging: false, comment: summary }],
-            service: { slug: service.slug, name: service.name, fields: serviceFields },
+            // Поля услуги — с подписями, как их видит клиент: так их прочитает менеджер в CRM
+            service: {
+              slug: service.slug,
+              name: service.name,
+              fields: Object.fromEntries(Object.entries(serviceFields).filter(([, val]) => val).map(([k, val]) => [t(`labels.${k}`), val])),
+            },
             attachment: file,
             personalDataConsent: true,
             antispam: { website: v.website ?? '', elapsedMs: elapsedMs() },
             pageUrl: window.location.href,
+            formType: 'service',
           });
       track('form_submit', { form_type: 'service', service: service.slug, page: window.location.pathname });
       setStatus({ kind: 'success', number: res.number });
       reset(empty);
       setFile(undefined);
-    } catch {
-      setStatus({ kind: 'error' });
+    } catch (error) {
+      setStatus({ kind: 'error', key: submitErrorKey(error) });
     }
   };
 
@@ -283,7 +290,7 @@ export function ServiceRequestForm({
       <ConsentCheckbox kind="personalData" docs={docs} error={err(errors.consent?.message)} {...register('consent')} />
       <Honeypot {...register('website')} />
 
-      {status?.kind === 'error' ? <FormStatus kind="error" title={tf('errorTitle')}>{tf('errorText')}</FormStatus> : null}
+      {status?.kind === 'error' ? <FormStatus kind="error" title={tf('errorTitle')}>{tf(status.key)}</FormStatus> : null}
 
       <Button type="submit" size="l" aria-disabled={isSubmitting || undefined} className="mt-2">
         {isSubmitting ? tf('sending') : t('submit')}

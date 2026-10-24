@@ -10,6 +10,7 @@ import { FileInput } from '@/components/ui/FileInput';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { submitSiteRequest } from '@/lib/api';
+import { submitErrorKey } from '@/lib/submit-error';
 import { track } from '@/lib/analytics';
 import { useFormMeta } from '@/lib/hooks';
 import { toE164 } from '@/lib/phone';
@@ -59,7 +60,7 @@ export function RequestForm({
   const formRef = useRef<HTMLFormElement>(null);
   const [file, setFile] = useState<File | undefined>();
   const [fileError, setFileError] = useState<string | undefined>();
-  const [status, setStatus] = useState<{ kind: 'success'; number: string } | { kind: 'error' } | null>(null);
+  const [status, setStatus] = useState<{ kind: 'success'; number: string } | { kind: 'error'; key: string } | null>(null);
 
   const {
     register,
@@ -114,13 +115,14 @@ export function RequestForm({
             personalDataConsent: true,
             antispam: { website: v.website ?? '', elapsedMs: elapsedMs() },
             pageUrl: window.location.href,
+            formType,
           });
       track('form_submit', { form_type: formType, page: window.location.pathname });
       setStatus({ kind: 'success', number: res.number });
       reset({ name: '', company: '', email: '', phone: '', message: defaultMessage, consent: false, website: '' });
       setFile(undefined);
-    } catch {
-      setStatus({ kind: 'error' });
+    } catch (error) {
+      setStatus({ kind: 'error', key: submitErrorKey(error) });
     }
   };
 
@@ -207,7 +209,7 @@ export function RequestForm({
       <ConsentCheckbox kind="personalData" docs={docs} error={err(errors.consent?.message)} {...register('consent')} />
       <Honeypot {...register('website')} />
 
-      {status?.kind === 'error' ? <FormStatus kind="error" title={t('errorTitle')}>{t('errorText')}</FormStatus> : null}
+      {status?.kind === 'error' ? <FormStatus kind="error" title={t('errorTitle')}>{t(status.key)}</FormStatus> : null}
 
       <Button type="submit" size="l" aria-disabled={isSubmitting || undefined} className="mt-2">
         {isSubmitting ? t('sending') : t('submit')}
