@@ -77,6 +77,7 @@ export function trackAttribution(request: NextRequest, response: NextResponse): 
     maxAge: MAX_AGE,
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    // Только по HTTPS, если сайт открыт по HTTPS (в том числе за прокси); по http://localhost cookie тоже живёт
+    secure: request.nextUrl.protocol === 'https:' || request.headers.get('x-forwarded-proto') === 'https',
   });
 }

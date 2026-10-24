@@ -2,7 +2,11 @@
 
 Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · next-intl (RU `/`, EN `/en/`).
 
-Бэкенд сайта — в [backend/](backend/README.md): FastAPI + PostgreSQL, приём заявок с форм и доставка в «Реактив CRM» (поток F1). Для разработки: `cp .env.example .env && docker compose up -d --build`, затем `npm run dev` — витрина проксирует `/api/v1/*` на API. Без бэкенда формы работают на моках с `NEXT_PUBLIC_API_MOCK=1`.
+Бэкенд сайта — в [backend/](backend/README.md): FastAPI + PostgreSQL, приём заявок с форм и доставка в «Реактив CRM» (поток F1).
+
+Весь сайт в Docker: `cp .env.example .env && docker compose up -d --build` — витрина <http://127.0.0.1:3000>, API <http://127.0.0.1:8001/api/docs>, письма в Mailpit <http://127.0.0.1:8025>. Витрина проксирует `/api/v1/*` на API внутри сети. Для правки витрины с горячей перезагрузкой остановите сервис `web` и запустите `npm run dev`. Без бэкенда формы работают на моках с `NEXT_PUBLIC_API_MOCK=1`.
+
+Связь с CRM, запущенной своим `docker compose` на этом же компьютере: в CRM `docker compose exec api python -m app.integrations.site_tokens create --name local`, значения — в `CRM_TOKEN` и `CRM_SIGNING_SECRET` файла `.env`, `CRM_URL=http://host.docker.internal:8000`, `CRM_DELIVERY_ENABLED=true`, затем `docker compose up -d`.
 
 ## Запуск
 

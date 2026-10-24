@@ -1,6 +1,7 @@
-# Backend of the site for development and staging: PostgreSQL, migrations, API, queue worker and Mailpit,
-# which catches every letter (http://127.0.0.1:8025). The storefront runs with `npm run dev`; it proxies
-# /api/v1/* to the API (next.config.ts, API_ORIGIN). Settings: copy .env.example to .env.
+# The site for development and staging: storefront (http://127.0.0.1:3000), PostgreSQL, migrations, API, queue
+# worker and Mailpit, which catches every letter (http://127.0.0.1:8025). The storefront proxies /api/v1/* to the
+# API inside the network. Settings: copy .env.example to .env. For live editing of the storefront run
+# `npm run dev` instead of the web service: it proxies to http://127.0.0.1:8001.
 name: ogk-site
 
 services:
@@ -57,6 +58,19 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      args:
+        API_ORIGIN: http://api:8000
+        NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY: ${NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY:-}
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
   mailpit:

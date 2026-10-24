@@ -9,7 +9,10 @@ const nextConfig: NextConfig = {
   // URL-01: все адреса со слешем на конце
   trailingSlash: true,
   poweredByHeader: false,
-  // API сайта (backend/): в разработке Next проксирует /api/v1/* на API_ORIGIN, в production его отдаёт Caddy
+  // Docker-образ витрины (Dockerfile) собирается в самостоятельный server.js; npm run build/start — как раньше
+  output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
+  // API сайта (backend/): Next проксирует /api/v1/* на API_ORIGIN (в Docker — http://api:8000).
+  // Адрес берётся при сборке. В production перед витриной и API стоит Caddy
   async rewrites() {
     const api = process.env.API_ORIGIN ?? 'http://127.0.0.1:8001';
     return [{ source: '/api/v1/:path*', destination: `${api}/api/v1/:path*` }];

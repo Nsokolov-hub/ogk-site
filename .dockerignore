@@ -1,0 +1,13 @@
+.git
+.github
+.next
+.next-prod
+.taste-skill
+node_modules
+backend
+docs
+.env
+.env*.local
+*.tsbuildinfo
+docker-compose.yml
+Dockerfile
