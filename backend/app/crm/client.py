@@ -22,6 +22,7 @@ from app.requests import attachments
 from app.requests.models import SiteRequest, SiteRequestAttachment, SiteRequestItem
 
 PATH = '/api/v1/integrations/site/requests'
+SUBSCRIBERS_PATH = '/api/v1/integrations/site/subscribers'
 # A CRM answer that a repeat cannot change: the request content or the contract is wrong (a person must look).
 PERMANENT = {400, 404, 409, 413, 415, 422}
 # Configuration problems on either side: alert at once, but keep retrying — fixing the token or the address
@@ -122,3 +123,26 @@ def deliver(db: Session, row: SiteRequest) -> Outcome:
     if code in CONFIGURATION:
         return Outcome('retry', code, (error or f'CRM_HTTP_{code}')[:80], alert_now=True)
     return Outcome('retry', code, (error or f'CRM_HTTP_{code}')[:80])
+
+
+def post_json(path: str, body: dict[str, Any], idempotency_key: str) -> Outcome:
+    """A signed JSON call to the integration module of the CRM (subscribers; the signature is the one of F1)."""
+    raw = json.dumps(body, ensure_ascii=False).encode()
+    stamp = str(int(time.time()))
+    headers = {'Content-Type': 'application/json', 'Authorization': f'Bearer {settings.crm_token}',
+               'X-Site-Timestamp': stamp, 'X-Site-Signature': sign(settings.crm_signing_secret, stamp, raw),
+               'Idempotency-Key': idempotency_key}
+    try:
+        with http_client() as client:
+            response = client.post(settings.crm_url.rstrip('/') + path, content=raw, headers=headers)
+    except httpx.TimeoutException:
+        return Outcome('retry', error_code='CRM_TIMEOUT')
+    except httpx.HTTPError:
+        return Outcome('retry', error_code='CRM_UNREACHABLE')
+    code = response.status_code
+    if code in (200, 201):
+        return Outcome('delivered', code)
+    # 404: a CRM that does not know the endpoint yet; it is retried until the CRM is updated.
+    if code in PERMANENT - {404}:
+        return Outcome('failed', code, f'CRM_HTTP_{code}')
+    return Outcome('retry', code, f'CRM_HTTP_{code}')

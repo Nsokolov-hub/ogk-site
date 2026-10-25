@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
   const q = (request.nextUrl.searchParams.get('q') ?? '').slice(0, 100);
   const lang = request.nextUrl.searchParams.get('lang') === 'en' ? 'en' : 'ru';
   try {
-    const result = await suggest(q, lang);
+    const visitor = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || null;
+    const result = await suggest(q, lang, visitor);
     const query = (result.corrected ?? q).trim().toLowerCase();
     if (query.length >= 3 && result.categories.length < 3) {
       const extra = landings

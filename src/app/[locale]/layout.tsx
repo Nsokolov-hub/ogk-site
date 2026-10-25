@@ -1,10 +1,12 @@
 import type { Metadata, Viewport } from 'next';
-import type { ReactNode } from 'react';
+import { Suspense, type ReactNode } from 'react';
 import { Manrope } from 'next/font/google';
+import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
+import { Counters } from '@/components/analytics/Counters';
 import { CaptchaHost } from '@/components/forms/CaptchaHost';
 import { CookieBanner } from '@/components/layout/CookieBanner';
 import { Footer } from '@/components/layout/Footer';
@@ -46,7 +48,10 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const [settings, tree] = await Promise.all([getSiteSettings(locale), getCatalogTree(locale)]);
+  const [settings, tree, requestHeaders] = await Promise.all([getSiteSettings(locale), getCatalogTree(locale), headers()]);
+  // Номера счётчиков — из окружения при запросе: у стейджа и продакшена свои (ТЗ 15.1)
+  const ymId = Number.parseInt(process.env.YM_COUNTER_ID ?? '', 10);
+  const counterIds = { ym: Number.isFinite(ymId) ? ymId : null, ga: process.env.GA_MEASUREMENT_ID || null };
 
   return (
     <html lang={locale} className={manrope.variable}>
@@ -62,6 +67,9 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           <OneClickOrderDialog docs={settings.docs} />
           <CaptchaHost />
           <CookieBanner privacyHref={settings.docs.privacy} />
+          <Suspense fallback={null}>
+            <Counters ids={counterIds} nonce={requestHeaders.get('x-nonce') ?? undefined} />
+          </Suspense>
         </NextIntlClientProvider>
       </body>
     </html>

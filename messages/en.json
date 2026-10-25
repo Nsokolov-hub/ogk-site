@@ -786,5 +786,18 @@
     "title": "Confirm you are not a robot",
     "text": "The form was filled in very quickly — tick the box and your request will be sent.",
     "close": "Close"
+  },
+  "unsubscribe": {
+    "metaTitle": "Unsubscribe — OGK-CHEM",
+    "h1": "Unsubscribe",
+    "lead": "Press the button and we will stop sending news. Letters about your requests will still arrive.",
+    "submit": "Unsubscribe",
+    "sending": "Unsubscribing…",
+    "doneTitle": "You are unsubscribed",
+    "doneText": "No more news letters. You can subscribe again at the bottom of the home page.",
+    "missingTitle": "The link is incomplete",
+    "missingText": "Open the whole link from the letter or write to info@ogk-chem.ru and we will unsubscribe you by hand.",
+    "errorTitle": "Something went wrong",
+    "errorText": "Try again in a minute or write to info@ogk-chem.ru and we will unsubscribe you by hand."
   }
 }

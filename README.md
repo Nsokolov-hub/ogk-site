@@ -4,6 +4,8 @@ Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · next-int
 
 Бэкенд сайта — в [backend/](backend/README.md): FastAPI + PostgreSQL + Meilisearch. Каталог, поиск, корзина, импорт прайсов, приём заявок и доставка в «Реактив CRM» (потоки F1 и F5). Витрина берёт все данные каталога из API: моков каталога в коде нет.
 
+Стейдж и продакшен — [deploy/README.md](deploy/README.md): HTTPS через Caddy, пароль на стейдже, бэкапы с восстановлением на момент времени, мониторинг, нагрузочный тест; обновление — `./scripts/deploy.sh`.
+
 Весь сайт в Docker: `cp .env.example .env && docker compose up -d --build`, затем тестовый каталог `docker compose exec api python -m app.catalog.cli seed` — витрина <http://127.0.0.1:3000>, API <http://127.0.0.1:8001/api/docs>, письма в Mailpit <http://127.0.0.1:8025>. Витрина проксирует `/api/v1/*` на API внутри сети. Для правки витрины с горячей перезагрузкой остановите сервис `web` и запустите `npm run dev` — она пойдёт в API на `API_ORIGIN` (по умолчанию <http://127.0.0.1:8001>).
 
 Связь с CRM, запущенной своим `docker compose` на этом же компьютере: в CRM `docker compose exec api python -m app.integrations.site_tokens create --name local`, значения — в `CRM_TOKEN` и `CRM_SIGNING_SECRET` файла `.env`, `CRM_URL=http://host.docker.internal:8000`, `CRM_DELIVERY_ENABLED=true`, затем `docker compose up -d`.
@@ -40,6 +42,10 @@ NEXT_DIST_DIR=.next-prod npm run build  # проверочная сборка, �
 - `src/middleware.ts` + `src/lib/attribution-cookie.ts` — источник визита (ТЗ 15.3): первое и последнее касание, UTM, yclid, gclid в cookie `ogk_attr` на 90 дней; её читает API при отправке заявки.
 - `src/lib/catalog.ts` — формат URL фильтров (`?brand=edqm&pack=100-mg&sort=name&page=2`) и порядок значений в фильтрах; фильтрует и считает фасеты API.
 - `src/lib/rfq-store.ts` — корзина запроса в localStorage; `src/lib/cart-sync.ts` — её серверная копия по cookie `ogk_cart` на 90 дней (RFQ-01).
+- `src/middleware.ts` + `src/lib/csp.ts` — Content-Security-Policy с одноразовым nonce на каждый ответ (NFR-04): скрипты только свои и загруженные ими, поэтому Метрика, GA4 и SmartCaptcha работают без перечня адресов.
+- `src/components/analytics/Counters.tsx` — Яндекс Метрика и GA4 (ТЗ 15.1) после согласия на аналитические cookies; номера — `YM_COUNTER_ID` и `GA_MEASUREMENT_ID` при запросе страницы, у стейджа и продакшена свои. `track()` шлёт события ТЗ 15.2 целями Метрики и событиями GA4; поля форм не пишутся Вебвизором (`ym-disable-keys`, NFR-08).
+- `src/components/forms/SubscribeForm.tsx` → `POST /api/v1/public/subscriptions/`: адрес с двумя согласиями в базе сайта, письмо со ссылкой отписки, копия в CRM (ТЗ 11.2, NFR-07); `/unsubscribe/?t=` — отписка кнопкой.
+- `src/instrumentation.ts` — ошибки серверного рендера в Sentry или GlitchTip по `SENTRY_DSN`, без SDK и без персональных данных.
 - `messages/ru.json`, `messages/en.json` — строки интерфейса.
 - `src/app/[locale]/product/[slug]` — карточка товара (3 типа: стандарты, оборудование, прочее): идентификаторы с копированием, фасовки и своя фасовка, аналоги, вкладки «Описание» / «Технические данные», документы, «другие примеси субстанции», аналоги других брендов, аксессуары, FAQ, форма с подставленным товаром.
 - `src/app/[locale]/substances` — указатель А–Я и `/substances/{мнн}/`: все стандарты и примеси субстанции, выбор нескольких позиций и добавление в корзину одним действием (SC-05).
@@ -67,7 +73,7 @@ NEXT_DIST_DIR=.next-prod npm run build  # проверочная сборка, �
 - Тестовый каталог для разработки — `backend/seed/catalog.json` (413 позиций, 9 обогащённых карточек; выгружен из прежних моков скриптом `scripts/export-catalog-seed.mjs`). Настоящий ассортимент загружается импортом (backend/README.md); карточки без описания — шаблонный текст и noindex до обогащения.
 - Статьи — 10 первых тем ТЗ 10.4; ещё 5 тем публикуются по мере написания, без страниц-заглушек. Отметка «Проверено экспертом» появится после проверки химиком (`reviewed`).
 - Страница автора в noindex, пока нет квалификации и фото.
-- Не сделаны: подписка на рассылку (форма пока на моке), личный кабинет (P2), стили печати карточки и корзины (P2).
+- Не сделаны: личный кабинет (P2), стили печати карточки и корзины (P2).
 - Фото товаров нет: в карточках нарисованная банка-заглушка, её заменят фото производителей.
 
 ## Дизайн

@@ -1,7 +1,8 @@
-# The site for development and staging: storefront (http://127.0.0.1:3000), PostgreSQL, Meilisearch, migrations,
-# API, queue worker and Mailpit, which catches every letter (http://127.0.0.1:8025). The storefront proxies /api/v1/* to the
-# API inside the network. Settings: copy .env.example to .env. For live editing of the storefront run
+# The site for development: storefront (http://127.0.0.1:3000), PostgreSQL, Meilisearch, Redis, migrations, API,
+# queue worker and Mailpit, which catches every letter (http://127.0.0.1:8025). The storefront proxies /api/v1/* to
+# the API inside the network. Settings: copy .env.example to .env. For live editing of the storefront run
 # `npm run dev` instead of the web service: it proxies to http://127.0.0.1:8001.
+# Staging and production add docker-compose.prod.yml on top: HTTPS, backups, no ports but 80 and 443 (deploy/README.md).
 name: ogk-site
 
 services:
@@ -38,14 +39,27 @@ services:
       timeout: 5s
       retries: 20
 
+  # Limits of the public API shared by all API processes (NFR-05). Nothing in it needs to survive a restart.
+  redis:
+    image: redis:8.10.1-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   migrate:
     build: ./backend
     command: ["alembic", "upgrade", "head"]
     env_file: .env
-    environment: &database
+    environment: &backend
       DATABASE_URL: postgresql+psycopg://site:${POSTGRES_PASSWORD:-site}@db:5432/site
       MEILI_URL: http://meilisearch:7700
       MEILI_KEY: ${MEILI_MASTER_KEY:-development-master-key-0123456789}
+      REDIS_URL: redis://redis:6379/0
+      # The API and the worker drop the storefront's cached pages after catalog changes.
+      WEB_URL: http://web:3000
     depends_on:
       db:
         condition: service_healthy
@@ -53,7 +67,7 @@ services:
   api:
     build: ./backend
     env_file: .env
-    environment: *database
+    environment: *backend
     volumes:
       - files:/data/files
     ports:
@@ -62,6 +76,8 @@ services:
       migrate:
         condition: service_completed_successfully
       meilisearch:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready')"]
@@ -74,10 +90,7 @@ services:
     build: ./backend
     command: ["python", "-m", "app.outbox.worker"]
     env_file: .env
-    environment:
-      <<: *database
-      # The worker drops the storefront's cached pages of changed products.
-      WEB_URL: http://web:3000
+    environment: *backend
     volumes:
       - files:/data/files
     depends_on:

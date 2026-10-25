@@ -1,0 +1,127 @@
+# Staging and production (TZ 12.3), on top of docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# or simply ./scripts/deploy.sh. Needs Docker Compose 2.24 or newer (the !reset tag).
+#
+# Outside: only Caddy on 80 and 443 with certificates from Let's Encrypt. SITE_ENV=staging closes the site with a
+# password and noindex, production redirects every other name to https://www… (URL-02). PostgreSQL archives its
+# journal into BACKUP_DIR every ARCHIVE_TIMEOUT seconds, scripts/backup.sh adds a daily base copy (RPO ≤ 1 h).
+# Settings: deploy/README.md.
+
+services:
+  caddy:
+    image: caddy:2.11.6-alpine
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN in .env, e.g. www.ogk-chem.ru}
+      SITE_ALIASES: ${SITE_ALIASES:-}
+      TLS_EMAIL: ${TLS_EMAIL:?Set TLS_EMAIL in .env}
+      STAGING_USER: ${STAGING_USER:-ogk}
+      STAGING_PASSWORD_HASH: ${STAGING_PASSWORD_HASH:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - type: bind
+        source: ./deploy/Caddyfile.${SITE_ENV:?Set SITE_ENV in .env to staging or production}
+        target: /etc/caddy/Caddyfile
+        read_only: true
+      - ./deploy/caddy:/etc/caddy/conf:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      web:
+        condition: service_started
+    restart: unless-stopped
+    logging: &logging
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+  db:
+    ports: !reset []
+    # The journal goes to BACKUP_DIR/wal as soon as a segment is full and at least every ARCHIVE_TIMEOUT seconds:
+    # scripts/restore.sh brings the database back to any moment covered by the base copy and the journal.
+    entrypoint:
+      - sh
+      - -c
+      - mkdir -p /backups/wal /backups/base && chown postgres:postgres /backups /backups/wal /backups/base && exec docker-entrypoint.sh "$$@"
+      - --
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_mode=on
+      - -c
+      # A segment already archived is accepted only with the same content; a different one stops the archive (the
+      # backup script alerts) instead of being lost.
+      - archive_command=if [ -f /backups/wal/%f.gz ]; then gunzip -c /backups/wal/%f.gz | cmp -s - %p; else gzip -c %p > /backups/wal/%f.gz.part && mv /backups/wal/%f.gz.part /backups/wal/%f.gz; fi
+      - -c
+      - archive_timeout=${ARCHIVE_TIMEOUT:-600}
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-1GB}
+      - -c
+      - effective_cache_size=${PG_EFFECTIVE_CACHE_SIZE:-3GB}
+      - -c
+      - work_mem=${PG_WORK_MEM:-32MB}
+      - -c
+      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-512MB}
+      - -c
+      - max_wal_size=4GB
+    volumes:
+      - ${BACKUP_DIR:-./backups}:/backups
+    shm_size: 1g
+    restart: unless-stopped
+    logging: *logging
+
+  meilisearch:
+    ports: !reset []
+    environment:
+      MEILI_ENV: production
+    restart: unless-stopped
+    logging: *logging
+
+  redis:
+    restart: unless-stopped
+    logging: *logging
+
+  migrate:
+    environment:
+      ENVIRONMENT: ${SITE_ENV}
+
+  api:
+    ports: !reset []
+    environment:
+      ENVIRONMENT: ${SITE_ENV}
+    restart: unless-stopped
+    logging: *logging
+
+  worker:
+    environment:
+      ENVIRONMENT: ${SITE_ENV}
+    restart: unless-stopped
+    logging: *logging
+
+  web:
+    ports: !reset []
+    environment:
+      # robots.txt and the noindex of staging (TZ 12.3), counters and error reporting at run time.
+      SITE_ENV: ${SITE_ENV}
+      YM_COUNTER_ID: ${YM_COUNTER_ID:-}
+      GA_MEASUREMENT_ID: ${GA_MEASUREMENT_ID:-}
+      SENTRY_DSN: ${WEB_SENTRY_DSN:-}
+    restart: unless-stopped
+    logging: *logging
+
+  # Letters on staging can stay in Mailpit: COMPOSE_PROFILES=mailpit in .env, the letters are at
+  # https://<SITE_DOMAIN>/mailpit/ behind the staging password. Production sends them over SMTP.
+  mailpit:
+    ports: !reset []
+    environment:
+      MP_WEBROOT: /mailpit/
+    profiles: ["mailpit"]
+
+volumes:
+  caddy-data:
+  caddy-config:

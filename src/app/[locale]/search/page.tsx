@@ -17,6 +17,7 @@ import { getBrands } from '@/lib/content-api';
 import { getSubstanceList } from '@/lib/product-api';
 import { searchCatalog } from '@/lib/search';
 import { serviceMetadata } from '@/lib/seo';
+import { visitorAddress } from '@/lib/visitor';
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<SearchParams> };
@@ -47,7 +48,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
     getCatalogTree(locale),
     getSiteSettings(locale),
     getBrands(locale),
-    searchCatalog({ query: q, brand, category, page, locale }),
+    searchCatalog({ query: q, brand, category, page, locale, visitor: await visitorAddress() }),
     q.length >= 3 ? getSubstanceList(locale) : Promise.resolve([]),
   ]);
   const items = result.items;

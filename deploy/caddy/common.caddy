@@ -1,0 +1,34 @@
+# Shared by Caddyfile.staging and Caddyfile.production.
+
+(site_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+		-Server
+		-X-Powered-By
+	}
+}
+
+# The storefront and the public API. While a container restarts during a deploy, Caddy holds the request for up
+# to 30 seconds instead of answering 502: an update goes without visible downtime (NFR-02).
+(site_routes) {
+	encode zstd gzip
+	# route keeps the order as written (Caddy sorts bare directives by its own order).
+	route {
+		# Only the API's worker calls this route of the storefront, inside the Docker network.
+		respond /api/revalidate* 404
+		# The admin contour of the API is served on ADMIN_DOMAIN only (TZ 12.2).
+		respond /api/v1/admin* 404
+		reverse_proxy /api/v1/* api:8000 {
+			lb_try_duration 30s
+			lb_try_interval 250ms
+		}
+		reverse_proxy web:3000 {
+			lb_try_duration 30s
+			lb_try_interval 250ms
+		}
+	}
+}

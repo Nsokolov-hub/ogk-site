@@ -52,8 +52,14 @@ export async function getHomeProducts(p: {
   limit: number;
   locale: Locale;
 }): Promise<{ items: ProductPreview[]; total: number }> {
-  const page = await api<Schemas['ProductsPage']>('/public/catalog/popular', { lang: p.locale, sort: p.sort, offset: p.offset, limit: p.limit }, { tags: ['catalog'] });
-  return page as { items: ProductPreview[]; total: number };
+  try {
+    const page = await api<Schemas['ProductsPage']>('/public/catalog/popular', { lang: p.locale, sort: p.sort, offset: p.offset, limit: p.limit }, { tags: ['catalog'] });
+    return page as { items: ProductPreview[]; total: number };
+  } catch (error) {
+    // Главная открывается и без блока товаров: поиск перезапускается или каталог ещё не загружен
+    if (typeof window === 'undefined') return { items: [], total: 0 };
+    throw error;
+  }
 }
 
 // ── заявки: POST /api/v1/public/requests/ (backend/app/requests) ──
@@ -126,13 +132,24 @@ export async function submitSiteRequest(p: SiteRequestPayload): Promise<SiteRequ
   throw new SubmitError('CAPTCHA_FAILED', 428);
 }
 
+/** Подписка на рассылку (ТЗ 11.2, NFR-07): адрес и оба согласия сохраняются в API сайта и уходят в CRM */
 export async function subscribe(p: {
   email: string;
   personalDataConsent: true;
   marketingConsent: true;
-  source: 'home';
+  lang: Locale;
+  source: string;
+  pageUrl?: string;
 }): Promise<{ ok: true }> {
-  await networkDelay(500);
-  if (process.env.NODE_ENV !== 'production') console.debug('[api] subscribe', p);
+  if (process.env.NEXT_PUBLIC_API_MOCK === '1') {
+    await networkDelay(500);
+    return { ok: true };
+  }
+  await api('/public/subscriptions', undefined, { method: 'POST', body: p, revalidate: false });
   return { ok: true };
+}
+
+/** Отписка по ссылке из письма: ответ одинаковый для любого ключа */
+export async function unsubscribe(token: string): Promise<void> {
+  await api('/public/subscriptions/unsubscribe', undefined, { method: 'POST', body: { token }, revalidate: false });
 }

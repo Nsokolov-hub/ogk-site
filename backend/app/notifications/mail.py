@@ -16,7 +16,8 @@ class MailUnavailable(Exception):
     """The mail server refused or did not answer; the worker retries the letter later."""
 
 
-def send(to: list[str], subject: str, body: str, *, reply_to: str | None = None) -> None:
+def send(to: list[str], subject: str, body: str, *, reply_to: str | None = None,
+         headers: dict[str, str] | None = None) -> None:
     recipients = [address.strip() for address in to if address.strip()]
     if not recipients:
         return
@@ -30,6 +31,8 @@ def send(to: list[str], subject: str, body: str, *, reply_to: str | None = None)
     message['Message-ID'] = make_msgid(domain=settings.mail_from.split('@')[-1].rstrip('>') or None)
     if reply_to:
         message['Reply-To'] = reply_to
+    for name, value in (headers or {}).items():
+        message[name] = value
     message.set_content(body)
     try:
         with smtplib.SMTP(settings.smtp_host, settings.smtp_port, timeout=20) as smtp:

@@ -35,14 +35,27 @@ export interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT';
   body?: unknown;
   signal?: AbortSignal;
+  /**
+   * Адрес посетителя, от имени которого витрина спрашивает API (поиск, подсказки): лимит API считается на этого
+   * посетителя (NFR-05), ответ не кэшируется. Без него серверный запрос несёт общий секрет витрины и API и в
+   * лимит не входит — его ответ из кэша получают все посетители.
+   */
+  visitor?: string | null;
 }
 
 export async function api<T>(path: string, params?: Record<string, Param>, options: ApiOptions = {}): Promise<T> {
-  const { revalidate = 300, tags, method = 'GET', body, signal } = options;
+  const { tags, method = 'GET', body, signal, visitor } = options;
+  const revalidate = visitor ? false : (options.revalidate ?? 300);
+  const headers: Record<string, string> = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (typeof window === 'undefined') {
+    if (visitor) headers['X-Forwarded-For'] = visitor;
+    else if (process.env.REVALIDATE_SECRET) headers['X-Site-Token'] = process.env.REVALIDATE_SECRET;
+  }
   const init: RequestInit & { next?: { revalidate?: number | false; tags?: string[] } } = {
     method,
     signal,
-    headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+    headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     credentials: 'same-origin',
   };

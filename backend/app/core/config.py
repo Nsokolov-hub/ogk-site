@@ -31,10 +31,17 @@ class Settings(BaseSettings):
     # Requests to the search API from one address per minute (NFR-05); deeper pages are refused.
     search_rate_per_minute: int = 120
     search_max_page: int = 200
+    # Shared limits of all API processes; empty — counted in each process.
+    redis_url: str = ''
 
     # ── storefront cache: the worker drops ISR pages of changed products ──
     web_url: str = ''
+    # Shared secret of the storefront and the API: cache drops, and the storefront's cached requests are not
+    # counted against the search limits.
     revalidate_secret: str = ''
+
+    # ── error reports (Sentry or GlitchTip, TZ 12.1); empty — only the logs ──
+    sentry_dsn: str = ''
 
     # ── mail ──
     smtp_host: str = ''

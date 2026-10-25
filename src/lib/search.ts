@@ -9,8 +9,9 @@ import type { SuggestResult } from './search-shared';
 
 export type { SuggestItem, SuggestResult } from './search-shared';
 
-export async function suggest(query: string, lang: string): Promise<SuggestResult> {
-  return api<SuggestResult>('/public/search/suggest', { q: query.slice(0, 100), lang }, { revalidate: 60, tags: ['catalog'] });
+/** Подсказки строки поиска; visitor — адрес посетителя для его лимита запросов (NFR-05) */
+export async function suggest(query: string, lang: string, visitor?: string | null): Promise<SuggestResult> {
+  return api<SuggestResult>('/public/search/suggest', { q: query.slice(0, 100), lang }, { revalidate: 60, tags: ['catalog'], visitor });
 }
 
 // ── страница результатов /search/ (SRCH-07) ──
@@ -36,11 +37,18 @@ export interface SearchPageResult {
 export const SEARCH_PAGE_SIZE = 24;
 
 /** Полная выдача с фильтрами по бренду и разделу и счётчиками. Пустой результат API пишет в «спрос без товара» */
-export async function searchCatalog(p: { query: string; brand?: string; category?: string; page?: number; locale: string }): Promise<SearchPageResult> {
+export async function searchCatalog(p: {
+  query: string;
+  brand?: string;
+  category?: string;
+  page?: number;
+  locale: string;
+  visitor?: string | null;
+}): Promise<SearchPageResult> {
   return api<SearchPageResult>(
     '/public/search',
     { q: p.query, brand: p.brand, category: p.category, page: p.page, lang: p.locale },
-    { revalidate: false },
+    { revalidate: false, visitor: p.visitor },
   );
 }
 

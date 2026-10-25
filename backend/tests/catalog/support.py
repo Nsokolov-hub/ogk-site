@@ -57,3 +57,6 @@ class FakeEngine:
 
     def count(self, index: str) -> int:
         return len(self.documents)
+
+    def exists(self, index: str) -> bool:
+        return bool(self.settings)

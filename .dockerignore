@@ -11,3 +11,12 @@ docs
 *.tsbuildinfo
 docker-compose.yml
 Dockerfile
+docker-compose.prod.yml
+docker-compose.override.yml
+# Base copies and the journal archive of the server (BACKUP_DIR): never in an image
+backups
+deploy
+scripts
+e2e
+playwright-report
+test-results

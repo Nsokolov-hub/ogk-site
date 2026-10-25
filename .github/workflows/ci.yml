@@ -92,7 +92,20 @@ jobs:
       - name: Smoke-test backend image
         run: >-
           docker run --rm -e DATABASE_URL=sqlite:// ogk-site-backend:ci python -c
-          "import app.main, app.outbox.worker, app.cli, app.catalog.cli"
+          "import app.main, app.outbox.worker, app.cli, app.catalog.cli, rdkit, boto3, redis, sentry_sdk"
+      # Staging and production (deploy/README.md): the compose files merge and both Caddyfiles are valid.
+      - name: Staging and production configuration
+        run: |
+          cp .env.example .env
+          for mode in staging production; do
+            SITE_ENV=$mode SITE_DOMAIN=www.example.ru TLS_EMAIL=ci@example.ru \
+              docker compose -f docker-compose.yml -f docker-compose.prod.yml config -q
+            docker run --rm -e SITE_DOMAIN=www.example.ru -e TLS_EMAIL=ci@example.ru -e STAGING_USER=ogk \
+              -e 'STAGING_PASSWORD_HASH=$2a$14$Zkx19XLiW6VYouLHR5NmfOFU0z2GTNmpkT/5qqR7hx4wHAiSgLiAy' \
+              -v "$PWD/deploy/Caddyfile.$mode:/etc/caddy/Caddyfile:ro" -v "$PWD/deploy/caddy:/etc/caddy/conf:ro" \
+              caddy:2.11.6-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+          done
+          bash -n scripts/deploy.sh scripts/backup.sh scripts/restore.sh scripts/lib.sh
 
   # SC-01…SC-04 (NFR-12) on the whole site in Docker with the test catalog.
   e2e:

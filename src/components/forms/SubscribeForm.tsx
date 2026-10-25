@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -11,6 +11,7 @@ import { subscribe } from '@/lib/api';
 import { track } from '@/lib/analytics';
 import { useFormMeta } from '@/lib/hooks';
 import { fields } from '@/lib/validation';
+import type { Locale } from '@/i18n/routing';
 import type { SiteSettings } from '@/types/settings';
 import { ConsentCheckbox } from './ConsentCheckbox';
 import { FormStatus } from './FormStatus';
@@ -30,6 +31,7 @@ export function SubscribeForm({ docs }: { docs: SiteSettings['docs'] }) {
   const t = useTranslations('subscribe');
   const tf = useTranslations('form');
   const te = useTranslations('errors');
+  const locale = useLocale() as Locale;
   const { onFocusCapture } = useFormMeta('subscribe');
   const [status, setStatus] = useState<'success' | 'error' | null>(null);
 
@@ -49,7 +51,14 @@ export function SubscribeForm({ docs }: { docs: SiteSettings['docs'] }) {
     setStatus(null);
     try {
       if (!v.website) {
-        await subscribe({ email: v.email.trim(), personalDataConsent: true, marketingConsent: true, source: 'home' });
+        await subscribe({
+          email: v.email.trim(),
+          personalDataConsent: true,
+          marketingConsent: true,
+          lang: locale,
+          source: 'home',
+          pageUrl: window.location.href.split('?')[0],
+        });
       }
       track('subscribe');
       track('form_submit', { form_type: 'subscribe', page: window.location.pathname });

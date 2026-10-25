@@ -37,6 +37,7 @@ def _seed(args: argparse.Namespace) -> None:
     query.reset_directory()
     print('Загружено: ' + ', '.join(f'{k} {v}' for k, v in counts.items()))
     _index(argparse.Namespace())
+    _refresh_storefront()
 
 
 def _recategorize(args: argparse.Namespace) -> None:
@@ -46,6 +47,15 @@ def _recategorize(args: argparse.Namespace) -> None:
                               progress=lambda n: print(f'  {n}', file=sys.stderr))
     print(json.dumps(counts, ensure_ascii=False))
     _index(argparse.Namespace())
+    _refresh_storefront()
+
+
+def _refresh_storefront() -> None:
+    """The storefront keeps API answers for a few minutes: drop them so the change is visible at once."""
+    from app.core import storefront
+
+    if storefront.revalidate_catalog():
+        print('Кэш витрины сброшен')
 
 
 def _index(_args: argparse.Namespace) -> None:
@@ -71,6 +81,7 @@ def _reindex(_args: argparse.Namespace) -> None:
 
     total = indexer.reindex_all(SessionLocal, engine(), progress=lambda n: print(f'  {n}', file=sys.stderr))
     print(f'Индекс перестроен: {total} документов')
+    _refresh_storefront()
 
 
 def _import(args: argparse.Namespace) -> None:
@@ -86,6 +97,8 @@ def _import(args: argparse.Namespace) -> None:
     print(json.dumps(result, ensure_ascii=False, indent=1))
     if not args.dry_run and not args.no_index:
         _index(argparse.Namespace())
+    if not args.dry_run:
+        _refresh_storefront()
 
 
 def _batches(_args: argparse.Namespace) -> None:
@@ -118,6 +131,7 @@ def _rollback(args: argparse.Namespace) -> None:
     with SessionLocal.begin() as db:
         print(json.dumps(run.rollback(db, args.batch), ensure_ascii=False))
     _index(argparse.Namespace())
+    _refresh_storefront()
 
 
 def _controlled(args: argparse.Namespace) -> None:
@@ -130,12 +144,14 @@ def _controlled(args: argparse.Namespace) -> None:
         changed = run.recheck_controlled(db)
     print(f'Записей в перечнях: {count}; изменён признак у товаров: {changed}')
     _index(argparse.Namespace())
+    _refresh_storefront()
 
 
 def _sync_brands(_args: argparse.Namespace) -> None:
     from app.catalog import brands_sync
 
     print(json.dumps(brands_sync.sync(SessionLocal), ensure_ascii=False))
+    _refresh_storefront()
 
 
 def _misses(args: argparse.Namespace) -> None:
@@ -167,6 +183,7 @@ def _setting(args: argparse.Namespace) -> None:
             refresh_all(db)
             queue_all(db)
     print('Сохранено.')
+    _refresh_storefront()
 
 
 def main() -> None:

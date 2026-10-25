@@ -1,5 +1,5 @@
 """API of ogk-chem.ru. Contours (TZ 12.2): /api/v1/public/* — the storefront's forms, catalog, search and cart;
-/api/v1/admin/* and /api/v1/crm/* come with the admin panel and flow F2."""
+/api/v1/admin/* and /api/v1/crm/* come with the admin panel and flow F2. /api/v1/health — for the uptime monitor."""
 
 import logging
 import re
@@ -18,10 +18,13 @@ from app.core.config import settings
 from app.core.db import SessionLocal
 from app.core.errors import DomainError
 from app.core.logs import configure_logging, event
+from app.core.monitoring import check_parts, init_sentry
 from app.requests.routes import router as requests_router
 from app.requests.service import FormError
+from app.subscriptions.routes import router as subscriptions_router
 
 configure_logging()
+init_sentry('api')
 logger = logging.getLogger('site.api')
 
 app = FastAPI(title='API сайта ОГК-ХИМ', version='0.1.0', docs_url='/api/docs', redoc_url=None,
@@ -111,5 +114,15 @@ def ready():
         return JSONResponse({'status': 'not_ready'}, status_code=503)
 
 
+@app.get('/api/v1/health', include_in_schema=False)
+def public_health():
+    """For an external uptime monitor (Yandex Monitoring, UptimeRobot…): 200 when the database and search work."""
+    with SessionLocal() as db:
+        parts = check_parts(db)
+    healthy = parts.get('database') and parts.get('search')
+    return JSONResponse({'status': 'ok' if healthy else 'degraded', **parts}, status_code=200 if healthy else 503)
+
+
 app.include_router(requests_router, prefix='/api/v1')
 app.include_router(catalog_router, prefix='/api/v1')
+app.include_router(subscriptions_router, prefix='/api/v1')

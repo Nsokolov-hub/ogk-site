@@ -8,7 +8,7 @@ import { SITE_URL } from '@/lib/seo';
 /** Читаем SITE_ENV при запросе, а не при сборке: один образ для staging и production */
 export const dynamic = 'force-dynamic';
 
-const CLOSED = ['/admin/', '/api/', '/internal/', '/search/', '/rfq/', '/account/'];
+const CLOSED = ['/admin/', '/api/', '/internal/', '/search/', '/rfq/', '/account/', '/unsubscribe/'];
 
 export function GET() {
   if (process.env.SITE_ENV === 'staging') {

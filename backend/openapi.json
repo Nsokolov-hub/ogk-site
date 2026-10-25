@@ -1029,6 +1029,101 @@
           }
         }
       }
+    },
+    "/api/v1/public/subscriptions": {
+      "post": {
+        "tags": [
+          "Подписка"
+        ],
+        "summary": "Subscribe",
+        "description": "Подписка на рассылку: адрес и два согласия — на обработку ПДн и на рекламную рассылку. Ответ одинаковый\nдля нового и уже подписанного адреса.",
+        "operationId": "subscribe_api_v1_public_subscriptions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscribeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "type": "object",
+                  "title": "Response Subscribe Api V1 Public Subscriptions Post"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Слишком много попыток с адреса"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/subscriptions/unsubscribe": {
+      "post": {
+        "tags": [
+          "Подписка"
+        ],
+        "summary": "Unsubscribe",
+        "description": "Отписка по ссылке из письма. Ответ одинаковый для любого ключа.",
+        "operationId": "unsubscribe_api_v1_public_subscriptions_unsubscribe_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnsubscribeIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "boolean"
+                  },
+                  "type": "object",
+                  "title": "Response Unsubscribe Api V1 Public Subscriptions Unsubscribe Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2557,6 +2652,65 @@
         ],
         "title": "SitemapPage"
       },
+      "SubscribeIn": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "maxLength": 254,
+            "title": "Email"
+          },
+          "personalDataConsent": {
+            "type": "boolean",
+            "const": true,
+            "title": "Personaldataconsent"
+          },
+          "marketingConsent": {
+            "type": "boolean",
+            "const": true,
+            "title": "Marketingconsent"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ],
+            "title": "Lang",
+            "default": "ru"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Source",
+            "default": "home"
+          },
+          "pageUrl": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pageurl"
+          },
+          "website": {
+            "type": "string",
+            "maxLength": 200,
+            "title": "Website",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "personalDataConsent",
+          "marketingConsent"
+        ],
+        "title": "SubscribeIn"
+      },
       "SubstanceLink": {
         "properties": {
           "slug": {
@@ -2934,6 +3088,21 @@
           "nameEn"
         ],
         "title": "SuggestSubstance"
+      },
+      "UnsubscribeIn": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 16,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "UnsubscribeIn"
       },
       "ValidationError": {
         "properties": {

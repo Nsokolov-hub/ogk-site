@@ -49,6 +49,8 @@ class SearchEngine(Protocol):
 
     def count(self, index: str) -> int: ...
 
+    def exists(self, index: str) -> bool: ...
+
 
 def quote(value: str) -> str:
     """A string literal for filter expressions."""

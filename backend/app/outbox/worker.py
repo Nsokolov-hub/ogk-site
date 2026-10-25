@@ -17,22 +17,24 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Literal
 
-import httpx
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.catalog.search import indexer
 from app.catalog.search.engine import EngineUnavailable
 from app.catalog.search.meili import engine as search_engine
+from app.core import storefront
 from app.core.config import settings
 from app.core.db import SessionLocal, as_utc, utcnow
 from app.core.errors import DomainError
 from app.core.logs import configure_logging, event
+from app.core.monitoring import Watchdog, init_sentry
 from app.crm import client as crm
 from app.notifications import mail, telegram, texts
 from app.outbox.models import OutboxEvent
 from app.requests import antispam
 from app.requests.models import DeliveryAttempt, SiteRequest
+from app.subscriptions.models import Subscriber
 
 logger = logging.getLogger('site.worker')
 CRM_DELAYS = (timedelta(minutes=1), timedelta(minutes=5), timedelta(minutes=15), timedelta(minutes=60))
@@ -131,8 +133,45 @@ def delete_from_index(db: Session, outbox: OutboxEvent) -> Result:
     return Result('succeeded')
 
 
+def subscriber_of(db: Session, outbox: OutboxEvent) -> Subscriber:
+    row = db.get(Subscriber, outbox.payload.get('subscriber_id'))
+    if row is None:
+        raise DomainError('SUBSCRIBER_NOT_FOUND', 'Подписчик не найден', 404)
+    return row
+
+
+def send_subscriber(db: Session, outbox: OutboxEvent) -> Result:
+    row = subscriber_of(db, outbox)
+    if row.status != 'active':
+        return Result('succeeded')
+    subject, body = texts.subscriber_letter(row)
+    # One-click unsubscribe for mail clients (RFC 8058) next to the link in the text.
+    mail.send([row.email], subject, body, reply_to=settings.mail_reply_to,
+              headers={'List-Unsubscribe': f'<{texts.unsubscribe_url(row)}>'})
+    return Result('succeeded')
+
+
+def send_subscriber_sales(db: Session, outbox: OutboxEvent) -> Result:
+    subject, body = texts.subscriber_sales_letter(subscriber_of(db, outbox))
+    mail.send([settings.sales_email], subject, body)
+    return Result('succeeded')
+
+
+def deliver_subscriber(db: Session, outbox: OutboxEvent) -> Result:
+    """The subscriber as a contact for mailings in the CRM; the latest state wins (one key per version)."""
+    from app.subscriptions.service import crm_payload
+
+    row = subscriber_of(db, outbox)
+    outcome = crm.post_json(crm.SUBSCRIBERS_PATH, crm_payload(row), f'{row.id}:{row.version}')
+    if outcome.kind == 'delivered':
+        row.crm_synced_at = utcnow()
+        return Result('succeeded')
+    return Result('failed' if outcome.kind == 'failed' else 'retry', outcome.error_code)
+
+
 HANDLERS = {'crm.deliver': deliver, 'mail.customer': send_customer, 'mail.sales': send_sales, 'alert': send_alert,
-            'search.delete': delete_from_index}
+            'search.delete': delete_from_index, 'mail.subscriber': send_subscriber,
+            'mail.subscriber_sales': send_subscriber_sales, 'crm.subscriber': deliver_subscriber}
 
 
 def dispatch(db: Session, outbox: OutboxEvent) -> Result:
@@ -171,8 +210,8 @@ def process_events(db: Session, now: datetime | None = None, limit: int = BATCH)
     statement = select(OutboxEvent).where(OutboxEvent.status == 'pending', or_(
         OutboxEvent.next_attempt_at.is_(None), OutboxEvent.next_attempt_at <= now))
     if not settings.crm_delivery_enabled:
-        # Requests wait in the queue, sales get them by e-mail meanwhile.
-        statement = statement.where(OutboxEvent.kind != 'crm.deliver')
+        # Requests and subscribers wait in the queue, sales get them by e-mail meanwhile.
+        statement = statement.where(OutboxEvent.kind.not_like('crm.%'))
     events = db.scalars(statement.order_by(OutboxEvent.created_at, OutboxEvent.id).limit(limit)
                         .with_for_update(skip_locked=True)).all()
     for outbox in events:
@@ -250,17 +289,8 @@ def index_catalog(limit: int = 5) -> int:
 
 def revalidate_pages(slugs: list[str]) -> None:
     """Drop the storefront's cached data of changed products; a mass import leaves pages to their cache time."""
-    if not (settings.web_url and settings.revalidate_secret) or len(slugs) > 1000:
-        return
-    try:
-        # The trailing slash: the storefront has trailingSlash on and answers 308 to the address without it.
-        response = httpx.post(f'{settings.web_url.rstrip("/")}/api/revalidate/', timeout=5.0,
-                              headers={'X-Revalidate-Secret': settings.revalidate_secret},
-                              json={'tags': ['catalog', *(f'product:{slug}' for slug in slugs)]})
-        if response.status_code != 200:
-            event(logger, 'revalidate_failed', logging.WARNING, status=response.status_code)
-    except httpx.HTTPError as exc:
-        event(logger, 'revalidate_failed', logging.WARNING, error=str(exc)[:200])
+    if len(slugs) < storefront.MAX_TAGS:
+        storefront.revalidate(['catalog', *(f'product:{slug}' for slug in slugs)])
 
 
 def sync_brands_if_due() -> None:
@@ -283,7 +313,25 @@ def sync_brands_if_due() -> None:
             set_setting(db, 'brands_sync_run_at', (utcnow() - timedelta(hours=23)).isoformat())
 
 
+_index_ready = False
+
+
+def ensure_search_index() -> None:
+    """Once per worker start, retried while the engine is down."""
+    global _index_ready
+    if _index_ready:
+        return
+    try:
+        with SessionLocal() as db:
+            if indexer.ensure_index(db, search_engine()):
+                event(logger, 'search_index_created', index=settings.meili_index)
+        _index_ready = True
+    except EngineUnavailable as exc:
+        event(logger, 'search_index_unavailable', logging.WARNING, error=str(exc)[:200])
+
+
 def run_once(*, housekeeping: bool = True) -> dict[str, int]:
+    ensure_search_index()
     if housekeeping:
         with SessionLocal.begin() as db:
             watch_undelivered(db)
@@ -314,6 +362,8 @@ def main() -> None:
     parser.add_argument('--interval', type=float, default=2.0)
     args = parser.parse_args()
     configure_logging()
+    init_sentry('worker')
+    watchdog = Watchdog()
     running = True
 
     def stop(signum: int, _frame: object) -> None:
@@ -333,6 +383,9 @@ def main() -> None:
                 last_housekeeping = time.monotonic()
             if any(counts.values()):
                 event(logger, 'outbox_batch', **counts)
+            if watchdog.due():
+                with SessionLocal() as db:
+                    watchdog.run(db, telegram.send)
         except Exception:
             logger.exception('{"event": "worker_iteration_failed"}')
             if args.once:

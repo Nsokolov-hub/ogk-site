@@ -1,0 +1,2 @@
+# Extra sites of this Caddy, e.g. the CRM on the same server (deploy/README.md, «Сайт и CRM на одном сервере»).
+# Every *.caddy file of this folder is imported by Caddyfile.staging and Caddyfile.production.

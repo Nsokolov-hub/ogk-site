@@ -1,0 +1,23 @@
+# Production (SITE_ENV=production): https://SITE_DOMAIN, every other name and http:// answer 301 to it (URL-02).
+{
+	email {$TLS_EMAIL}
+	admin off
+}
+
+import conf/common.caddy
+
+{$SITE_DOMAIN} {
+	import site_headers
+	import site_routes
+}
+
+http://{$SITE_DOMAIN}, http://{$SITE_ALIASES:ogk-chem.ru} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
+
+https://{$SITE_ALIASES:ogk-chem.ru} {
+	redir https://{$SITE_DOMAIN}{uri} permanent
+}
+
+import conf/admin.caddy
+import conf/extra/*.caddy

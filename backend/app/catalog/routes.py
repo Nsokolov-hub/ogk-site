@@ -4,10 +4,8 @@ Only published data; controlled products are hidden while the setting says so (T
 limited per address and in depth (NFR-05).
 """
 
+import hmac
 import io
-import threading
-import time
-from collections import deque
 from typing import Annotated, Literal
 from uuid import uuid4
 
@@ -25,6 +23,7 @@ from app.catalog.search.meili import engine as meili_engine
 from app.core.config import settings
 from app.core.db import DB, utcnow
 from app.core.errors import DomainError
+from app.core.ratelimit import RateLimiter
 
 router = APIRouter(prefix='/public', tags=['Каталог'])
 Lang = Annotated[Literal['ru', 'en'], Query()]
@@ -40,33 +39,18 @@ def get_engine() -> SearchEngine:
 Engine = Annotated[SearchEngine, Depends(get_engine)]
 
 
-class RateLimit:
-    """Search requests per address and minute, in this process (approximate across processes)."""
-
-    def __init__(self) -> None:
-        self.hits: dict[str, deque[float]] = {}
-        self.lock = threading.Lock()
-        self.pruned = time.monotonic()
-
-    def check(self, address: str) -> None:
-        now = time.monotonic()
-        with self.lock:
-            if now - self.pruned > 300:
-                self.hits = {k: v for k, v in self.hits.items() if v and now - v[-1] < 60}
-                self.pruned = now
-            window = self.hits.setdefault(address, deque())
-            while window and now - window[0] > 60:
-                window.popleft()
-            if len(window) >= settings.search_rate_per_minute:
-                raise DomainError('RATE_LIMITED', 'Слишком много запросов. Повторите через минуту', 429)
-            window.append(now)
-
-
-limiter = RateLimit()
+limiter = RateLimiter('search')
 
 
 def limited(request: Request) -> None:
-    limiter.check(request.client.host if request.client else 'unknown')
+    """Search and listings per visitor (NFR-05). The storefront's own cached requests carry the shared secret and
+    are not counted: they serve every visitor at once; requests it makes for one visitor carry the visitor's
+    address in X-Forwarded-For and are counted for that visitor."""
+    token = request.headers.get('x-site-token', '')
+    if token and settings.revalidate_secret and hmac.compare_digest(token, settings.revalidate_secret):
+        return
+    if not limiter.allow(request.client.host if request.client else 'unknown', settings.search_rate_per_minute):
+        raise DomainError('RATE_LIMITED', 'Слишком много запросов. Повторите через минуту', 429)
 
 
 def cached(response: Response) -> None:

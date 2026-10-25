@@ -1,6 +1,15 @@
 import { hasAnalyticsConsent } from './consent';
 
-/** События ТЗ 15.2. Счётчики Метрики и GA4 подключим отдельно — здесь только единый слой событий. */
+/** Номера счётчиков: Метрика — число, GA4 — G-XXXXXXX. Пустые — счётчик выключен */
+export interface CounterIds {
+  ym: number | null;
+  ga: string | null;
+}
+
+/** Счётчики, загруженные после согласия (components/analytics/Counters) */
+export const counters: { ids: CounterIds | null } = { ids: null };
+
+/** События ТЗ 15.2: в dataLayer, цели Метрики (reachGoal) и события GA4 — одним вызовом */
 export type AnalyticsEvent =
   | 'form_start'
   | 'form_submit'
@@ -32,4 +41,8 @@ export function track(event: AnalyticsEvent, params: Record<string, unknown> = {
   if (!hasAnalyticsConsent()) return;
   window.dataLayer = window.dataLayer ?? [];
   window.dataLayer.push(payload);
+  const w = window as unknown as Record<string, ((...args: unknown[]) => void) | undefined>;
+  const ids = counters.ids;
+  if (ids?.ym && w.ym) w.ym(ids.ym, 'reachGoal', event, params);
+  if (ids?.ga && w.gtag) w.gtag('event', event, params);
 }

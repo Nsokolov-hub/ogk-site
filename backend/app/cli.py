@@ -3,6 +3,7 @@
     python -m app.cli status                 — counts by status and the queue
     python -m app.cli undelivered            — requests not yet in the CRM
     python -m app.cli resend S-2026-000123   — deliver a failed request again (a new 24-hour window)
+    python -m app.cli subscribers [--all] > subscribers.csv — subscribers of the mailing for a mailing service
 """
 
 import argparse
@@ -64,9 +65,15 @@ def main() -> None:
     commands.add_parser('undelivered', help='недоставленные в CRM')
     command = commands.add_parser('resend', help='отправить в CRM повторно')
     command.add_argument('number')
+    command = commands.add_parser('subscribers', help='подписчики рассылки в CSV')
+    command.add_argument('--all', action='store_true', help='и отписавшиеся')
     args = parser.parse_args()
     with SessionLocal.begin() as db:
-        if args.command == 'status':
+        if args.command == 'subscribers':
+            from app.subscriptions.service import export_csv
+
+            print(export_csv(db, None if args.all else 'active'), end='')
+        elif args.command == 'status':
             print('\n'.join(status(db)))
         elif args.command == 'undelivered':
             print('\n'.join(undelivered(db)))

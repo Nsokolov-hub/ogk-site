@@ -28,6 +28,15 @@ def configure(db: Session, engine: SearchEngine, index: str | None = None) -> No
     engine.configure(index or settings.meili_index, documents.index_settings(db))
 
 
+def ensure_index(db: Session, engine: SearchEngine) -> bool:
+    """A new server has no index yet: create it with its settings, so an empty catalog answers with no results
+    instead of errors. An existing index is left as it is (re-applying settings re-indexes everything)."""
+    if engine.exists(settings.meili_index):
+        return False
+    configure(db, engine)
+    return True
+
+
 def index_pending(db: Session, engine: SearchEngine, limit: int = BATCH, changed: list[str] | None = None) -> int:
     """Push one batch of queued products; the rows stay locked until the caller commits.
 

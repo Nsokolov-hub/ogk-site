@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.requests.models import SiteRequest, SiteRequestAttachment, SiteRequestItem
+from app.subscriptions.models import Subscriber
 
 KIND_RU = {'product_rfq': 'Запрос КП (корзина)', 'one_click': 'Заказ в 1 клик', 'service': 'Заявка на услугу',
            'general': 'Общая форма'}
@@ -111,3 +112,30 @@ def alert_message(row: SiteRequest, reason: str, attempts: int) -> str:
     # No names, phones or companies: see app.notifications.telegram.
     return (f'⚠️ Заявка {row.number} не доставлена в CRM: {reason}. Ошибка: {row.delivery_error or "—"}. '
             f'Попыток: {attempts}. Полный состав отправлен на {settings.alert_emails}.')
+
+
+def unsubscribe_url(row: Subscriber) -> str:
+    prefix = '/en' if row.lang == 'en' else ''
+    return f'{settings.site_url}{prefix}/unsubscribe/?t={row.unsubscribe_token}'
+
+
+def subscriber_letter(row: Subscriber) -> tuple[str, str]:
+    """Welcome letter: what the subscriber will get and how to leave (NFR-07)."""
+    link = unsubscribe_url(row)
+    if row.lang == 'en':
+        return 'You are subscribed — OGK-CHEM', '\n'.join([
+            'Thank you for subscribing to OGK-CHEM news.', '',
+            'We write rarely: new manufacturers and reference standards, delivery terms, useful articles.', '',
+            f'Unsubscribe at any time: {link}', '', 'OGK-CHEM', settings.site_url])
+    return 'Вы подписались на рассылку ОГК-ХИМ', '\n'.join([
+        'Спасибо за подписку на новости ОГК-ХИМ.', '',
+        'Пишем нечасто: новые производители и стандартные образцы, условия поставки, полезные статьи.', '',
+        f'Отписаться можно в любой момент: {link}', '', 'ОГК-ХИМ', settings.site_url])
+
+
+def subscriber_sales_letter(row: Subscriber) -> tuple[str, str]:
+    return f'Новый подписчик сайта: {row.email}', '\n'.join([
+        'На сайте ogk-chem.ru оформлена подписка на рассылку.', '',
+        f'E-mail: {row.email}', f'Язык: {row.lang}', f'Источник: {row.source or "—"}',
+        f'Страница: {row.page_url or "—"}',
+        f'Согласия на обработку ПДн и на рассылку: {row.marketing_consent_at:%d.%m.%Y %H:%M} UTC'])

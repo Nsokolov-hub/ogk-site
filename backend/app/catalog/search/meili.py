@@ -31,6 +31,9 @@ class Meilisearch:
         self.create(index)
         self._task(self._call('PATCH', f'/indexes/{index}/settings', json=index_settings), timeout=600)
 
+    def exists(self, index: str) -> bool:
+        return self._exists(index)
+
     def _exists(self, index: str) -> bool:
         try:
             response = self.client.get(f'/indexes/{index}')

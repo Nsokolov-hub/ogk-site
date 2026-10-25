@@ -340,6 +340,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/subscriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Subscribe
+         * @description Подписка на рассылку: адрес и два согласия — на обработку ПДн и на рекламную рассылку. Ответ одинаковый
+         *     для нового и уже подписанного адреса.
+         */
+        post: operations["subscribe_api_v1_public_subscriptions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/subscriptions/unsubscribe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Unsubscribe
+         * @description Отписка по ссылке из письма. Ответ одинаковый для любого ключа.
+         */
+        post: operations["unsubscribe_api_v1_public_subscriptions_unsubscribe_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -861,6 +902,39 @@ export interface components {
             /** Pagecount */
             pageCount: number;
         };
+        /** SubscribeIn */
+        SubscribeIn: {
+            /** Email */
+            email: string;
+            /**
+             * Personaldataconsent
+             * @constant
+             */
+            personalDataConsent: true;
+            /**
+             * Marketingconsent
+             * @constant
+             */
+            marketingConsent: true;
+            /**
+             * Lang
+             * @default ru
+             * @enum {string}
+             */
+            lang: "ru" | "en";
+            /**
+             * Source
+             * @default home
+             */
+            source: string;
+            /** Pageurl */
+            pageUrl?: string | null;
+            /**
+             * Website
+             * @default
+             */
+            website: string;
+        };
         /** SubstanceLink */
         SubstanceLink: {
             /** Slug */
@@ -982,6 +1056,11 @@ export interface components {
             name: string;
             /** Nameen */
             nameEn: string;
+        };
+        /** UnsubscribeIn */
+        UnsubscribeIn: {
+            /** Token */
+            token: string;
         };
         /** ValidationError */
         ValidationError: {
@@ -1620,6 +1699,83 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CartOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    subscribe_api_v1_public_subscriptions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubscribeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+            /** @description Слишком много попыток с адреса */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    unsubscribe_api_v1_public_subscriptions_unsubscribe_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UnsubscribeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: boolean;
+                    };
                 };
             };
             /** @description Validation Error */

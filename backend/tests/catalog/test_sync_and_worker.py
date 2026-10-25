@@ -13,6 +13,7 @@ from app.catalog.importer import run
 from app.catalog.models import Brand, BrandAlias, Product, SlugRedirect
 from app.catalog.search import indexer
 from app.catalog.settings import get_setting
+from app.core import storefront
 from app.core.config import settings
 from app.outbox import worker
 from app.outbox.models import OutboxEvent
@@ -91,7 +92,7 @@ def test_worker_pushes_the_queue_and_drops_storefront_cache(seeded, monkeypatch)
         calls.append({'url': url, **kwargs})
         return httpx.Response(200)
 
-    monkeypatch.setattr(worker.httpx, 'post', post)
+    monkeypatch.setattr(storefront.httpx, 'post', post)
     assert worker.index_catalog(limit=10) > 400
     with seeded() as db:
         total = db.scalar(select(func.count()).select_from(Product))
@@ -156,3 +157,10 @@ def test_seed_is_idempotent(seeded):
     with seeded() as db:
         assert db.scalar(select(func.count()).select_from(Product)) == before
         assert json.loads(json.dumps(get_setting(db, 'home_products')))[0] == 'edqm-y0001897-oxcarbazepine-crs'
+
+
+def test_a_new_server_gets_an_empty_index_with_its_settings(seeded):
+    engine = FakeEngine()
+    with seeded() as db:
+        assert indexer.ensure_index(db, engine) is True
+        assert engine.settings and indexer.ensure_index(db, engine) is False

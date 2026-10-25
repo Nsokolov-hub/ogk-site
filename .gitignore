@@ -21,3 +21,6 @@ __pycache__/
 # Playwright
 /test-results/
 /playwright-report/
+
+# Резервные копии сервера (scripts/backup.sh)
+/backups/

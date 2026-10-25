@@ -1,18 +1,30 @@
 [project]
 name = "ogk-site-backend"
 version = "0.1.0"
-description = "API и фоновый worker сайта ogk-chem.ru: приём заявок и доставка в CRM"
+description = "API, админка и фоновый worker сайта ogk-chem.ru"
 requires-python = ">=3.13"
 # The same stack as the CRM (TZ 12.1); requirements.lock pins everything the Docker image installs.
 # After any change here run: uv pip compile pyproject.toml -o requirements.lock
 dependencies = [
     "alembic>=1.16",
+    # Passwords of the admin panel's staff, as in the CRM.
+    "argon2-cffi>=25.1",
+    # Documents, images and attachments in S3-compatible storage (TZ 12.1).
+    "boto3>=1.43",
+    # The admin panel's TOTP secrets are kept encrypted.
+    "cryptography>=50",
     "fastapi>=0.115",
     "httpx>=0.28",
     "psycopg[binary]>=3.2",
     "pydantic>=2.11",
     "pydantic-settings>=2.9",
+    "pyotp>=2.10",
     "python-multipart>=0.0.20",
+    # 2D structures from SMILES, formula and mass checks (TZ 12.1).
+    "rdkit>=2026.3",
+    # Limits of the public API shared by all processes (TZ 12.1, NFR-05).
+    "redis>=8.1",
+    "sentry-sdk[fastapi]>=2.71",
     "sqlalchemy>=2.0.40",
     "uvicorn[standard]>=0.34",
 ]
