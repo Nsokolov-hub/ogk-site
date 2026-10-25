@@ -6,19 +6,25 @@ the admin panel's wizard can show and change it later.
 
 from typing import Any
 
-FIELDS = ('brand', 'catalog_number', 'name', 'cas', 'pack', 'availability')
+FIELDS = ('brand', 'catalog_number', 'name', 'cas', 'pack', 'availability', 'characteristics')
 REQUIRED = ('brand', 'catalog_number')
+# The export's own products are not imported; the list lives in code so the database never names the source.
+SOURCE_BRANDS = ('Химмед', 'Chimmed')
+# Options of older saved templates that are no longer used.
+OBSOLETE_OPTIONS = ('skip_brands',)
 
 TEMPLATES: dict[str, dict[str, Any]] = {
-    # The assortment export of 17.10.2026 (TZ 9.6): 2.4 million rows, 325 manufacturers. Only the list of items
-    # is taken: manufacturer, catalog number, CAS and packagings. Prices, stock, sections, characteristics,
-    # descriptions and links are not imported; every item is «Под заказ».
+    # The assortment export of 17.10.2026 (TZ 9.6): 2.4 million rows, 325 manufacturers. Taken: manufacturer,
+    # catalog number, CAS, packagings, the manufacturer's Latin name and, from the characteristics, only the gross
+    # formula and the molecular weight. Prices, stock, sections, the rest of the characteristics, descriptions,
+    # the source's links and ids are never read; every item is «Под заказ».
     'assortment': {
         'name': 'Выгрузка ассортимента (ТЗ 9.6)',
         'mapping': {'brand': 'Производитель', 'catalog_number': 'Кат. №', 'name': 'Наименование', 'cas': 'CAS',
-                    'pack': 'Фасовка'},
+                    'pack': 'Фасовка', 'characteristics': 'Характеристики'},
         'options': {
-            'skip_brands': ['Химмед', 'Chimmed'],
+            'exclude_source_brand': True,
+            'chemical_facts': True,
             # Names written in Latin are the manufacturer's catalog names; translated ones are the source's text
             # and stay internal (NFR-09). Without a Latin name the card is named by its substance or number.
             'names': 'latin',

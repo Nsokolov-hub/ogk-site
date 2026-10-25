@@ -70,7 +70,7 @@ def test_first_load_creates_products_packagings_and_brands(sessions, tmp_path):
         assert category_of['CS-T-60514'] == 'reference-standards/impurity-standards'
         assert category_of['186003116'] == 'chromatography/hplc-columns' and column.card_type == 'equipment'
         assert category_of['56715-U'] == 'chromatography/fittings'
-        assert 'BML-GA1160' not in category_of  # no rule for the manufacturer: waits for a person
+        assert category_of['BML-GA1160'] == 'biochemistry'  # an antibody of a biotech brand
         # A manufacturer met for the first time becomes a brand without a page, listed for review.
         enzo = db.scalar(select(Brand).where(Brand.name == 'Enzo Life Sciences'))
         assert enzo is not None and not enzo.page_published

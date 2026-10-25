@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.catalog import completeness, controlled
 from app.catalog.importer.reader import read_rows
 from app.catalog.importer.rules import card_type_for, category_for
-from app.catalog.importer.sources import REQUIRED, TEMPLATES
+from app.catalog.importer.sources import OBSOLETE_OPTIONS, REQUIRED, SOURCE_BRANDS, TEMPLATES
 from app.catalog.models import (
     Brand,
     BrandAlias,
@@ -44,6 +44,7 @@ from app.catalog.models import (
 from app.catalog.normalize import (
     Pack,
     brand_key,
+    chemical_facts,
     clean_spaces,
     compact,
     parse_cas,
@@ -57,9 +58,12 @@ from app.core.db import utcnow
 from app.outbox.models import OutboxEvent
 
 CHUNK = 5000
+SOURCE_BRAND_KEYS = {brand_key(b) for b in SOURCE_BRANDS}
 IN_STOCK = re.compile(r'в наличии|на складе|in stock|available', re.I)
 CYRILLIC = re.compile('[а-яё]', re.I)
-UPDATABLE = ('name_en', 'source_name', 'cas', 'availability')
+UPDATABLE = ('name_en', 'source_name', 'cas', 'availability', 'formula', 'formula_hill', 'molecular_weight')
+# Columns that are read for facts only and never stored as they are (the journal keeps none of their text).
+NOT_STORED = ('characteristics',)
 
 
 class ImportFailed(Exception):
@@ -77,6 +81,7 @@ class Row:
     pack_numbers: dict[str, str]
     availability: str | None
     raw: dict[str, Any]
+    facts: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
@@ -115,14 +120,21 @@ class State:
 
 def ensure_source(db: Session, code: str) -> ImportSource:
     source = db.scalar(select(ImportSource).where(ImportSource.code == code))
+    template = TEMPLATES.get(code)
     if source is None:
-        template = TEMPLATES.get(code)
         if template is None:
             raise ImportFailed(f'Неизвестный источник «{code}». Есть: {", ".join(TEMPLATES)}')
         source = ImportSource(code=code, name=template['name'], mapping=template['mapping'],
                               options=template['options'])
         db.add(source)
         db.flush()
+    elif template is not None:
+        # A built-in template learned new fields: add them, keep what people changed in the saved one.
+        mapping = {**template['mapping'], **source.mapping}
+        options = {k: v for k, v in {**template['options'], **source.options}.items() if k not in OBSOLETE_OPTIONS}
+        if mapping != source.mapping or options != source.options:
+            source.mapping, source.options = mapping, options
+            db.flush()
     return source
 
 
@@ -185,11 +197,12 @@ def parse_row(db: Session, state: State, number: int, cells: list[str | None], c
         index = cols.get(name)
         return clean_spaces(str(cells[index])) if index is not None and index < len(cells) and cells[index] else ''
 
-    raw = {name: cell(name) for name in cols}
+    raw = {name: cell(name) for name in cols if name not in NOT_STORED}
+    facts = chemical_facts(cell('characteristics')) if state.options.get('chemical_facts') else {}
     brand, number_text = raw.get('brand', ''), raw.get('catalog_number', '')
     if not any(raw.values()):
         return None
-    if brand_key(brand) in {brand_key(b) for b in state.options.get('skip_brands') or []}:
+    if state.options.get('exclude_source_brand') and brand_key(brand) in SOURCE_BRAND_KEYS:
         state.counters['skipped'] += 1
         return None
     if state.brand_filter and brand_key(brand) not in state.brand_filter:
@@ -217,7 +230,7 @@ def parse_row(db: Session, state: State, number: int, cells: list[str | None], c
     if state.options.get('availability') == 'column':
         availability = 'in_stock' if IN_STOCK.search(raw.get('availability', '')) else 'on_order'
     return Row(number=number, brand=brand, catalog_number=catalog_number, name=clean_name(raw.get('name', '')),
-               cas=cas, packs=packs, pack_numbers=pack_numbers, availability=availability, raw=raw)
+               cas=cas, packs=packs, pack_numbers=pack_numbers, availability=availability, raw=raw, facts=facts)
 
 
 def resolve_brand(db: Session, state: State, row: Row) -> str | None:
@@ -314,6 +327,7 @@ def process(db: Session, state: State, rows: list[Row]) -> None:
             for pack in row.packs:
                 packs.setdefault(pack.key, (pack, row.pack_numbers.get(pack.key), row.availability))
         name_en, source_name = display_name(state, group)
+        chem = next((r.facts for r in group.rows if r.facts), {})
         hit = controlled.apply(state.register, name=name_en, cas=cas, synonyms=[source_name] if source_name else [],
                                current=None, state=None)
         product = existing.get(key)
@@ -332,7 +346,8 @@ def process(db: Session, state: State, rows: list[Row]) -> None:
                 'brand_id': group.brand_id, 'catalog_number': group.catalog_number, 'catalog_number_norm': group.norm,
                 'slug': slugs[key], 'name_en': name_en, 'name_ru': None, 'source_name': source_name, 'synonyms': [],
                 'cas': cas, 'alt_cas': [], 'substance_id': None, 'substance_role': None, 'attributes': {},
-                'formula': None, 'formula_hill': None, 'molecular_weight': None, 'smiles': None, 'iupac_name': None,
+                'formula': chem.get('formula'), 'formula_hill': chem.get('formula_hill'),
+                'molecular_weight': chem.get('molecular_weight'), 'smiles': None, 'iupac_name': None,
                 'purity': None, 'storage': None, 'shipping': None, 'dangerous_goods': None, 'texts': {},
                 'unique_description': False, 'images': [], 'availability': availability, 'custom_packaging': None,
                 'discontinued': False, 'controlled': hit[0], 'controlled_state': hit[1],
@@ -364,6 +379,10 @@ def process(db: Session, state: State, rows: list[Row]) -> None:
             continue
         manual = set(product.manual_fields or [])
         wanted: dict[str, Any] = {'name_en': name_en, 'source_name': source_name, 'cas': product.cas or cas}
+        for name in ('formula', 'formula_hill', 'molecular_weight'):
+            # Imported cards follow the source; cards written by people only get what they lack.
+            if chem.get(name) and (product.source.startswith('import:') or not getattr(product, name)):
+                wanted[name] = chem[name]
         from_file = next((r.availability for r in group.rows if r.availability), None)
         if from_file:
             wanted['availability'] = from_file
@@ -626,6 +645,76 @@ def write_xlsx(path: Path, rows: list[list[Any]]) -> None:
 
 
 # ── catalog-wide rechecks ──
+
+def recategorize(session_factory: sessionmaker[Session], *, only_missing: bool = True,
+                 progress: Callable[[int], None] | None = None) -> dict[str, int]:
+    """Categories by the current rules for imported products: those without one, or all with ``only_missing=False``.
+
+    A category set by a person (any product not from an import) is never touched.
+    """
+    counts: dict[str, int] = defaultdict(int)
+    with session_factory() as db:
+        categories = {c.path: c.id for c in db.scalars(select(Category))}
+        brands = {b.id: b for b in db.scalars(select(Brand))}
+        weights, threshold = get_setting(db, 'completeness_weights'), get_setting(db, 'index_threshold')
+    # NOT EXISTS, not NOT IN: PostgreSQL runs it as an anti-join over the primary key of product_categories.
+    has_primary = select(ProductCategory.product_id).where(ProductCategory.product_id == Product.id,
+                                                            ProductCategory.is_primary.is_(True)).exists()
+    last_id = ''
+    while True:
+        with session_factory.begin() as db:
+            statement = select(Product).where(Product.id > last_id, Product.source.like('import:%'))
+            if only_missing:
+                statement = statement.where(~has_primary)
+            products = db.scalars(statement.order_by(Product.id).limit(5000)).all()
+            if not products:
+                break
+            last_id = products[-1].id
+            ids = [p.id for p in products]
+            packs = dict(db.execute(select(Packaging.product_id, func.count()).where(Packaging.product_id.in_(ids))
+                                    .group_by(Packaging.product_id)).all())
+            current = dict(db.execute(select(ProductCategory.product_id, Category.path)
+                                      .join(Category, Category.id == ProductCategory.category_id)
+                                      .where(ProductCategory.product_id.in_(ids), ProductCategory.is_primary.is_(True)))
+                           .all())
+            links: list[dict[str, Any]] = []
+            updates: list[dict[str, Any]] = []
+            moved: list[str] = []
+            for product in products:
+                brand = brands[product.brand_id]
+                path = category_for(brand.name, product.source_name or product.name_en)
+                path = path if path in categories else None
+                counts['checked'] += 1
+                if not path or current.get(product.id) == path:
+                    continue
+                if product.id in current:
+                    moved.append(product.id)
+                links.append({'product_id': product.id, 'category_id': categories[path], 'is_primary': True})
+                facts = completeness.facts(
+                    name=product.name_en, brand_id=product.brand_id, catalog_number=product.catalog_number,
+                    primary_category=path, packagings=packs.get(product.id, 0),
+                    custom_packaging=bool(product.custom_packaging if product.custom_packaging is not None
+                                          else brand.custom_packaging),
+                    images=product.images, texts=product.texts, documents=0, substance_id=product.substance_id,
+                    storage=product.storage)
+                score = completeness.score(facts, weights)
+                updates.append({'id': product.id, 'card_type': card_type_for(path), 'completeness': score,
+                                'indexable': completeness.indexable(
+                                    status=product.status, completeness=score, threshold=threshold,
+                                    override=product.index_override, controlled=bool(product.controlled),
+                                    discontinued=product.discontinued),
+                                'needs_index': True, 'updated_at': utcnow()})
+                counts[path.split('/')[0]] += 1
+            if moved:
+                db.execute(delete(ProductCategory).where(ProductCategory.product_id.in_(moved)))
+            if links:
+                db.execute(insert(ProductCategory), links)
+            if updates:
+                db.execute(update(Product), updates)
+        if progress:
+            progress(counts['checked'])
+    return dict(counts)
+
 
 def recheck_controlled(db: Session) -> int:
     """After the lists change: every product against the register; the chemist's decisions stay."""

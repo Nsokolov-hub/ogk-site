@@ -93,3 +93,14 @@ def test_layout_numbers_slugs_and_brand_spellings():
     assert brand_key('Riedel-de Haën (Honeywell)') == brand_key('riedel de haen honeywell')
     assert brand_key('Merck KGaA') != brand_key('Merck') and brand_key('ABCR GmbH') == brand_key('ABCR')
     assert brand_key('R&D Systems') == brand_key('R and D Systems')
+
+
+def test_only_formula_and_molecular_weight_are_taken_from_characteristics():
+    from app.catalog.normalize import chemical_facts
+
+    assert chemical_facts('Молекулярный вес: 322.70 g/mol; Формула: C9H10N2O; Плотность: 1.2; Точка кипения: 1') == {
+        'formula': 'C9H10N2O', 'formula_hill': 'C9H10N2O', 'molecular_weight': '322,70'}
+    assert chemical_facts('Formula: C22H36FeP2; Molecular Weight: 220.26 g/mol')['formula_hill'] == 'C22H36FeP2'
+    assert chemical_facts('Формула: C6H12O6·H2O') == {'formula': 'C6H12O6·H2O'}
+    assert chemical_facts('Формула: None; Молекулярный вес: None; Вес: 200 г') == {}
+    assert chemical_facts('Альтернативное название: ГАМК; Хост: Мышь') == {}

@@ -271,3 +271,33 @@ def split_pack_suffix(catalog_number: str, pack: Pack | None) -> tuple[str, Pack
         if amount is not None and amount == pack.amount:
             return match.group('base'), pack
     return value, pack
+
+
+# ── chemical facts from a source's characteristics: «Формула: C9H10N2O; Молекулярный вес: 162.19 g/mol; …» ──
+
+_FORMULA_KEYS = {'формула', 'formula', 'брутто-формула', 'molecular formula', 'молекулярная формула'}
+_WEIGHT_KEYS = {'молекулярный вес', 'molecular weight', 'молекулярная масса', 'molecular mass', 'mw', 'мол. масса'}
+
+
+def chemical_facts(text: str | None) -> dict[str, str]:
+    """Only the gross formula and the molecular weight — facts, not text; everything else is dropped (NFR-09)."""
+    facts: dict[str, str] = {}
+    for part in re.split(r';\s*', text or ''):
+        key, _, value = part.partition(':')
+        key, value = clean_spaces(key).casefold(), clean_spaces(value)
+        if not value or value.casefold() in ('none', 'n/a', 'na', '-'):
+            continue
+        if key in _FORMULA_KEYS and 'formula' not in facts:
+            formula = value.translate(_SUBSCRIPTS)
+            if re.fullmatch(r'[A-Za-z0-9().·*+\-\s]{2,120}', formula) and re.search('[A-Z]', formula):
+                facts['formula'] = formula.replace(' ', '')
+                hill = hill_key(facts['formula'])
+                if hill:
+                    facts['formula_hill'] = hill
+        elif key in _WEIGHT_KEYS and 'molecular_weight' not in facts:
+            match = re.match(r'(\d+(?:[.,]\d+)?)\s*(g/mol|г/моль|da|дальтон)?$', value, re.I)
+            if match:
+                number = _decimal(match.group(1))
+                if number is not None and 0 < number < 1_000_000:
+                    facts['molecular_weight'] = match.group(1).replace('.', ',')
+    return facts

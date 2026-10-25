@@ -10,12 +10,19 @@ HEADER = ['№', 'Наименование', 'Кат. №', 'CAS', 'Произв
           'Раздел (по прайсу)', 'Характеристики', 'Описание', 'Ссылка', 'ID']
 
 
-def assortment(path: Path, rows: list[tuple[str, str, str | None, str, str | None]]) -> Path:
-    """Rows: (name, catalog number, CAS, manufacturer, packaging); the rest as in the export."""
+SOURCE_LINK = 'https://chimmed-new.ru/products/item-id='
+SOURCE_ID = 6263000
+
+
+def assortment(path: Path, rows: list[tuple[str, str, str | None, str, str | None]],
+               characteristics: dict[int, str] | None = None) -> Path:
+    """Rows: (name, catalog number, CAS, manufacturer, packaging); the rest as in the export, with the source's
+    links and ids in «Ссылка» and «ID» (they must never reach the catalog)."""
     data: list[list[Any]] = [HEADER]
     for i, (name, number, cas, maker, pack) in enumerate(rows, start=1):
         data.append([i, name, number, cas, maker, pack, 'по запросу', None, 'Под заказ', None, None,
-                     'HS code: 29147990', 'Текст источника', f'https://example.test/p{i}', 1000 + i])
+                     (characteristics or {}).get(i, 'HS code: 29147990'), 'Текст описания источника',
+                     f'{SOURCE_LINK}{SOURCE_ID + i}', SOURCE_ID + i])
     write_xlsx(path, data)
     return path
 

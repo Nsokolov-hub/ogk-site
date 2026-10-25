@@ -1,4 +1,8 @@
-"""The storefront's test catalog (backend/seed/catalog.json) for development and staging; never in production.
+"""The catalog structure and the test catalog (backend/seed/catalog.json).
+
+``--content-only`` loads what production needs before the first import: the category tree with its texts, brand
+pages and substances. The full load adds 413 test products for development and staging and is refused in
+production.
 
 Loading is idempotent: brands, categories and substances are matched by slug or path, products by brand and
 normalized catalog number, so a second run updates rows instead of duplicating them.
@@ -133,13 +137,17 @@ def _product(db: Session, raw: dict[str, Any], brands: dict[str, Brand], categor
     return product
 
 
-def load(db: Session, path: Path = SEED_FILE) -> dict[str, int]:
+def load(db: Session, path: Path = SEED_FILE, *, products_too: bool = True) -> dict[str, int]:
+    """The catalog structure and texts (categories, brand pages, substances, the root); with ``products_too`` —
+    also the 413 test products, the register sample and the home selection (development and staging only)."""
     data = json.loads(path.read_text())
-    controlled.load_register(db, data.get('controlled') or [])
-    register = controlled.Register.load(db)
     brands = _brands(db, data['brands'])
     categories = _categories(db, data['categories'], data.get('root') or {})
     substances = _substances(db, data['substances'])
+    if not products_too:
+        return {'brands': len(brands), 'categories': len(categories), 'substances': len(substances)}
+    controlled.load_register(db, data.get('controlled') or [])
+    register = controlled.Register.load(db)
     weights, threshold = get_setting(db, 'completeness_weights'), get_setting(db, 'index_threshold')
     products = []
     for raw in data['products']:

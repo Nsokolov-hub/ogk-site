@@ -1,6 +1,7 @@
 """Catalog operations until the admin panel has them (ADM-03…06, ADM-10).
 
-    python -m app.catalog.cli seed                         — test catalog for development and staging
+    python -m app.catalog.cli seed [--content-only]        — categories, brand pages, substances (+ test products)
+    python -m app.catalog.cli recategorize [--all]         — categories by the rules for imported products
     python -m app.catalog.cli reindex                      — rebuild the search index without downtime
     python -m app.catalog.cli index                        — push queued products to the index now
     python -m app.catalog.cli import FILE… --source assortment [--brands …] [--dry-run] [--limit N]
@@ -29,12 +30,21 @@ def _seed(args: argparse.Namespace) -> None:
     from app.catalog import seed
     from app.catalog.search import query
 
-    if settings.environment == 'production' and not args.force:
-        raise SystemExit('Тестовый каталог не загружается в production (добавьте --force, если это осознанно)')
+    if settings.environment == 'production' and not args.force and not args.content_only:
+        raise SystemExit('Тестовые товары не загружаются в production: для структуры и текстов — --content-only')
     with SessionLocal.begin() as db:
-        counts = seed.load(db)
+        counts = seed.load(db, products_too=not args.content_only)
     query.reset_directory()
     print('Загружено: ' + ', '.join(f'{k} {v}' for k, v in counts.items()))
+    _index(argparse.Namespace())
+
+
+def _recategorize(args: argparse.Namespace) -> None:
+    from app.catalog.importer import run
+
+    counts = run.recategorize(SessionLocal, only_missing=not args.all,
+                              progress=lambda n: print(f'  {n}', file=sys.stderr))
+    print(json.dumps(counts, ensure_ascii=False))
     _index(argparse.Namespace())
 
 
@@ -166,8 +176,11 @@ def main() -> None:
     configure_logging()
     parser = argparse.ArgumentParser(description='Каталог сайта')
     commands = parser.add_subparsers(dest='command', required=True)
-    command = commands.add_parser('seed', help='тестовый каталог')
+    command = commands.add_parser('seed', help='структура каталога и тестовые товары')
+    command.add_argument('--content-only', action='store_true', help='только категории, бренды и субстанции')
     command.add_argument('--force', action='store_true')
+    command = commands.add_parser('recategorize', help='категории импортированных товаров по правилам')
+    command.add_argument('--all', action='store_true', help='и у товаров, где категория уже есть')
     commands.add_parser('index', help='отправить очередь в индекс')
     commands.add_parser('reindex', help='перестроить индекс')
     command = commands.add_parser('import', help='импорт прайса')
@@ -193,7 +206,7 @@ def main() -> None:
     command.add_argument('key')
     command.add_argument('value', nargs='?')
     args = parser.parse_args()
-    handlers = {'seed': _seed, 'index': _index, 'reindex': _reindex, 'import': _import, 'batches': _batches,
+    handlers = {'seed': _seed, 'recategorize': _recategorize, 'index': _index, 'reindex': _reindex, 'import': _import, 'batches': _batches,
                 'issues': _issues, 'rollback': _rollback, 'controlled': _controlled, 'sync-brands': _sync_brands,
                 'misses': _misses, 'setting': _setting}
     handlers[args.command](args)

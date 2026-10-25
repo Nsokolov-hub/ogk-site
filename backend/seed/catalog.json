@@ -2149,10 +2149,137 @@
    }
   },
   {
+   "path": "biochemistry",
+   "parent": null,
+   "slug": "biochemistry",
+   "position": 5,
+   "nameRu": "Биохимия и биотехнологии",
+   "nameEn": "Biochemistry and biotechnology",
+   "shortRu": "Биохимия",
+   "shortEn": "Biochemistry",
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Биохимия и биотехнологии",
+     "title": "Антитела, белки и реагенты для биохимии и биотехнологий | ОГК-ХИМ",
+     "description": "Антитела, рекомбинантные белки, пептиды, ферменты и наборы для ИФА от мировых производителей. Поставка под заказ с соблюдением холодовой цепи, запрос КП.",
+     "intro": "Антитела, рекомбинантные белки, пептиды, ферменты и наборы для иммуноанализа и молекулярной биологии. Поставляем под заказ из каталогов производителей.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "seoText": [
+      "В разделе собраны продукты для биохимических, иммунологических и молекулярно-биологических исследований: моноклональные и поликлональные антитела, в том числе конъюгированные, рекомбинантные белки, пептиды, ферменты и наборы для ИФА.",
+      "Найти позицию проще всего по каталожному номеру производителя — его можно вставить в поиск целиком, вместе с обозначением фасовки. Если нужного продукта нет на сайте, отправьте запрос: подберём его в каталогах производителей или предложим аналог.",
+      "Большинство биологических продуктов требует холодовой цепи: перевозим при +2…+8 °C, −20 °C или на сухом льду в зависимости от требований производителя."
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Микроорганизмы и биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Biochemistry and biotechnology",
+     "title": "Antibodies, proteins and reagents for biochemistry and biotechnology | OGK-CHEM",
+     "description": "Antibodies, recombinant proteins, peptides, enzymes and ELISA kits from global manufacturers. Supplied to order with cold chain delivery; request a quotation.",
+     "intro": "Antibodies, recombinant proteins, peptides, enzymes and kits for immunoassays and molecular biology. Supplied to order from manufacturer catalogues.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "seoText": [
+      "This section covers products for biochemical, immunological and molecular biology research: monoclonal and polyclonal antibodies including conjugates, recombinant proteins, peptides, enzymes and ELISA kits.",
+      "The easiest way to find an item is the manufacturer catalogue number — paste it into the search in full, including the pack size code. If the product is not on the website, send a request and we will find it in manufacturer catalogues or suggest an alternative.",
+      "Most biological products need a cold chain: we ship at +2…+8 °C, −20 °C or on dry ice as the manufacturer requires."
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Microorganisms and biological standards",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    }
+   }
+  },
+  {
    "path": "laboratory-equipment",
    "parent": null,
    "slug": "laboratory-equipment",
-   "position": 5,
+   "position": 6,
    "nameRu": "Лабораторное оборудование",
    "nameEn": "Laboratory equipment",
    "shortRu": "Оборудование",
@@ -2280,7 +2407,7 @@
    "path": "laboratory-glassware",
    "parent": null,
    "slug": "laboratory-glassware",
-   "position": 6,
+   "position": 7,
    "nameRu": "Лабораторная посуда и тара",
    "nameEn": "Laboratory glassware and containers",
    "shortRu": "Посуда и тара",
@@ -2384,7 +2511,7 @@
    "path": "pharmacopeias",
    "parent": null,
    "slug": "pharmacopeias",
-   "position": 7,
+   "position": 8,
    "nameRu": "Фармакопеи и справочники",
    "nameEn": "Pharmacopoeias and reference books",
    "shortRu": "Фармакопеи",
