@@ -1,8 +1,7 @@
-import type { CatalogFilters, CatalogSort, Facet, FacetKey, ProductPreview } from '@/types/catalog';
+import type { CatalogFilters, CatalogSort, Facet, FacetKey } from '@/types/catalog';
 
 /**
- * Каталог: параметры URL, фильтрация, сортировка и фасеты.
- * Сейчас считается по мокам; в проде это делает поиск (Meilisearch) на бэкенде.
+ * Каталог: параметры URL и порядок значений в фильтрах. Фильтрует, сортирует и считает фасеты поиск на бэкенде.
  * Формат URL (ТЗ URL-06): ?brand=edqm&brand=usp&pack=100-mg&sort=name&page=2
  */
 
@@ -60,22 +59,8 @@ export function withoutValue(filters: CatalogFilters, key: FacetKey, value: stri
   return next;
 }
 
-/** Внутри одного фильтра — «или», между фильтрами — «и» */
-export function applyFilters(items: ProductPreview[], filters: CatalogFilters, except?: FacetKey) {
-  const active = (Object.entries(filters) as [FacetKey, string[]][]).filter(([k, v]) => k !== except && v.length);
-  if (!active.length) return items;
-  return items.filter((p) => active.every(([k, values]) => (p.attributes?.[k] ?? []).some((v) => values.includes(v))));
-}
-
-export function sortItems(items: ProductPreview[], sort: CatalogSort) {
-  const byName = (a: ProductPreview, b: ProductPreview) => a.name.localeCompare(b.name, 'en');
-  const list = [...items];
-  if (sort === 'name') return list.sort(byName);
-  return list.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0) || byName(a, b));
-}
-
 // ── порядок значений в фасетах ──
-const UNIT_ORDER = ['mg', 'g', 'ml', 'l', 'pcs', 'vial', 'pack'];
+const UNIT_ORDER = ['ug', 'mg', 'g', 'kg', 'ul', 'ml', 'l', 'pcs', 'test', 'kit', 'vial', 'pack'];
 const FIXED_ORDER: Partial<Record<FacetKey, string[]>> = {
   storage: ['room', '2-8', '-20', '-80'],
   purpose: ['assay', 'identification', 'impurity-control', 'system-suitability'],
@@ -100,40 +85,26 @@ function compareValues(key: FacetKey, a: { value: string; count: number; label: 
   return a.label.localeCompare(b.label);
 }
 
-/** Подписи значений, которые берутся из данных (бренд, фасовка) */
-function valueLabel(key: FacetKey, value: string, items: ProductPreview[]): string {
-  if (key === 'brand') return items.find((p) => p.brand.slug === value)?.brand.name ?? value;
-  if (key === 'pack') {
-    for (const p of items) {
-      const pk = p.packagings.find((x) => x.id.endsWith(`-${value}`));
-      if (pk) return pk.label;
-    }
-    return value;
-  }
+/** Подписи чисел в фильтрах колонок: pH 2–8, 2,7 мкм */
+function valueLabel(key: FacetKey, value: string, label: string): string {
   if (key === 'ph') return value.replace('-', '–').replace(/\./g, ',');
   if (key === 'particle' || key === 'diameter') return value.replace('.', ',');
-  return value;
+  return label;
 }
 
 /**
- * Фасеты со счётчиками: для каждого фильтра считаем позиции с учётом всех остальных выбранных фильтров.
- * Так у выбранного фильтра видны альтернативы, а не только он сам.
+ * Значения фасетов в понятном порядке (фасовки по весу, хранение по температуре). Счётчики уже посчитаны API:
+ * у выбранного фильтра — с учётом всех остальных фильтров, так видны альтернативы. Фильтр из одного значения
+ * без выбора не показываем.
  */
-export function buildFacets(items: ProductPreview[], filters: CatalogFilters, keys: FacetKey[]): Facet[] {
-  return keys
-    .map((key) => {
-      const scoped = applyFilters(items, filters, key);
-      const counts = new Map<string, number>();
-      for (const p of scoped) for (const v of p.attributes?.[key] ?? []) counts.set(v, (counts.get(v) ?? 0) + 1);
-      const selected = filters[key] ?? [];
-      for (const v of selected) if (!counts.has(v)) counts.set(v, 0);
-      const values = Array.from(counts, ([value, count]) => ({
-        value,
-        count,
-        label: key === 'pack' && value === 'custom' ? 'custom' : valueLabel(key, value, items),
-        selected: selected.includes(value),
-      })).sort((a, b) => compareValues(key, a, b));
-      return { key, values };
-    })
+export function orderFacets(facets: Facet[]): Facet[] {
+  return facets
+    .map((f) => ({
+      key: f.key,
+      values: f.values
+        .map((v) => ({ ...v, label: f.key === 'pack' && v.value === 'custom' ? 'custom' : valueLabel(f.key, v.value, v.label) }))
+        // В длинных списках (фасовки большого раздела) первыми идут ходовые значения, в коротких — по порядку
+        .sort((a, b) => (f.values.length > 15 && f.key === 'pack' ? b.count - a.count || compareValues(f.key, a, b) : compareValues(f.key, a, b))),
+    }))
     .filter((f) => f.values.length > 1 || f.values.some((v) => v.selected));
 }

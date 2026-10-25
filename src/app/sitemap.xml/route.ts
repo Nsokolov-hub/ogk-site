@@ -1,8 +1,10 @@
 import { sitemapIndexXml } from '@/lib/sitemap';
 
 /** /sitemap.xml — индекс файлов Sitemap (SEO-04) */
-export const revalidate = 3600;
+export const dynamic = 'force-dynamic';
 
-export function GET() {
-  return new Response(sitemapIndexXml(), { headers: { 'Content-Type': 'application/xml; charset=utf-8' } });
+export async function GET() {
+  return new Response(await sitemapIndexXml(), {
+    headers: { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=3600' },
+  });
 }

@@ -9,6 +9,7 @@ import { RequestBlock } from '@/components/content/RequestBlock';
 import { SubstancePicker } from '@/components/product/SubstancePicker';
 import { breadcrumbsLd, JsonLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
+import { permanentRedirect } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
 import { getSubstancePage } from '@/lib/product-api';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
@@ -19,7 +20,7 @@ type Props = { params: Promise<{ locale: Locale; slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const data = await getSubstancePage(slug, locale);
-  if (!data) return {};
+  if (!data || 'moved' in data) return {};
   const t = await getTranslations({ locale, namespace: 'substancePage.meta' });
   const s = data.substance;
   const impurities = data.items.filter((p) => p.substance?.role !== 'api').length;
@@ -38,6 +39,7 @@ export default async function SubstancePage({ params }: Props) {
   setRequestLocale(locale);
   const [data, settings] = await Promise.all([getSubstancePage(slug, locale), getSiteSettings(locale)]);
   if (!data) notFound();
+  if ('moved' in data) return permanentRedirect({ href: `/substances/${data.moved}/`, locale });
   const t = await getTranslations('substancePage');
   const tc = await getTranslations('catalog');
   const s = data.substance;

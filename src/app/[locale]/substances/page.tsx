@@ -23,7 +23,7 @@ export default async function SubstancesIndex({ params }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations('substancePage.list');
   const tc = await getTranslations('catalog');
-  const list = getSubstanceList(locale).sort((a, b) => a.name.localeCompare(b.name, locale));
+  const list = (await getSubstanceList(locale)).sort((a, b) => a.name.localeCompare(b.name, locale));
   const breadcrumbs: BreadcrumbItem[] = [{ label: tc('home'), href: '/' }, { label: t('breadcrumb') }];
 
   // Группы по первой букве названия на языке страницы

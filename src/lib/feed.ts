@@ -6,51 +6,40 @@
  * это открытый вопрос ТЗ 15.4, до запуска сверяем требования и выбираем типы кампаний.
  * Когда появятся публичные цены (P2), добавим <price> только позициям с флагом показа.
  */
-import type { Category, ProductPreview } from '@/types/catalog';
-import { catalogTree } from '@/data/mock/categories';
-import { catalogSettings, siteSettings } from '@/data/mock/settings';
-import { catalogProducts } from '@/data/mock/catalog-products';
-import { getProductDetail } from './product-api';
+import { siteSettings } from '@/data/mock/settings';
+import type { Schemas } from './api-types';
+import { api } from './backend';
 import { absoluteUrl, SITE_NAME } from './seo';
+
+type FeedNode = Schemas['CategoryNode'];
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 
-/** Числовые id категорий для YML: в проде — id из базы, здесь — порядок в дереве */
-function feedCategories() {
+/** Числовые id категорий для YML — порядок в дереве каталога */
+function feedCategories(tree: FeedNode[]) {
   const list: { id: number; parentId?: number; name: string; path: string }[] = [];
   let id = 0;
-  const walk = (cats: Category[], parentPath?: string, parentId?: number) => {
-    for (const c of cats) {
+  const walk = (nodes: FeedNode[], parentId?: number) => {
+    for (const c of nodes) {
       id += 1;
-      const path = parentPath ? `${parentPath}/${c.slug}` : c.slug;
-      list.push({ id, parentId, name: c.name, path });
-      if (c.children?.length) walk(c.children, path, id);
+      list.push({ id, parentId, name: c.nameRu, path: c.path });
+      if (c.children?.length) walk(c.children, id);
     }
   };
-  walk(catalogTree);
+  walk(tree);
   return list;
 }
 
-export function feedProducts(): ProductPreview[] {
-  const { categories, brands } = catalogSettings.feed;
-  return catalogProducts.filter(
-    (p) =>
-      !p.controlled &&
-      !p.discontinued &&
-      categories.some((c) => p.categorySlug === c || p.categorySlug.startsWith(`${c}/`)) &&
-      (!brands.length || brands.includes(p.brand.slug)),
-  );
-}
-
 /** Яндекс принимает изображения JPEG, PNG, WebP; SVG-структуры в фид не отдаём */
-const feedPicture = (p: ProductPreview) =>
-  p.image && !p.image.src.endsWith('.svg') ? `${siteSettings.siteUrl}${p.image.src}` : undefined;
+const feedPicture = (src?: string | null) => (src && !src.endsWith('.svg') ? `${siteSettings.siteUrl}${src}` : undefined);
 
-export function yandexDirectYml(now = new Date()): string {
-  const cats = feedCategories();
+export async function yandexDirectYml(now = new Date()): Promise<string> {
+  // Состав фида (разделы и бренды) задаётся настройкой каталога; подконтрольные и снятые позиции API не отдаёт
+  const feed = await api<Schemas['FeedOut']>('/public/catalog/feed', undefined, { revalidate: 21600, tags: ['catalog'] });
+  const cats = feedCategories(feed.categories);
   const catId = new Map(cats.map((c) => [c.path, c.id]));
-  const products = feedProducts();
+  const products = feed.items;
   // В фиде только разделы, из которых есть позиции, и их родители
   const used = new Set<number>();
   for (const p of products) {
@@ -68,12 +57,11 @@ export function yandexDirectYml(now = new Date()): string {
 
   const offersXml = products
     .map((p) => {
-      const d = getProductDetail(p.slug);
-      const description = (d?.description ?? []).join(' ').slice(0, 3000);
-      const picture = feedPicture(p);
+      const description = (p.description ?? '').slice(0, 3000);
+      const picture = feedPicture(p.image);
       const params = [
         p.cas ? `        <param name="CAS">${esc(p.cas)}</param>` : '',
-        p.packagings.length ? `        <param name="Фасовка">${esc(p.packagings.map((x) => x.label).join(', '))}</param>` : '',
+        p.packagings?.length ? `        <param name="Фасовка">${esc(p.packagings.join(', '))}</param>` : '',
         p.customPackaging ? '        <param name="Фасовка под запрос">да</param>' : '',
       ].filter(Boolean);
       return [
@@ -81,7 +69,7 @@ export function yandexDirectYml(now = new Date()): string {
         `      <offer id="${esc(p.id)}" available="false">`,
         `        <url>${esc(absoluteUrl('ru', `/product/${p.slug}/`))}</url>`,
         `        <name>${esc(p.name)}</name>`,
-        `        <vendor>${esc(p.brand.name)}</vendor>`,
+        `        <vendor>${esc(p.brand)}</vendor>`,
         `        <vendorCode>${esc(p.catalogNumber)}</vendorCode>`,
         `        <categoryId>${catId.get(p.categorySlug) ?? catId.get(p.categorySlug.split('/')[0])}</categoryId>`,
         picture ? `        <picture>${esc(picture)}</picture>` : '',

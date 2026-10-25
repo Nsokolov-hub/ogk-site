@@ -51,7 +51,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     title,
     description: data.content.description,
     // Фильтры и сортировка — noindex, follow, canonical на категорию; пагинация — canonical на себя
-    index: !filtered && (!data.landing || isLandingIndexable(data.landing)),
+    index: !filtered && (!data.landing || (await isLandingIndexable(data.landing))),
     hasEn: data.hasEn,
     canonicalQuery: paged ? `page=${q.page}` : undefined,
   });

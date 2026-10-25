@@ -5,7 +5,6 @@ import type { Locale } from '@/i18n/routing';
 import { HeaderSearch } from '@/components/layout/HeaderSearch';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
-import { categoryShortName } from '@/data/mock/categories';
 import { getCatalogTree } from '@/lib/api';
 
 /**
@@ -39,7 +38,7 @@ export default async function NotFound() {
           {tree.map((c) => (
             <li key={c.slug}>
               <Button href={c.href} variant="menu" size="s">
-                {categoryShortName(c.slug, locale) ?? c.name}
+                {c.short ?? c.name}
               </Button>
             </li>
           ))}

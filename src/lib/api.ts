@@ -1,20 +1,18 @@
 /**
  * Функции данных сайта. Работают и на сервере, и в браузере.
- * Каталог и тексты пока отдают моки; позже тела заменятся на fetch к /api/v1/public/* — сигнатуры не меняем.
- * Заявки уже уходят в API сайта (backend/).
+ * Каталог и заявки — API сайта (backend/); настройки и тексты главной пока в коде, до админки (ADM-02, ADM-10).
  */
 import type { Locale } from '@/i18n/routing';
 import type { Category, ProductPreview } from '@/types/catalog';
 import type { HomeContent } from '@/types/content';
 import type { SiteRequestPayload, SiteRequestResult } from '@/types/requests';
 import type { SiteSettings } from '@/types/settings';
-import { localizedTree } from '@/data/mock/categories';
 import { homeContentEn } from '@/data/mock/en/home';
 import { homeContentRu } from '@/data/mock/home';
-import { catalogProducts } from '@/data/mock/catalog-products';
 import { siteSettings, siteSettingsEn } from '@/data/mock/settings';
+import type { Schemas } from './api-types';
+import { api } from './backend';
 import { requestCaptcha } from './captcha-store';
-import { localizeProduct } from './pack-label';
 import { SubmitError } from './submit-error';
 
 /** Имитация сети только в браузере, чтобы не тормозить серверный рендер */
@@ -30,29 +28,32 @@ export async function getHomeContent(locale: Locale): Promise<HomeContent> {
   return locale === 'en' ? homeContentEn : homeContentRu;
 }
 
+type ApiCategoryNode = Schemas['CategoryNode'];
+
+/** Дерево каталога (ТЗ 4.2) на языке страницы; short — короткое название для кнопок главной и 404 */
 export async function getCatalogTree(locale: Locale): Promise<Category[]> {
-  return localizedTree(locale);
+  const nodes = await api<ApiCategoryNode[]>('/public/catalog/tree', undefined, { tags: ['catalog'] });
+  const map = (n: ApiCategoryNode): Category => ({
+    slug: n.slug,
+    name: locale === 'en' ? (n.nameEn ?? n.nameRu) : n.nameRu,
+    short: (locale === 'en' ? n.shortEn : n.shortRu) ?? undefined,
+    href: `/catalog/${n.path}/`,
+    children: n.children?.length ? n.children.map(map) : undefined,
+  });
+  return nodes.map(map);
 }
 
 export type HomeProductsSort = 'popular' | 'alpha';
 
-const MOCK_TOTAL = 36;
-
-/** «Популярные» — подборка из админки; в моках — самые популярные позиции каталога, все со своими карточками */
-function buildMockList(sort: HomeProductsSort): ProductPreview[] {
-  const top = [...catalogProducts].sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0)).slice(0, MOCK_TOTAL);
-  return sort === 'alpha' ? top.sort((a, b) => a.name.localeCompare(b.name, 'en')) : top;
-}
-
+/** «Популярные» — самые популярные позиции каталога (подборку можно будет задать в админке) */
 export async function getHomeProducts(p: {
   sort: HomeProductsSort;
   offset: number;
   limit: number;
   locale: Locale;
 }): Promise<{ items: ProductPreview[]; total: number }> {
-  await networkDelay();
-  const list = buildMockList(p.sort);
-  return { items: list.slice(p.offset, p.offset + p.limit).map((x) => localizeProduct(x, p.locale)), total: list.length };
+  const page = await api<Schemas['ProductsPage']>('/public/catalog/popular', { lang: p.locale, sort: p.sort, offset: p.offset, limit: p.limit }, { tags: ['catalog'] });
+  return page as { items: ProductPreview[]; total: number };
 }
 
 // ── заявки: POST /api/v1/public/requests/ (backend/app/requests) ──

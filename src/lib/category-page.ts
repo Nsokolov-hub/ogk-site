@@ -1,20 +1,32 @@
 /**
- * Данные страницы категории (только сервер): контент, хлебные крошки, навигация по разделам, производители.
- * Отдельный модуль, чтобы тексты категорий не попадали в браузерный бандл.
+ * Данные страницы категории (только сервер): контент из API, хлебные крошки, навигация по разделам, производители.
  * Третий уровень пути — SEO-посадочная из среза фильтров (ТЗ URL-07): /catalog/chromatography/hplc-columns/waters-c18/.
  */
 import type { Locale } from '@/i18n/routing';
 import type { Category, FacetKey } from '@/types/catalog';
-import type { BreadcrumbItem, CategoryPageData, SeoLanding } from '@/types/content';
-import { categoryContent } from '@/data/mock/category-content';
-import { categoryContentEn, landingTextEn } from '@/data/mock/en/category-content';
-import { findLanding, LANDING_MIN_ITEMS, landingHref, landings } from '@/data/mock/landings';
+import type { BreadcrumbItem, CategoryContent, CategoryPageData, SeoLanding } from '@/types/content';
+import { findLanding, LANDING_MIN_ITEMS, landingHref, landings, landingTextEn } from '@/data/seo-landings';
 import { getCatalogTree } from './api';
+import { apiOrNull } from './backend';
 import { countInScope, getCategoryBrands } from './catalog-api';
 
+interface ApiCategory {
+  path: string;
+  nameRu: string;
+  nameEn?: string | null;
+  facets: FacetKey[];
+  isIndexed: boolean;
+  content: { ru?: CategoryContent; en?: CategoryContent };
+  updatedAt: string;
+}
+
+export function getCategory(path: string): Promise<ApiCategory | null> {
+  return apiOrNull<ApiCategory>('/public/catalog/category', { path }, { tags: ['catalog', `category:${path}`] });
+}
+
 /** Посадочная индексируется, если в срезе достаточно позиций (иначе это тонкая страница) */
-export function isLandingIndexable(l: SeoLanding) {
-  return countInScope(l.parent.split('/'), l.preset) >= LANDING_MIN_ITEMS;
+export async function isLandingIndexable(l: SeoLanding): Promise<boolean> {
+  return (await countInScope(l.parent.split('/'), l.preset)) >= LANDING_MIN_ITEMS;
 }
 
 export async function getCategoryPage(
@@ -26,17 +38,19 @@ export async function getCategoryPage(
   const categoryPath = found ? found.parent.split('/') : path;
   if (categoryPath.length > 2) return null;
   const key = categoryPath.join('/');
-  const ruContent = categoryContent[key];
-  if (!ruContent) return null;
+  const [data, tree] = await Promise.all([getCategory(key), getCatalogTree(locale)]);
+  const ruContent = data?.content.ru;
+  if (!data || !ruContent) return null;
+  // Набор фильтров — общий для обоих языков, ведётся у раздела
+  const facets = data.facets.length ? data.facets : ruContent.facets;
   // Английский текст раздела или посадочной; без перевода страница остаётся русской и закрыта в /en/ (EN-05)
-  const enContent = categoryContentEn[key];
+  const enContent = data.content.en ? { ...data.content.en, facets } : undefined;
   const enLanding = found ? landingTextEn[found.slug] : undefined;
   const hasEn = !!enContent && (!found || !!enLanding);
   const en = locale === 'en' && hasEn;
-  const parentContent = en ? enContent : ruContent;
+  const parentContent = en && enContent ? enContent : { ...ruContent, facets };
   const landing = found && en ? { ...found, ...enLanding } : found;
 
-  const tree = await getCatalogTree(locale);
   const top = categoryPath[0] ? tree.find((c) => c.slug === categoryPath[0]) : undefined;
   if (categoryPath[0] && !top) return null;
   const sub = categoryPath[1] ? top?.children?.find((c) => c.slug === categoryPath[1]) : undefined;
@@ -71,12 +85,15 @@ export async function getCategoryPage(
   }
 
   // Подборки: на категории — её посадочные, на посадочной — соседние (перелинковка, SEO-08)
-  const parentKey = categoryPath.join('/');
-  const landingLinks = landings
-    .filter((l) => l.parent === parentKey && isLandingIndexable(l))
+  const candidates = landings.filter((l) => l.parent === key);
+  const indexable = await Promise.all(candidates.map(isLandingIndexable));
+  const landingLinks = candidates
+    .filter((_, i) => indexable[i])
     .map((l) => ({ label: (en ? landingTextEn[l.slug]?.name : undefined) ?? l.name, href: landingHref(l), active: l.slug === landing?.slug }));
 
-  const brands = (await getCategoryBrands(categoryPath, landing?.preset)).filter((b) => b.slug !== 'various');
+  const brands = (await getCategoryBrands(categoryPath, landing?.preset))
+    .filter((b) => b.slug !== 'various')
+    .map((b) => ({ ...b, logo: b.logo ?? undefined }));
   // У посадочной фильтры среза зафиксированы — в панели остаются только остальные
   const presetKeys = new Set(Object.keys(landing?.preset ?? {}) as FacetKey[]);
   const content = landing ? { ...landing, facets: landing.facets.filter((f) => !presetKeys.has(f)) } : parentContent;

@@ -19,7 +19,7 @@ import { ProductTabs } from '@/components/product/detail/ProductTabs';
 import { breadcrumbsLd, faqLd, JsonLd, productLd } from '@/components/seo/JsonLd';
 import { TrackView } from '@/components/seo/TrackView';
 import { Container } from '@/components/ui/Container';
-import { Link } from '@/i18n/navigation';
+import { Link, permanentRedirect } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { getProductPage, toPreview } from '@/lib/product-api';
@@ -40,7 +40,7 @@ const COLD = new Set(['2-8', '-20', '-80']);
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const data = await getProductPage(slug, locale);
-  if (!data) return {};
+  if (!data || 'moved' in data) return {};
   const t = await getTranslations({ locale, namespace: 'productPage.meta' });
   const p = data.product;
   const numberLabel = p.cardType === 'equipment' ? 'P/N' : t('number');
@@ -64,6 +64,8 @@ export default async function ProductPage({ params }: Props) {
   setRequestLocale(locale);
   const [data, settings] = await Promise.all([getProductPage(slug, locale), getSiteSettings(locale)]);
   if (!data) notFound();
+  // URL-03: адрес сменился — 301 на текущий
+  if ('moved' in data) return permanentRedirect({ href: `/product/${data.moved}/`, locale });
 
   const t = await getTranslations('productPage');
   const tc = await getTranslations('catalog');

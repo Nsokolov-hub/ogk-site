@@ -2,12 +2,13 @@
 
 import { useId, useState } from 'react';
 import { CircleAlert, CircleCheck, CircleHelp, Upload } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { FormStatus } from '@/components/forms/FormStatus';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { track } from '@/lib/analytics';
+import { api, apiUrl } from '@/lib/backend';
 import { cn } from '@/lib/cn';
 import { useRfqStore } from '@/lib/rfq-store';
 import type { BatchLineResult } from '@/lib/search';
@@ -17,12 +18,13 @@ const FREE = '__free__';
 const MAX_LINES = 200;
 
 /**
- * Запрос по списку (SC-02, SRCH-09): до 200 строк из буфера или файла csv/txt. Каждая строка получает статус:
+ * Запрос по списку (SC-02, SRCH-09): до 200 строк из буфера или файла xlsx/csv. Каждая строка получает статус:
  * найдено точно / несколько кандидатов (выбор) / не найдено (свободная строка). «Добавить всё в корзину».
- * xlsx без разбора на клиенте прикладываем к заявке — исходный файл уходит в CRM.
+ * Файл разбирает API сайта, а исходный файл прикладывается к заявке и уходит в CRM.
  */
 export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
   const t = useTranslations('rfq.bulk');
+  const locale = useLocale();
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const [text, setText] = useState('');
   const [results, setResults] = useState<BatchLineResult[] | null>(null);
@@ -36,22 +38,24 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
 
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
 
+  const show = (found: BatchLineResult[]) => {
+    setResults(found);
+    // По умолчанию: точное совпадение — добавить, несколько — первый кандидат, не найдено — свободной строкой
+    setChoice(Object.fromEntries(found.map((r, i) => [i, r.status === 'none' ? FREE : r.candidates[0].id])));
+    track('bulk_upload', { rows: found.length, found: found.filter((r) => r.status === 'exact').length });
+  };
+
   const match = async (source: string[]) => {
     setLoading(true);
     setError(false);
     setAdded(null);
     try {
-      const res = await fetch('/api/search/batch', {
+      const data = await api<{ lines: BatchLineResult[] }>('/public/search/batch', undefined, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lines: source.slice(0, MAX_LINES) }),
+        body: { lines: source.slice(0, MAX_LINES), lang: locale },
+        revalidate: false,
       });
-      if (!res.ok) throw new Error(String(res.status));
-      const data = (await res.json()) as { results: BatchLineResult[] };
-      setResults(data.results);
-      // По умолчанию: точное совпадение — добавить, несколько — первый кандидат, не найдено — свободной строкой
-      setChoice(Object.fromEntries(data.results.map((r, i) => [i, r.status === 'none' ? FREE : r.candidates[0].id])));
-      track('bulk_upload', { rows: data.results.length, found: data.results.filter((r) => r.status === 'exact').length });
+      show(data.lines);
     } catch {
       setError(true);
     } finally {
@@ -62,22 +66,27 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
   const onFile = async (file: File | undefined) => {
     if (!file) return;
     const name = file.name.toLowerCase();
-    if (name.endsWith('.csv') || name.endsWith('.txt')) {
-      // Колонки CSV склеиваем табуляцией: последняя числовая колонка — количество
-      const content = await file.text();
-      const rows = content
-        .split(/\r?\n/)
-        .map((r) => r.split(/[;,\t]/).map((c) => c.replace(/^"|"$/g, '').trim()).filter(Boolean).join('\t'))
-        .filter(Boolean);
-      setText(rows.join('\n'));
-      setNote(t('fileParsed', { name: file.name, count: rows.length }));
-      onAttach(file);
-      await match(rows);
-    } else if (name.endsWith('.xlsx')) {
-      onAttach(file);
-      setNote(t('xlsxAttached', { name: file.name }));
-    } else {
+    if (!/\.(xlsx|csv|txt)$/.test(name)) {
       setNote(t('fileType'));
+      return;
+    }
+    onAttach(file);
+    setLoading(true);
+    setError(false);
+    setAdded(null);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const res = await fetch(apiUrl('/public/search/batch/file', { lang: locale }), { method: 'POST', body: form });
+      if (!res.ok) throw new Error(String(res.status));
+      const data = (await res.json()) as { lines: BatchLineResult[] };
+      setText(data.lines.map((r) => r.line).join('\n'));
+      setNote(t('fileParsed', { name: file.name, count: data.lines.length }));
+      show(data.lines);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
     }
   };
 

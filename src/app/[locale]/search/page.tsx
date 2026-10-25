@@ -14,7 +14,6 @@ import { Link } from '@/i18n/navigation';
 import { getCatalogTree, getSiteSettings } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { getBrands } from '@/lib/content-api';
-import { localizeProduct } from '@/lib/pack-label';
 import { getSubstanceList } from '@/lib/product-api';
 import { searchCatalog } from '@/lib/search';
 import { serviceMetadata } from '@/lib/seo';
@@ -44,16 +43,21 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   const t = await getTranslations('searchPage');
   const tc = await getTranslations('catalog');
-  const [tree, settings, brands] = await Promise.all([getCatalogTree(locale), getSiteSettings(locale), getBrands(locale)]);
-  const categoryNames = Object.fromEntries(tree.map((c) => [c.slug, c.name]));
-  const result = searchCatalog({ query: q, brand, category, page, categoryNames });
-  const items = result.items.map((p) => localizeProduct(p, locale));
+  const [tree, settings, brands, result, substances] = await Promise.all([
+    getCatalogTree(locale),
+    getSiteSettings(locale),
+    getBrands(locale),
+    searchCatalog({ query: q, brand, category, page, locale }),
+    q.length >= 3 ? getSubstanceList(locale) : Promise.resolve([]),
+  ]);
+  const items = result.items;
+  const categoryNames: Record<string, string> = Object.fromEntries(tree.map((c) => [c.slug, c.name]));
 
   // Совпадения по субстанциям и брендам — отдельные группы над товарами (SRCH-01)
   const ql = (result.corrected ?? q).toLowerCase();
-  const substanceHits = q.length >= 3
-    ? getSubstanceList(locale).filter((s) => s.nameRu.toLowerCase().includes(ql) || s.nameEn.toLowerCase().includes(ql) || s.cas === q).slice(0, 4)
-    : [];
+  const substanceHits = substances
+    .filter((s) => s.nameRu.toLowerCase().includes(ql) || s.nameEn.toLowerCase().includes(ql) || s.cas === q)
+    .slice(0, 4);
   const brandHits = q.length >= 2 ? brands.filter((b) => b.name.toLowerCase().includes(ql)).slice(0, 4) : [];
 
   const href = (patch: { brand?: string | null; category?: string | null; page?: number }) => {

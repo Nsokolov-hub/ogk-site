@@ -39,15 +39,3 @@ export const siteSettingsEn: SiteSettings = {
   hours: 'Mon–Fri 9:00–18:00 (Moscow time)',
   legal: { ...siteSettings.legal, name: 'OGK-CHEM LLC', shortName: 'OGK-CHEM' },
 };
-
-/** Настройки каталога и фида — в проде из админки (ТЗ 5.2.1, 13 «Фиды») */
-export const catalogSettings = {
-  /** Скрывать позиции из перечней ПП № 681 и № 964 с витрины, из поиска, Sitemap и фида */
-  hideControlled: true,
-  feed: {
-    /** Разделы каталога в фиде Директа: префиксы пути категории */
-    categories: ['reference-standards', 'chromatography', 'reagents', 'biological-standards', 'laboratory-equipment'],
-    /** Бренды в фиде; пустой список — все бренды выбранных разделов */
-    brands: [] as string[],
-  },
-};

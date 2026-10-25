@@ -87,6 +87,8 @@ export interface CatalogListing {
 export interface Category {
   slug: string;
   name: string;
+  /** Короткое название для ряда кнопок на главной и в 404 */
+  short?: string;
   /** /catalog/reference-standards/edqm/ */
   href: string;
   children?: Category[];

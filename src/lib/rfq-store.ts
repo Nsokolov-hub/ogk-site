@@ -7,7 +7,7 @@ import type { Analogue } from '@/types/requests';
 
 /**
  * Корзина запроса КП (RFQ-01, RFQ-02, RFQ-12).
- * Сейчас хранится в localStorage; серверная копия по анонимному cookie — вместе с API.
+ * Хранится в localStorage; серверная копия по анонимному cookie — lib/cart-sync.
  */
 export interface RfqItem {
   key: string;

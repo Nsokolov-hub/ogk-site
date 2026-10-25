@@ -4,7 +4,6 @@ import type { HomeContent } from '@/types/content';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { categoryShortName } from '@/data/mock/categories';
 import { getCatalogTree, getHomeProducts } from '@/lib/api';
 import { ProductsGrid } from './ProductsGrid';
 
@@ -30,7 +29,7 @@ export async function ProductsSection({ content, locale }: { content: HomeConten
             {tree.map((c) => (
               <li key={c.slug}>
                 <Button href={c.href} variant="menu" size="s">
-                  {categoryShortName(c.slug, locale) ?? c.name}
+                  {c.short ?? c.name}
                 </Button>
               </li>
             ))}

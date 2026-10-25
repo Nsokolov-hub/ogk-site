@@ -33,6 +33,10 @@ export const viewport: Viewport = {
   colorScheme: 'dark',
 };
 
+// Страницы собираются на запрос: данные каталога приходят из API и кэшируются на уровне запросов (Data Cache)
+// с тегами — правка товара сбрасывает кэш его страницы. Так сборка витрины не зависит от доступности API.
+export const dynamic = 'force-dynamic';
+
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
