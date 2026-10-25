@@ -1,0 +1,2980 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API сайта ОГК-ХИМ",
+    "description": "Каталог, поиск и корзина сайта ogk-chem.ru; приём заявок с форм и их доставка в «Реактив CRM» (поток F1).",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/public/requests": {
+      "post": {
+        "tags": [
+          "Заявки"
+        ],
+        "summary": "Submit Request",
+        "description": "Заявка с любой формы сайта: корзина, «Заказать в 1 клик», услуга, общая форма.\n\nmultipart/form-data: часть `payload` — JSON `RequestIn`, необязательная часть `attachment` — файл XLSX, CSV,\nPDF или DOCX до 10 МБ. Заголовок `Idempotency-Key` — UUID, один на отправку формы.",
+        "operationId": "submit_request_api_v1_public_requests_post",
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestOut"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Повтор с тем же Idempotency-Key: та же заявка",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequestOut"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Ключ уже использован для другой заявки"
+          },
+          "413": {
+            "description": "Файл больше 10 МБ"
+          },
+          "422": {
+            "description": "Ошибки в полях формы: fields[].field — путь поля"
+          },
+          "428": {
+            "description": "Нужна SmartCaptcha: повторите с captchaToken"
+          },
+          "429": {
+            "description": "Слишком много заявок с адреса"
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/tree": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Tree",
+        "operationId": "catalog_tree_api_v1_public_catalog_tree_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryNode"
+                  },
+                  "type": "array",
+                  "title": "Response Catalog Tree Api V1 Public Catalog Tree Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/category": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Category",
+        "operationId": "catalog_category_api_v1_public_catalog_category_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/listing": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Listing",
+        "operationId": "catalog_listing_api_v1_public_catalog_listing_get",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "popular",
+                "name"
+              ],
+              "type": "string",
+              "default": "popular",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 96,
+              "minimum": 1,
+              "default": 24,
+              "title": "Pagesize"
+            }
+          },
+          {
+            "name": "facets",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Facets"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogListing"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/count": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Count",
+        "operationId": "catalog_count_api_v1_public_catalog_count_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CountOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/brands": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Brands",
+        "operationId": "catalog_brands_api_v1_public_catalog_brands_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryBrand"
+                  },
+                  "title": "Response Catalog Brands Api V1 Public Catalog Brands Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/popular": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Popular",
+        "description": "The home page block and «Часто заказывают»: the most popular products, 36 at most.",
+        "operationId": "catalog_popular_api_v1_public_catalog_popular_get",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "popular",
+                "alpha"
+              ],
+              "type": "string",
+              "default": "popular",
+              "title": "Sort"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 48,
+              "minimum": 1,
+              "default": 12,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductsPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/sitemap": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Sitemap",
+        "operationId": "catalog_sitemap_api_v1_public_catalog_sitemap_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitemapPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/catalog/feed": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Catalog Feed",
+        "operationId": "catalog_feed_api_v1_public_catalog_feed_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/products/{slug}": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Product",
+        "operationId": "product_api_v1_public_products__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/substances": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Substance List",
+        "operationId": "substance_list_api_v1_public_substances_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SubstanceListItem"
+                  },
+                  "type": "array",
+                  "title": "Response Substance List Api V1 Public Substances Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/substances/{slug}": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Substance",
+        "operationId": "substance_api_v1_public_substances__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubstancePage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/brands": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Brand List",
+        "operationId": "brand_list_api_v1_public_brands_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BrandOut"
+                  },
+                  "type": "array",
+                  "title": "Response Brand List Api V1 Public Brands Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/brands/{slug}": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Brand",
+        "operationId": "brand_api_v1_public_brands__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/search/suggest": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Suggest",
+        "operationId": "suggest_api_v1_public_search_suggest_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuggestResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/search": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Search Page",
+        "operationId": "search_page_api_v1_public_search_get",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "default": "",
+              "title": "Q"
+            }
+          },
+          {
+            "name": "brand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Brand"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchPageResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/search/batch": {
+      "post": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Search Batch",
+        "operationId": "search_batch_api_v1_public_search_batch_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/search/batch/file": {
+      "post": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Search Batch File",
+        "description": "A list from xlsx or csv (SC-02): each row's filled cells form a line «запрос [количество]».",
+        "operationId": "search_batch_file_api_v1_public_search_batch_file_post",
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_search_batch_file_api_v1_public_search_batch_file_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/cart": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Cart Get",
+        "operationId": "cart_get_api_v1_public_cart_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Cart Put",
+        "operationId": "cart_put_api_v1_public_cart_put",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CartIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CartOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatchCandidate": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand": {
+            "$ref": "#/components/schemas/BrandRef"
+          },
+          "catalogNumber": {
+            "type": "string",
+            "title": "Catalognumber"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "categorySlug": {
+            "type": "string",
+            "title": "Categoryslug"
+          },
+          "packagings": {
+            "items": {
+              "$ref": "#/components/schemas/PackagingOut"
+            },
+            "type": "array",
+            "title": "Packagings"
+          },
+          "customPackaging": {
+            "type": "boolean",
+            "title": "Custompackaging"
+          },
+          "cardType": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "equipment",
+              "other"
+            ],
+            "title": "Cardtype"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "brand",
+          "catalogNumber",
+          "categorySlug",
+          "packagings",
+          "customPackaging",
+          "cardType"
+        ],
+        "title": "BatchCandidate"
+      },
+      "BatchIn": {
+        "properties": {
+          "lines": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "title": "Lines"
+          },
+          "lang": {
+            "type": "string",
+            "enum": [
+              "ru",
+              "en"
+            ],
+            "title": "Lang",
+            "default": "ru"
+          }
+        },
+        "type": "object",
+        "required": [
+          "lines"
+        ],
+        "title": "BatchIn"
+      },
+      "BatchLine": {
+        "properties": {
+          "line": {
+            "type": "string",
+            "title": "Line"
+          },
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "exact",
+              "multiple",
+              "none"
+            ],
+            "title": "Status"
+          },
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/BatchCandidate"
+            },
+            "type": "array",
+            "title": "Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "line",
+          "query",
+          "quantity",
+          "status",
+          "candidates"
+        ],
+        "title": "BatchLine"
+      },
+      "BatchOut": {
+        "properties": {
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/BatchLine"
+            },
+            "type": "array",
+            "title": "Lines"
+          },
+          "truncated": {
+            "type": "boolean",
+            "title": "Truncated",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "lines"
+        ],
+        "title": "BatchOut"
+      },
+      "Body_search_batch_file_api_v1_public_search_batch_file_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_search_batch_file_api_v1_public_search_batch_file_post"
+      },
+      "BrandOut": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "logo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo"
+          },
+          "country": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Country"
+          },
+          "customPackaging": {
+            "type": "boolean",
+            "title": "Custompackaging"
+          },
+          "wave": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Wave"
+          },
+          "content": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Content"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name",
+          "customPackaging",
+          "content",
+          "count",
+          "updatedAt"
+        ],
+        "title": "BrandOut"
+      },
+      "BrandPage": {
+        "properties": {
+          "moved": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moved"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BrandOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Products"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CountedPath"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "title": "BrandPage"
+      },
+      "BrandRef": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "logo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name"
+        ],
+        "title": "BrandRef"
+      },
+      "BreadcrumbCategory": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "href": {
+            "type": "string",
+            "title": "Href"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name",
+          "href"
+        ],
+        "title": "BreadcrumbCategory"
+      },
+      "CartIn": {
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "maxItems": 200,
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "CartIn"
+      },
+      "CartOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "CartOut"
+      },
+      "CatalogListing": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageSize": {
+            "type": "integer",
+            "title": "Pagesize"
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount"
+          },
+          "facets": {
+            "items": {
+              "$ref": "#/components/schemas/Facet"
+            },
+            "type": "array",
+            "title": "Facets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "pageCount",
+          "facets"
+        ],
+        "title": "CatalogListing"
+      },
+      "CategoryBrand": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "logo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name",
+          "count"
+        ],
+        "title": "CategoryBrand"
+      },
+      "CategoryNode": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "nameRu": {
+            "type": "string",
+            "title": "Nameru"
+          },
+          "nameEn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nameen"
+          },
+          "shortRu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shortru"
+          },
+          "shortEn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shorten"
+          },
+          "hasEn": {
+            "type": "boolean",
+            "title": "Hasen",
+            "default": false
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat",
+            "default": ""
+          },
+          "children": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryNode"
+            },
+            "type": "array",
+            "title": "Children"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "path",
+          "nameRu"
+        ],
+        "title": "CategoryNode"
+      },
+      "CategoryOut": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "nameRu": {
+            "type": "string",
+            "title": "Nameru"
+          },
+          "nameEn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nameen"
+          },
+          "cardType": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "equipment",
+              "other"
+            ],
+            "title": "Cardtype"
+          },
+          "facets": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Facets"
+          },
+          "isIndexed": {
+            "type": "boolean",
+            "title": "Isindexed"
+          },
+          "content": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Content"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "nameRu",
+          "cardType",
+          "facets",
+          "isIndexed",
+          "content",
+          "updatedAt"
+        ],
+        "title": "CategoryOut"
+      },
+      "CountOut": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "count"
+        ],
+        "title": "CountOut"
+      },
+      "CountedPath": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "count"
+        ],
+        "title": "CountedPath"
+      },
+      "DocumentOut": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "lang": {
+            "type": "string",
+            "title": "Lang"
+          },
+          "titleRu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Titleru"
+          },
+          "titleEn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Titleen"
+          },
+          "href": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Href"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "lang"
+        ],
+        "title": "DocumentOut"
+      },
+      "Facet": {
+        "properties": {
+          "key": {
+            "type": "string",
+            "title": "Key"
+          },
+          "values": {
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            },
+            "type": "array",
+            "title": "Values"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key",
+          "values"
+        ],
+        "title": "Facet"
+      },
+      "FacetValue": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "title": "Value"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "selected": {
+            "type": "boolean",
+            "title": "Selected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "value",
+          "label",
+          "count",
+          "selected"
+        ],
+        "title": "FacetValue"
+      },
+      "FeedItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand": {
+            "type": "string",
+            "title": "Brand"
+          },
+          "catalogNumber": {
+            "type": "string",
+            "title": "Catalognumber"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "categorySlug": {
+            "type": "string",
+            "title": "Categoryslug"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "packagings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Packagings"
+          },
+          "customPackaging": {
+            "type": "boolean",
+            "title": "Custompackaging",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "brand",
+          "catalogNumber",
+          "categorySlug"
+        ],
+        "title": "FeedItem"
+      },
+      "FeedOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FeedItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryNode"
+            },
+            "type": "array",
+            "title": "Categories"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "categories"
+        ],
+        "title": "FeedOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImageOut": {
+        "properties": {
+          "src": {
+            "type": "string",
+            "title": "Src"
+          },
+          "alt": {
+            "type": "string",
+            "title": "Alt"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "photo",
+              "structure"
+            ],
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "src",
+          "alt",
+          "kind"
+        ],
+        "title": "ImageOut"
+      },
+      "LinkOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "href": {
+            "type": "string",
+            "title": "Href"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "href"
+        ],
+        "title": "LinkOut"
+      },
+      "PackagingOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "catalogNumber": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalognumber"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "PackagingOut"
+      },
+      "ProductDetailOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "cardType": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "equipment",
+              "other"
+            ],
+            "title": "Cardtype"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand": {
+            "$ref": "#/components/schemas/BrandRef"
+          },
+          "catalogNumber": {
+            "type": "string",
+            "title": "Catalognumber"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "categorySlug": {
+            "type": "string",
+            "title": "Categoryslug"
+          },
+          "packagings": {
+            "items": {
+              "$ref": "#/components/schemas/PackagingOut"
+            },
+            "type": "array",
+            "title": "Packagings"
+          },
+          "customPackaging": {
+            "type": "boolean",
+            "title": "Custompackaging"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discontinued": {
+            "type": "boolean",
+            "title": "Discontinued",
+            "default": false
+          },
+          "substance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubstanceLink"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attributes": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Attributes"
+          },
+          "popularity": {
+            "type": "integer",
+            "title": "Popularity",
+            "default": 0
+          },
+          "nameRu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nameru"
+          },
+          "synonyms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Synonyms"
+          },
+          "altCas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Altcas"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "molecularWeight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Molecularweight"
+          },
+          "iupacName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iupacname"
+          },
+          "purity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Purity"
+          },
+          "storage": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Storage"
+          },
+          "shipping": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shipping"
+          },
+          "dangerousGoods": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dangerousgoods"
+          },
+          "texts": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Texts"
+          },
+          "uniqueDescription": {
+            "type": "boolean",
+            "title": "Uniquedescription"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/DocumentOut"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "completeness": {
+            "type": "integer",
+            "title": "Completeness"
+          },
+          "indexable": {
+            "type": "boolean",
+            "title": "Indexable"
+          },
+          "availability": {
+            "type": "string",
+            "title": "Availability"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "cardType",
+          "name",
+          "brand",
+          "catalogNumber",
+          "categorySlug",
+          "packagings",
+          "customPackaging",
+          "texts",
+          "uniqueDescription",
+          "documents",
+          "completeness",
+          "indexable",
+          "availability",
+          "updatedAt"
+        ],
+        "title": "ProductDetailOut"
+      },
+      "ProductPage": {
+        "properties": {
+          "moved": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moved"
+          },
+          "product": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductDetailOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/BreadcrumbCategory"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "substance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubstanceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sameSubstance": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Samesubstance"
+          },
+          "sameSubstanceTotal": {
+            "type": "integer",
+            "title": "Samesubstancetotal",
+            "default": 0
+          },
+          "analogues": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Analogues"
+          },
+          "accessories": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Accessories"
+          }
+        },
+        "type": "object",
+        "title": "ProductPage"
+      },
+      "ProductPreview": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "cardType": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "equipment",
+              "other"
+            ],
+            "title": "Cardtype"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand": {
+            "$ref": "#/components/schemas/BrandRef"
+          },
+          "catalogNumber": {
+            "type": "string",
+            "title": "Catalognumber"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "categorySlug": {
+            "type": "string",
+            "title": "Categoryslug"
+          },
+          "packagings": {
+            "items": {
+              "$ref": "#/components/schemas/PackagingOut"
+            },
+            "type": "array",
+            "title": "Packagings"
+          },
+          "customPackaging": {
+            "type": "boolean",
+            "title": "Custompackaging"
+          },
+          "image": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discontinued": {
+            "type": "boolean",
+            "title": "Discontinued",
+            "default": false
+          },
+          "substance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubstanceLink"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "attributes": {
+            "additionalProperties": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Attributes"
+          },
+          "popularity": {
+            "type": "integer",
+            "title": "Popularity",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "cardType",
+          "name",
+          "brand",
+          "catalogNumber",
+          "categorySlug",
+          "packagings",
+          "customPackaging"
+        ],
+        "title": "ProductPreview"
+      },
+      "ProductsPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total"
+        ],
+        "title": "ProductsPage"
+      },
+      "RequestOut": {
+        "properties": {
+          "siteRequestId": {
+            "type": "string",
+            "title": "Siterequestid"
+          },
+          "number": {
+            "type": "string",
+            "title": "Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "siteRequestId",
+          "number"
+        ],
+        "title": "RequestOut"
+      },
+      "SearchFacets": {
+        "properties": {
+          "brand": {
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            },
+            "type": "array",
+            "title": "Brand"
+          },
+          "category": {
+            "items": {
+              "$ref": "#/components/schemas/FacetValue"
+            },
+            "type": "array",
+            "title": "Category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "brand",
+          "category"
+        ],
+        "title": "SearchFacets"
+      },
+      "SearchPageResult": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "corrected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrected"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount"
+          },
+          "facets": {
+            "$ref": "#/components/schemas/SearchFacets"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "items",
+          "total",
+          "page",
+          "pageCount",
+          "facets"
+        ],
+        "title": "SearchPageResult"
+      },
+      "SitemapEntry": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          },
+          "hasEn": {
+            "type": "boolean",
+            "title": "Hasen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "updatedAt",
+          "hasEn"
+        ],
+        "title": "SitemapEntry"
+      },
+      "SitemapPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SitemapEntry"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageCount"
+        ],
+        "title": "SitemapPage"
+      },
+      "SubstanceLink": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "api",
+              "impurity",
+              "metabolite",
+              "labeled"
+            ],
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "role"
+        ],
+        "title": "SubstanceLink"
+      },
+      "SubstanceListItem": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "nameRu": {
+            "type": "string",
+            "title": "Nameru"
+          },
+          "nameEn": {
+            "type": "string",
+            "title": "Nameen"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "molecularWeight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Molecularweight"
+          },
+          "synonyms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Synonyms"
+          },
+          "content": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Content"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "nameRu",
+          "nameEn",
+          "count"
+        ],
+        "title": "SubstanceListItem"
+      },
+      "SubstanceOut": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "nameRu": {
+            "type": "string",
+            "title": "Nameru"
+          },
+          "nameEn": {
+            "type": "string",
+            "title": "Nameen"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "molecularWeight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Molecularweight"
+          },
+          "synonyms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Synonyms"
+          },
+          "content": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "nameRu",
+          "nameEn"
+        ],
+        "title": "SubstanceOut"
+      },
+      "SubstancePage": {
+        "properties": {
+          "moved": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Moved"
+          },
+          "substance": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubstanceOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "title": "SubstancePage"
+      },
+      "SuggestBrand": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name"
+        ],
+        "title": "SuggestBrand"
+      },
+      "SuggestItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand": {
+            "type": "string",
+            "title": "Brand"
+          },
+          "catalogNumber": {
+            "type": "string",
+            "title": "Catalognumber"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "cardType": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "equipment",
+              "other"
+            ],
+            "title": "Cardtype"
+          },
+          "match": {
+            "type": "string",
+            "enum": [
+              "catalogNumber",
+              "cas",
+              "formula",
+              "name",
+              "brand"
+            ],
+            "title": "Match"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "brand",
+          "catalogNumber",
+          "cardType",
+          "match"
+        ],
+        "title": "SuggestItem"
+      },
+      "SuggestResult": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "corrected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrected"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestItem"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "substances": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestSubstance"
+            },
+            "type": "array",
+            "title": "Substances"
+          },
+          "categories": {
+            "items": {
+              "$ref": "#/components/schemas/LinkOut"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "brands": {
+            "items": {
+              "$ref": "#/components/schemas/SuggestBrand"
+            },
+            "type": "array",
+            "title": "Brands"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query",
+          "items",
+          "total",
+          "substances",
+          "categories",
+          "brands"
+        ],
+        "title": "SuggestResult"
+      },
+      "SuggestSubstance": {
+        "properties": {
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "nameEn": {
+            "type": "string",
+            "title": "Nameen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "slug",
+          "name",
+          "nameEn"
+        ],
+        "title": "SuggestSubstance"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

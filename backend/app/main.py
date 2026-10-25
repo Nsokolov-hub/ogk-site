@@ -1,5 +1,5 @@
-"""API of ogk-chem.ru. Contours (TZ 12.2): /api/v1/public/* — the storefront's forms; /api/v1/admin/* and
-/api/v1/crm/* come with the admin panel and flow F2."""
+"""API of ogk-chem.ru. Contours (TZ 12.2): /api/v1/public/* — the storefront's forms, catalog, search and cart;
+/api/v1/admin/* and /api/v1/crm/* come with the admin panel and flow F2."""
 
 import logging
 import re
@@ -12,6 +12,8 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
+from app.catalog.routes import router as catalog_router
+from app.catalog.search.engine import EngineUnavailable
 from app.core.config import settings
 from app.core.db import SessionLocal
 from app.core.errors import DomainError
@@ -24,7 +26,8 @@ logger = logging.getLogger('site.api')
 
 app = FastAPI(title='API сайта ОГК-ХИМ', version='0.1.0', docs_url='/api/docs', redoc_url=None,
               openapi_url='/api/openapi.json',
-              description='Приём заявок с форм сайта ogk-chem.ru и их доставка в «Реактив CRM» (поток F1).')
+              description='Каталог, поиск и корзина сайта ogk-chem.ru; приём заявок с форм и их доставка в '
+                          '«Реактив CRM» (поток F1).')
 
 
 def error_body(request: Request, code: str, message: str, field: str | None = None,
@@ -47,11 +50,14 @@ async def context(request: Request, call_next):
         response = await call_next(request)
     except Exception:
         logger.exception(f'{{"event": "unhandled_error", "requestId": "{request_id}"}}')
-        response = JSONResponse(error_body(request, 'INTERNAL_ERROR', 'Не удалось отправить заявку. Позвоните нам: '
-                                           '+7 495 234 28 63'), status_code=500)
+        response = JSONResponse(error_body(request, 'INTERNAL_ERROR', 'Что-то пошло не так. Повторите позже или '
+                                           'позвоните нам: +7 495 234 28 63'), status_code=500)
     route = getattr(request.scope.get('route'), 'path', 'unmatched')
     response.headers.update({'X-Request-ID': request_id, 'X-Content-Type-Options': 'nosniff',
-                             'Referrer-Policy': 'same-origin', 'Cache-Control': 'no-store'})
+                             'Referrer-Policy': 'same-origin'})
+    # Catalog answers set their own caching; everything else (forms, the cart, errors) is never cached.
+    if response.status_code >= 400 or 'cache-control' not in response.headers:
+        response.headers['Cache-Control'] = 'no-store'
     event(logger, 'http_request', requestId=request_id, method=request.method, route=route,
           status=response.status_code, duration_ms=round((time.perf_counter() - started) * 1000, 2))
     return response
@@ -60,6 +66,13 @@ async def context(request: Request, call_next):
 @app.exception_handler(DomainError)
 async def domain_error(request: Request, exc: DomainError):
     return JSONResponse(error_body(request, exc.code, exc.message, exc.field), status_code=exc.status)
+
+
+@app.exception_handler(EngineUnavailable)
+async def search_unavailable(request: Request, exc: EngineUnavailable):
+    event(logger, 'search_unavailable', logging.ERROR, error=str(exc)[:200])
+    return JSONResponse(error_body(request, 'SEARCH_UNAVAILABLE', 'Поиск временно недоступен. Повторите через '
+                                   'минуту или позвоните нам: +7 495 234 28 63'), status_code=503)
 
 
 @app.exception_handler(FormError)
@@ -99,3 +112,4 @@ def ready():
 
 
 app.include_router(requests_router, prefix='/api/v1')
+app.include_router(catalog_router, prefix='/api/v1')

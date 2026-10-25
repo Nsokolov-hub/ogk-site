@@ -1,5 +1,8 @@
 """Transactional outbox worker. Run: python -m app.outbox.worker (see backend/README.md).
 
+Besides the outbox it keeps the search index in step with the catalog: products marked ``needs_index`` are
+pushed to the engine every iteration, so a change is searchable within a minute (TZ 6).
+
 Retries of the CRM delivery follow RFQ-07: 1, 5, 15 and 60 minutes, then hourly for 24 hours. A request the
 CRM has not taken within 15 minutes raises an alert in Telegram (without personal data) and by e-mail (with
 the full content, so a manager can process it by hand). Rows are taken FOR UPDATE SKIP LOCKED, so several
@@ -14,9 +17,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Literal
 
+import httpx
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from app.catalog.search import indexer
+from app.catalog.search.engine import EngineUnavailable
+from app.catalog.search.meili import engine as search_engine
 from app.core.config import settings
 from app.core.db import SessionLocal, as_utc, utcnow
 from app.core.errors import DomainError
@@ -118,7 +125,14 @@ def send_alert(db: Session, outbox: OutboxEvent) -> Result:
     return Result('succeeded')
 
 
-HANDLERS = {'crm.deliver': deliver, 'mail.customer': send_customer, 'mail.sales': send_sales, 'alert': send_alert}
+def delete_from_index(db: Session, outbox: OutboxEvent) -> Result:
+    """Products removed from the catalog (a rolled-back import) leave the search index."""
+    search_engine().delete(settings.meili_index, [str(i) for i in outbox.payload.get('ids') or []])
+    return Result('succeeded')
+
+
+HANDLERS = {'crm.deliver': deliver, 'mail.customer': send_customer, 'mail.sales': send_sales, 'alert': send_alert,
+            'search.delete': delete_from_index}
 
 
 def dispatch(db: Session, outbox: OutboxEvent) -> Result:
@@ -133,6 +147,8 @@ def dispatch(db: Session, outbox: OutboxEvent) -> Result:
         return result
     except mail.MailUnavailable:
         return Result('retry', 'MAIL_UNAVAILABLE')
+    except EngineUnavailable:
+        return Result('retry', 'SEARCH_UNAVAILABLE')
     except DomainError as exc:
         return Result('failed' if exc.status in (400, 404, 422) else 'retry', exc.code)
     except Exception:
@@ -177,6 +193,9 @@ def process_events(db: Session, now: datetime | None = None, limit: int = BATCH)
                 finish_failed_delivery(db, outbox, 'не доставлена за 24 часа')
             else:
                 outbox.next_attempt_at = now + crm_delay(outbox.attempts)
+        elif result.kind == 'retry' and outbox.kind == 'search.delete':
+            # The index can be rebuilt from PostgreSQL at any time; keep trying, but not too often.
+            outbox.next_attempt_at = now + mail_delay(min(outbox.attempts, 8))
         elif result.kind == 'retry':
             if outbox.attempts >= MAIL_ATTEMPTS:
                 final = True
@@ -210,13 +229,81 @@ def watch_undelivered(db: Session, now: datetime | None = None) -> int:
     return len(late)
 
 
+def index_catalog(limit: int = 5) -> int:
+    """Up to ``limit`` batches of queued products; the engine being down leaves them queued."""
+    total = 0
+    for _ in range(limit):
+        changed: list[str] = []
+        try:
+            with SessionLocal.begin() as db:
+                done = indexer.index_pending(db, search_engine(), changed=changed)
+        except EngineUnavailable as exc:
+            event(logger, 'search_index_unavailable', logging.WARNING, error=str(exc)[:200])
+            break
+        total += done
+        if changed:
+            revalidate_pages(changed)
+        if not done:
+            break
+    return total
+
+
+def revalidate_pages(slugs: list[str]) -> None:
+    """Drop the storefront's cached data of changed products; a mass import leaves pages to their cache time."""
+    if not (settings.web_url and settings.revalidate_secret) or len(slugs) > 1000:
+        return
+    try:
+        # The trailing slash: the storefront has trailingSlash on and answers 308 to the address without it.
+        response = httpx.post(f'{settings.web_url.rstrip("/")}/api/revalidate/', timeout=5.0,
+                              headers={'X-Revalidate-Secret': settings.revalidate_secret},
+                              json={'tags': ['catalog', *(f'product:{slug}' for slug in slugs)]})
+        if response.status_code != 200:
+            event(logger, 'revalidate_failed', logging.WARNING, status=response.status_code)
+    except httpx.HTTPError as exc:
+        event(logger, 'revalidate_failed', logging.WARNING, error=str(exc)[:200])
+
+
+def sync_brands_if_due() -> None:
+    """The nightly load of the CRM manufacturer registry (flow F5); failures wait for the next day's try."""
+    from app.catalog import brands_sync
+
+    if not (settings.crm_delivery_enabled and brands_sync.configured()):
+        return
+    with SessionLocal() as db:
+        if not brands_sync.due(db):
+            return
+    try:
+        brands_sync.sync(SessionLocal)
+    except brands_sync.SyncFailed as exc:
+        event(logger, 'brands_sync_failed', logging.WARNING, error=str(exc)[:300])
+        with SessionLocal.begin() as db:
+            from app.catalog.settings import set_setting
+
+            # Try again in an hour, not every minute.
+            set_setting(db, 'brands_sync_run_at', (utcnow() - timedelta(hours=23)).isoformat())
+
+
 def run_once(*, housekeeping: bool = True) -> dict[str, int]:
     if housekeeping:
         with SessionLocal.begin() as db:
             watch_undelivered(db)
             antispam.prune(db)
+            prune_carts(db)
+        sync_brands_if_due()
     with SessionLocal.begin() as db:
-        return process_events(db)
+        counts = process_events(db)
+    counts['indexed'] = index_catalog()
+    return counts
+
+
+def prune_carts(db: Session, now: datetime | None = None) -> int:
+    """Guest carts live 90 days after the last change (RFQ-01)."""
+    from sqlalchemy import delete
+
+    from app.catalog.models import Cart
+
+    result = db.execute(delete(Cart).where(Cart.updated_at < (now or utcnow()) - timedelta(days=90)))
+    return int(getattr(result, 'rowcount', 0) or 0)
 
 
 def main() -> None:

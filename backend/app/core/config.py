@@ -23,6 +23,19 @@ class Settings(BaseSettings):
     crm_delivery_enabled: bool = False
     crm_timeout_seconds: float = 15.0
 
+    # ── search (TZ 6): Meilisearch behind app.catalog.search, rebuilt from PostgreSQL ──
+    meili_url: str = 'http://127.0.0.1:7700'
+    meili_key: str = 'development-master-key-0123456789'
+    meili_index: str = 'products'
+    search_timeout_seconds: float = 5.0
+    # Requests to the search API from one address per minute (NFR-05); deeper pages are refused.
+    search_rate_per_minute: int = 120
+    search_max_page: int = 200
+
+    # ── storefront cache: the worker drops ISR pages of changed products ──
+    web_url: str = ''
+    revalidate_secret: str = ''
+
     # ── mail ──
     smtp_host: str = ''
     smtp_port: int = 587

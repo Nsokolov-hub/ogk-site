@@ -1,5 +1,5 @@
-# The site for development and staging: storefront (http://127.0.0.1:3000), PostgreSQL, migrations, API, queue
-# worker and Mailpit, which catches every letter (http://127.0.0.1:8025). The storefront proxies /api/v1/* to the
+# The site for development and staging: storefront (http://127.0.0.1:3000), PostgreSQL, Meilisearch, migrations,
+# API, queue worker and Mailpit, which catches every letter (http://127.0.0.1:8025). The storefront proxies /api/v1/* to the
 # API inside the network. Settings: copy .env.example to .env. For live editing of the storefront run
 # `npm run dev` instead of the web service: it proxies to http://127.0.0.1:8001.
 name: ogk-site
@@ -21,12 +21,31 @@ services:
       timeout: 5s
       retries: 20
 
+  # Search index (TZ 6). Derived from PostgreSQL and rebuilt from it, so its volume is not backed up (TZ 12.3).
+  meilisearch:
+    image: getmeili/meilisearch:v1.54.3
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-development-master-key-0123456789}
+      MEILI_ENV: ${MEILI_ENV:-development}
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - meili:/meili_data
+    ports:
+      - "127.0.0.1:7700:7700"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:7700/health || curl -fs http://127.0.0.1:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
   migrate:
     build: ./backend
     command: ["alembic", "upgrade", "head"]
     env_file: .env
     environment: &database
       DATABASE_URL: postgresql+psycopg://site:${POSTGRES_PASSWORD:-site}@db:5432/site
+      MEILI_URL: http://meilisearch:7700
+      MEILI_KEY: ${MEILI_MASTER_KEY:-development-master-key-0123456789}
     depends_on:
       db:
         condition: service_healthy
@@ -42,22 +61,30 @@ services:
     depends_on:
       migrate:
         condition: service_completed_successfully
+      meilisearch:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/ready')"]
       interval: 10s
       timeout: 5s
       retries: 10
 
+  # The queue: delivery to the CRM, letters, alerts, the search index, the nightly CRM manufacturer registry.
   worker:
     build: ./backend
     command: ["python", "-m", "app.outbox.worker"]
     env_file: .env
-    environment: *database
+    environment:
+      <<: *database
+      # The worker drops the storefront's cached pages of changed products.
+      WEB_URL: http://web:3000
     volumes:
       - files:/data/files
     depends_on:
       migrate:
         condition: service_completed_successfully
+      meilisearch:
+        condition: service_healthy
     restart: unless-stopped
 
   web:
@@ -66,6 +93,10 @@ services:
       args:
         API_ORIGIN: http://api:8000
         NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY: ${NEXT_PUBLIC_SMARTCAPTCHA_SITE_KEY:-}
+    environment:
+      # Pages read the catalog from the API on the server side at run time.
+      API_ORIGIN: http://api:8000
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
     ports:
       - "127.0.0.1:3000:3000"
     depends_on:
@@ -81,3 +112,4 @@ services:
 volumes:
   db:
   files:
+  meili:

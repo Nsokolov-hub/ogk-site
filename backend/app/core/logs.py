@@ -30,6 +30,8 @@ def configure_logging() -> None:
     handler.setFormatter(JsonFormatter())
     root.handlers = [handler]
     root.setLevel(logging.INFO)
+    # Every call to the search engine and the CRM would be a line: keep only problems.
+    logging.getLogger('httpx').setLevel(logging.WARNING)
 
 
 def event(logger: logging.Logger, name: str, level: int = logging.INFO, **fields: object) -> None:
