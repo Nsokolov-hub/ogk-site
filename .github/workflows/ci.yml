@@ -15,6 +15,8 @@ jobs:
           node-version: '24'
           cache: npm
       - run: npm ci
+      - name: Audit production dependencies (NFR-04)
+        run: npm audit --omit=dev
       - name: API types match backend/openapi.json
         run: npm run api:types:check
       - name: ESLint
@@ -61,6 +63,9 @@ jobs:
           python-version: '3.13'
       - name: Install dependencies
         run: pip install -r requirements-dev.lock
+      - name: Audit dependencies (NFR-04)
+        # The development lock holds every runtime pin as well.
+        run: pip-audit -r requirements-dev.lock
       - name: Ruff
         run: ruff check .
       - name: Mypy

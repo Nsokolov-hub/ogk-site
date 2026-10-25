@@ -34,6 +34,8 @@ dev = [
     # Contract test: the F1 body is validated against the schema pinned from the CRM.
     "jsonschema>=4.23",
     "mypy>=1.15",
+    # Known vulnerabilities of the pinned dependencies (NFR-04), in CI.
+    "pip-audit>=2.9",
     "pytest>=8.3",
     "ruff>=0.11",
 ]

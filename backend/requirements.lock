@@ -64,7 +64,7 @@ numpy==2.5.4
     # via rdkit
 opentelemetry-api==1.45.1
     # via fastapi
-pillow==12.3.0
+pillow==13.0.0
     # via rdkit
 psycopg==3.3.6
     # via ogk-site-backend (pyproject.toml)
