@@ -1,5 +1,6 @@
-"""API of ogk-chem.ru. Contours (TZ 12.2): /api/v1/public/* — the storefront's forms, catalog, search and cart;
-/api/v1/admin/* and /api/v1/crm/* come with the admin panel and flow F2. /api/v1/health — for the uptime monitor."""
+"""API of ogk-chem.ru. Contours (TZ 12.2): /api/v1/public/* — the storefront's forms, catalog, search, cart and texts;
+/api/v1/admin/* — the admin panel (session, CSRF, roles); /api/v1/crm/* — events of the CRM (flow F2).
+/api/v1/health — for the uptime monitor."""
 
 import logging
 import re
@@ -12,8 +13,10 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.exc import OperationalError
 
+from app.admin.routes import router as admin_router
 from app.catalog.routes import router as catalog_router
 from app.catalog.search.engine import EngineUnavailable
+from app.content.routes import router as content_router
 from app.core.config import settings
 from app.core.db import SessionLocal
 from app.core.errors import DomainError
@@ -126,3 +129,5 @@ def public_health():
 app.include_router(requests_router, prefix='/api/v1')
 app.include_router(catalog_router, prefix='/api/v1')
 app.include_router(subscriptions_router, prefix='/api/v1')
+app.include_router(content_router, prefix='/api/v1')
+app.include_router(admin_router, prefix='/api/v1')

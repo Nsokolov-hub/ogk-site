@@ -43,6 +43,19 @@ class Settings(BaseSettings):
     # ── error reports (Sentry or GlitchTip, TZ 12.1); empty — only the logs ──
     sentry_dsn: str = ''
 
+    # ── admin panel (TZ 13) ──
+    # Encrypts TOTP secrets and signs preview links; in production a random string of at least 32 characters.
+    secret_key: str = 'development-secret-key-change-me-0123456789'
+    # Address of the admin panel: the only origin allowed to change data, and the base of its links.
+    admin_url: str = 'http://127.0.0.1:5174'
+    admin_session_hours: int = 12
+    # Administrators must turn on a second factor before they can work (ADM-01); on outside development.
+    require_totp: bool | None = None
+
+    @property
+    def totp_required(self) -> bool:
+        return self.require_totp if self.require_totp is not None else self.environment != 'development'
+
     # ── mail ──
     smtp_host: str = ''
     smtp_port: int = 587
@@ -75,6 +88,9 @@ class Settings(BaseSettings):
                 raise RuntimeError('Production requires PostgreSQL')
             if self.crm_delivery_enabled and not (self.crm_url and self.crm_token and self.crm_signing_secret):
                 raise RuntimeError('CRM_DELIVERY_ENABLED needs CRM_URL, CRM_TOKEN and CRM_SIGNING_SECRET')
+        if self.environment in ('production', 'staging') and (
+                len(self.secret_key) < 32 or self.secret_key.startswith('development-')):
+            raise RuntimeError('SECRET_KEY: a random string of at least 32 characters (scripts/init-env.py)')
 
 
 settings = Settings()

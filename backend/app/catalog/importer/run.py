@@ -261,7 +261,8 @@ def resolve_brand(db: Session, state: State, row: Row) -> str | None:
     state.aliases[key] = brand_id
     state.counters['brands_created'] += 1
     issue(db, state, row.number, 'review', 'BRAND_CREATED',
-          f'Новый производитель «{row.brand}»: создан бренд без страницы, сверьте с реестром CRM', row.raw)
+          f'Новый производитель «{row.brand}»: создан бренд без страницы, сверьте с реестром CRM',
+          {**row.raw, 'brand_id': brand_id})
     return brand_id
 
 
@@ -472,11 +473,12 @@ def _free_slugs(db: Session, state: State, groups: list[Group]) -> dict[tuple[st
 # ── files ──
 
 def import_file(session_factory: sessionmaker[Session], path: Path, *, source: str, run_id: str, dry_run: bool,
-                brands: list[str], limit: int | None, progress: Callable[[int], None] | None) -> dict[str, Any]:
+                brands: list[str], limit: int | None, progress: Callable[[int], None] | None,
+                author: str = 'cli', file_name: str | None = None) -> dict[str, Any]:
     with session_factory.begin() as db:
         source_row = ensure_source(db, source)
-        batch = ImportBatch(source_id=source_row.id, file_name=path.name, file_sha256=file_sha256(path),
-                            dry_run=dry_run, status='running')
+        batch = ImportBatch(source_id=source_row.id, file_name=file_name or path.name, file_sha256=file_sha256(path),
+                            dry_run=dry_run, status='running', author=author[:100])
         db.add(batch)
         db.flush()
         batch_id = batch.id
@@ -519,15 +521,18 @@ def import_file(session_factory: sessionmaker[Session], path: Path, *, source: s
         db.execute(update(ImportBatch).where(ImportBatch.id == batch_id).values(
             status='done', finished_at=utcnow(), rows_total=rows_seen, rows_done=rows_seen,
             counters=dict(state.counters)))
-    return {'batch': batch_id, 'file': path.name, 'rows': rows_seen, **dict(state.counters)}
+    return {'batch': batch_id, 'file': file_name or path.name, 'rows': rows_seen, **dict(state.counters)}
 
 
 def import_files(session_factory: sessionmaker[Session], files: list[Path], *, source: str, dry_run: bool = False,
                  brands: list[str] | None = None, limit: int | None = None,
-                 progress: Callable[[int], None] | None = None) -> dict[str, Any]:
+                 progress: Callable[[int], None] | None = None, author: str = 'cli',
+                 names: dict[Path, str] | None = None) -> dict[str, Any]:
+    """``names`` — the names people know the files by (an upload of the admin panel is stored under a key)."""
     run_id = str(uuid4())
     results = [import_file(session_factory, path, source=source, run_id=run_id, dry_run=dry_run, brands=brands or [],
-                           limit=limit, progress=progress) for path in files]
+                           limit=limit, progress=progress, author=author, file_name=(names or {}).get(path))
+               for path in files]
     marked = 0
     template = TEMPLATES.get(source, {})
     if not dry_run and not brands and not limit and template.get('options', {}).get('full_source'):

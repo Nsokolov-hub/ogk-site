@@ -119,6 +119,9 @@ class Product(Entity):
         # The indexing queue: only rows waiting for the index are in this index.
         Index('ix_products_needs_index', 'needs_index', postgresql_where=text('needs_index'),
               sqlite_where=text('needs_index')),
+        # «Название содержит…» of the admin list (pg_trgm, migration 0004); a plain index in SQLite tests.
+        Index('ix_products_name_en_trgm', 'name_en', postgresql_using='gin',
+              postgresql_ops={'name_en': 'gin_trgm_ops'}),
     )
     card_type: Mapped[str] = mapped_column(String(20), default='standard')
     brand_id: Mapped[str] = mapped_column(ForeignKey('brands.id'), index=True)

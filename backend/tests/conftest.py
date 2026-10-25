@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 from sqlalchemy.schema import CreateSchema, DropSchema
@@ -29,8 +29,10 @@ def engine() -> Iterator[Engine]:
     schema = f'test_{uuid4().hex}'
     admin = create_engine(url)
     with admin.begin() as connection:
+        connection.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
         connection.execute(CreateSchema(schema))
-    engine = create_engine(url, connect_args={'options': f'-csearch_path={schema} -ctimezone=UTC'})
+    # public stays on the path: the operator classes of pg_trgm live there.
+    engine = create_engine(url, connect_args={'options': f'-csearch_path={schema},public -ctimezone=UTC'})
     try:
         Base.metadata.create_all(engine)
         yield engine

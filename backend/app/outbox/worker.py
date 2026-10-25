@@ -169,9 +169,34 @@ def deliver_subscriber(db: Session, outbox: OutboxEvent) -> Result:
     return Result('failed' if outcome.kind == 'failed' else 'retry', outcome.error_code)
 
 
+def revalidate_storefront(db: Session, outbox: OutboxEvent) -> Result:
+    """Published in the admin panel: the storefront drops the cached pages (after the commit, so it reads the new)."""
+    tags = [str(t) for t in outbox.payload.get('tags') or []]
+    if tags and not storefront.revalidate(tags) and settings.web_url and settings.revalidate_secret:
+        return Result('retry', 'STOREFRONT_UNAVAILABLE')
+    return Result('succeeded')
+
+
+def start_import(db: Session, outbox: OutboxEvent) -> Result:
+    """The import wizard's batch runs in its own thread: requests and letters keep going meanwhile."""
+    from app.admin import jobs
+
+    jobs.start_import(str(outbox.payload.get('upload_id')), str(outbox.payload.get('author') or 'админка'))
+    return Result('succeeded')
+
+
+def start_refresh(db: Session, outbox: OutboxEvent) -> Result:
+    from app.admin import jobs
+
+    jobs.start_refresh()
+    return Result('succeeded')
+
+
 HANDLERS = {'crm.deliver': deliver, 'mail.customer': send_customer, 'mail.sales': send_sales, 'alert': send_alert,
             'search.delete': delete_from_index, 'mail.subscriber': send_subscriber,
-            'mail.subscriber_sales': send_subscriber_sales, 'crm.subscriber': deliver_subscriber}
+            'mail.subscriber_sales': send_subscriber_sales, 'crm.subscriber': deliver_subscriber,
+            'storefront.revalidate': revalidate_storefront, 'import.run': start_import,
+            'catalog.refresh': start_refresh}
 
 
 def dispatch(db: Session, outbox: OutboxEvent) -> Result:
@@ -330,6 +355,16 @@ def ensure_search_index() -> None:
         event(logger, 'search_index_unavailable', logging.WARNING, error=str(exc)[:200])
 
 
+def admin_housekeeping() -> None:
+    """Scheduled publications, new search synonyms, stale sessions of the admin panel."""
+    from app.admin import editables, jobs
+
+    with SessionLocal.begin() as db:
+        editables.publish_due(db)
+        jobs.prune_sessions(db)
+    jobs.apply_search_settings(SessionLocal, search_engine)
+
+
 def run_once(*, housekeeping: bool = True) -> dict[str, int]:
     ensure_search_index()
     if housekeeping:
@@ -338,6 +373,7 @@ def run_once(*, housekeeping: bool = True) -> dict[str, int]:
             antispam.prune(db)
             prune_carts(db)
         sync_brands_if_due()
+        admin_housekeeping()
     with SessionLocal.begin() as db:
         counts = process_events(db)
     counts['indexed'] = index_catalog()
@@ -373,6 +409,9 @@ def main() -> None:
 
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
+    from app.admin import jobs
+
+    jobs.recover_interrupted(SessionLocal)
     event(logger, 'worker_started', crm_delivery=settings.crm_delivery_enabled)
     last_housekeeping = 0.0
     while running:

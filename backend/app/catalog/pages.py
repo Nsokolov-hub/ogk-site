@@ -225,8 +225,10 @@ def brands(db: Session) -> list[dict[str, Any]]:
     return [brand_out(db, row) for row in rows]
 
 
-def brand_page(db: Session, slug: str, lang: str) -> dict[str, Any]:
-    row = db.scalar(select(Brand).where(Brand.slug == slug, Brand.page_published.is_(True)))
+def brand_page(db: Session, slug: str, lang: str, *, include_hidden: bool = False) -> dict[str, Any]:
+    """``include_hidden`` — the preview of a page not published yet (the admin panel's signed link)."""
+    statement = select(Brand).where(Brand.slug == slug)
+    row = db.scalar(statement if include_hidden else statement.where(Brand.page_published.is_(True)))
     if row is None or row.merged_into_id:
         target = db.get(Brand, row.merged_into_id) if row is not None and row.merged_into_id else None
         return {'moved': target.slug if target else moved(db, 'brand', slug, Brand)}

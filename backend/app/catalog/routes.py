@@ -6,7 +6,7 @@ limited per address and in depth (NFR-05).
 
 import hmac
 import io
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, File, Query, Request, Response, UploadFile
@@ -15,7 +15,7 @@ from sqlalchemy import select
 from app.catalog import pages
 from app.catalog import schemas as s
 from app.catalog.importer.reader import UnreadableFile, read_rows
-from app.catalog.models import Cart
+from app.catalog.models import Brand, Cart, Category, Substance
 from app.catalog.search import query as search
 from app.catalog.search.documents import FACET_FIELDS
 from app.catalog.search.engine import SearchEngine
@@ -74,12 +74,28 @@ def catalog_tree(db: DB, response: Response):
     return pages.tree(db)
 
 
+def draft_for(db: DB, preview: str | None, entity: str, model: Any, **where: str) -> dict[str, Any] | None:
+    """The admin panel's draft of this very page when ``preview`` is its signed link (ADM-02)."""
+    if not preview:
+        return None
+    from app.admin.editables import preview_data
+
+    row_id = db.scalar(select(model.id).filter_by(**where))
+    return preview_data(db, preview, entity, row_id) if row_id else None
+
+
 @router.get('/catalog/category', response_model=s.CategoryOut)
-def catalog_category(db: DB, response: Response, path: str = ''):
+def catalog_category(db: DB, response: Response, path: str = '', preview: str | None = None):
     found = pages.category(db, path.strip('/'))
     if found is None:
         raise DomainError('NOT_FOUND', 'Раздел не найден', 404)
-    cached(response)
+    draft = draft_for(db, preview, 'category', Category, path=path.strip('/'))
+    if draft:
+        found = {**found, 'nameRu': draft['nameRu'], 'nameEn': draft['nameEn'], 'cardType': draft['cardType'],
+                 'facets': draft['facets'], 'isIndexed': draft['isIndexed'], 'content': draft['content']}
+        response.headers['Cache-Control'] = 'no-store'
+    else:
+        cached(response)
     return found
 
 
@@ -149,11 +165,19 @@ def substance_list(db: DB, response: Response):
 
 
 @router.get('/substances/{slug}', response_model=s.SubstancePage)
-def substance(slug: str, db: DB, response: Response, lang: Lang = 'ru'):
+def substance(slug: str, db: DB, response: Response, lang: Lang = 'ru', preview: str | None = None):
     found = pages.substance_page(db, slug, lang)
     if not found.get('substance') and not found.get('moved'):
         raise DomainError('NOT_FOUND', 'Субстанция не найдена', 404)
-    cached(response)
+    draft = draft_for(db, preview, 'substance', Substance, slug=slug)
+    if draft and found.get('substance'):
+        found['substance'] = {**found['substance'], 'nameRu': draft['nameRu'], 'nameEn': draft['nameEn'],
+                              'cas': draft['cas'], 'formula': draft['formula'],
+                              'molecularWeight': draft['molecularWeight'], 'synonyms': draft['synonyms'],
+                              'content': draft['content']}
+        response.headers['Cache-Control'] = 'no-store'
+    else:
+        cached(response)
     return found
 
 
@@ -164,11 +188,18 @@ def brand_list(db: DB, response: Response):
 
 
 @router.get('/brands/{slug}', response_model=s.BrandPage)
-def brand(slug: str, db: DB, response: Response, lang: Lang = 'ru'):
-    found = pages.brand_page(db, slug, lang)
+def brand(slug: str, db: DB, response: Response, lang: Lang = 'ru', preview: str | None = None):
+    draft = draft_for(db, preview, 'brand', Brand, slug=slug)
+    found = pages.brand_page(db, slug, lang, include_hidden=draft is not None)
     if not found.get('brand') and not found.get('moved'):
         raise DomainError('NOT_FOUND', 'Бренд не найден', 404)
-    cached(response)
+    if draft and found.get('brand'):
+        found['brand'] = {**found['brand'], 'name': draft['name'], 'logo': draft['logo'], 'country': draft['country'],
+                          'customPackaging': draft['customPackaging'], 'wave': draft['wave'],
+                          'content': draft['content']}
+        response.headers['Cache-Control'] = 'no-store'
+    else:
+        cached(response)
     return found
 
 

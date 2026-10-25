@@ -1,0 +1,5503 @@
+{
+ "note": "Тексты сайта из src/data/mock на момент переноса в базу; дальше их ведут в админке. Загрузка: python -m app.catalog.cli seed --content-only",
+ "site": {
+  "ru": {
+   "siteUrl": "https://www.ogk-chem.ru",
+   "phone": {
+    "display": "+7 495 234 28 63",
+    "href": "tel:+74952342863"
+   },
+   "emails": {
+    "info": "info@ogk-chem.ru",
+    "order": "order@ogk-chem.ru"
+   },
+   "address": {
+    "postalCode": "129301",
+    "city": "Москва",
+    "street": "ул. Касаткина, д. 8, помещ. 1/1",
+    "full": "129301, Москва, ул. Касаткина, д. 8, помещ. 1/1",
+    "mapQuery": "129301, Москва, ул. Касаткина, д. 8"
+   },
+   "hours": "пн–пт 9:00–18:00",
+   "legal": {
+    "name": "ООО «ОГК-ХИМ»",
+    "shortName": "ОГК-ХИМ",
+    "inn": "9717188828",
+    "kpp": "771701001",
+    "ogrn": "1267700023997"
+   },
+   "docs": {
+    "consent": "/files/soglasie.pdf",
+    "privacy": "/files/politika.pdf",
+    "card": "/files/kartochka.pdf"
+   }
+  },
+  "en": {
+   "siteUrl": "https://www.ogk-chem.ru",
+   "phone": {
+    "display": "+7 495 234 28 63",
+    "href": "tel:+74952342863"
+   },
+   "emails": {
+    "info": "info@ogk-chem.ru",
+    "order": "order@ogk-chem.ru"
+   },
+   "address": {
+    "postalCode": "129301",
+    "city": "Moscow",
+    "street": "8 Kasatkina St., premises 1/1",
+    "full": "8 Kasatkina St., premises 1/1, Moscow 129301, Russia",
+    "mapQuery": "129301, Москва, ул. Касаткина, д. 8"
+   },
+   "hours": "Mon–Fri 9:00–18:00 (Moscow time)",
+   "legal": {
+    "name": "OGK-CHEM LLC",
+    "shortName": "OGK-CHEM",
+    "inn": "9717188828",
+    "kpp": "771701001",
+    "ogrn": "1267700023997"
+   },
+   "docs": {
+    "consent": "/files/soglasie.pdf",
+    "privacy": "/files/politika.pdf",
+    "card": "/files/kartochka.pdf"
+   }
+  }
+ },
+ "pages": [
+  {
+   "kind": "home",
+   "slug": "home",
+   "position": 0,
+   "content": {
+    "ru": {
+     "hero": {
+      "slides": [
+       {
+        "id": "main",
+        "title": "Материалы, реактивы и оборудование для фармацевтических лабораторий",
+        "subtitle": "Комплексные решения для фармкомпаний",
+        "ctas": [
+         {
+          "label": "Сделать заказ",
+          "href": "#request",
+          "variant": "primary",
+          "icon": "plus"
+         },
+         {
+          "label": "Связаться с нами",
+          "href": "/contacts/",
+          "variant": "secondary",
+          "icon": "dot"
+         }
+        ],
+        "imageMode": "cover",
+        "image": {
+         "src": "/images/home/hero-1.jpg",
+         "alt": "Флакон стандартного образца с зелёной крышкой",
+         "width": 2880,
+         "height": 1728
+        }
+       },
+       {
+        "id": "standards",
+        "title": "Стандартные образцы ведущих производителей",
+        "subtitle": "EDQM, USP, LGC, Merck и другие бренды — поставка под заказ из каталогов производителей, с документами и соблюдением условий хранения",
+        "ctas": [
+         {
+          "label": "Перейти в каталог",
+          "href": "/catalog/reference-standards/",
+          "variant": "primary",
+          "icon": "arrow"
+         }
+        ],
+        "imageMode": "object",
+        "image": {
+         "src": "/images/home/hero-2.png",
+         "alt": "Флакон реактива Merck",
+         "width": 824,
+         "height": 1478
+        }
+       },
+       {
+        "id": "logistics",
+        "title": "Логистика с холодовой цепью из 23 стран",
+        "subtitle": "Термоконтейнеры, хладоэлементы и логгеры температуры, таможенное оформление и разрешения на ввоз",
+        "ctas": [
+         {
+          "label": "Рассчитать доставку",
+          "href": "/services/cold-chain/",
+          "variant": "primary",
+          "icon": "arrow"
+         },
+         {
+          "label": "Все услуги",
+          "href": "/services/",
+          "variant": "secondary",
+          "icon": "dot"
+         }
+        ],
+        "imageMode": "object",
+        "image": {
+         "src": "/images/home/hero-3.png",
+         "alt": "Грузовик для перевозки фармацевтических грузов",
+         "width": 2082,
+         "height": 824
+        }
+       }
+      ],
+      "search": {
+       "title": "Найдите позицию по названию, каталожному номеру или CAS",
+       "examples": [
+        "Paracetamol",
+        "58-08-2",
+        "PHR6721",
+        "XBridge C18"
+       ]
+      },
+      "facts": [
+       {
+        "value": "60+",
+        "label": "мировых производителей"
+       },
+       {
+        "value": "23",
+        "label": "страны поставки"
+       },
+       {
+        "value": "2 часа",
+        "label": "на ответ по заявке"
+       }
+      ]
+     },
+     "products": {
+      "title": "Каталог",
+      "accent": "товаров",
+      "subtitle": "Стандартные образцы, реактивы, хроматография и оборудование ведущих производителей"
+     },
+     "brands": {
+      "title": "Широкий",
+      "accent": "ассортимент",
+      "subtitle": "Под любые задачи производства",
+      "items": [
+       {
+        "slug": "edqm",
+        "name": "EDQM",
+        "logo": "/images/brands/edqm.svg"
+       },
+       {
+        "slug": "usp",
+        "name": "USP",
+        "logo": "/images/brands/usp.svg"
+       },
+       {
+        "slug": "merck",
+        "name": "Merck",
+        "logo": "/images/brands/merck.svg"
+       },
+       {
+        "slug": "lgc",
+        "name": "LGC",
+        "logo": "/images/brands/lgc.svg"
+       },
+       {
+        "slug": "bioorganics",
+        "name": "BioOrganics",
+        "logo": "/images/brands/bioorganics.svg"
+       },
+       {
+        "slug": "synzeal",
+        "name": "SynZeal",
+        "logo": "/images/brands/synzeal.svg"
+       },
+       {
+        "slug": "sciex",
+        "name": "SCIEX",
+        "logo": "/images/brands/sciex.svg"
+       },
+       {
+        "slug": "waters",
+        "name": "Waters",
+        "logo": "/images/brands/waters.svg"
+       },
+       {
+        "slug": "macklin",
+        "name": "Macklin",
+        "logo": "/images/brands/macklin.svg"
+       },
+       {
+        "slug": "clearsynth",
+        "name": "Clearsynth",
+        "logo": "/images/brands/clearsynth.svg"
+       },
+       {
+        "slug": "aozeal",
+        "name": "Aozeal",
+        "logo": "/images/brands/aozeal.svg"
+       },
+       {
+        "slug": "agilent",
+        "name": "Agilent",
+        "logo": "/images/brands/agilent.svg"
+       },
+       {
+        "slug": "welch",
+        "name": "Welch",
+        "logo": "/images/brands/welch.svg"
+       }
+      ]
+     },
+     "promo": {
+      "title": "Нужен конкретный товар?",
+      "text": "Большой выбор товаров в каталоге для ваших нужд",
+      "cta": {
+       "label": "Перейти в каталог",
+       "href": "/catalog/",
+       "variant": "primary",
+       "icon": "arrow"
+      },
+      "image": {
+       "src": "/images/home/promo-vials.png",
+       "alt": "Флаконы стандартных образцов EDQM и USP",
+       "width": 1426,
+       "height": 972
+      }
+     },
+     "quality": {
+      "title": "Лучшее",
+      "accent": "качество",
+      "subtitle": "Мы предлагаем нашим клиентам только проверенную продукцию",
+      "items": [
+       {
+        "id": "purchase",
+        "title": "Закупка",
+        "icon": "globe",
+        "text": "Из США, Европы, Азии, Латинской Америки и других стран. Берём на себя таможенные процедуры и организацию логистики"
+       },
+       {
+        "id": "documents",
+        "title": "Документы",
+        "icon": "file",
+        "text": "Предоставляем всю необходимую документацию. Сертификация и контроль на каждом этапе в соответствии с правилами"
+       },
+       {
+        "id": "delivery",
+        "title": "Доставка",
+        "icon": "map",
+        "text": "В любой регион страны за счёт отлаженной логистики. Соблюдаем температурный режим, сроки и условия хранения"
+       }
+      ]
+     },
+     "services": {
+      "title": "Сервис",
+      "accent": "под ключ",
+      "subtitle": "Полный цикл услуг для фармацевтических компаний",
+      "items": [
+       {
+        "id": "supply",
+        "title": "Поставка лекарственных препаратов для исследований",
+        "href": "/services/research-drug-supply/",
+        "text": "Поставляем лекарственные препараты в Россию для исследовательских целей, а также стандартные образцы, реактивы, расходные материалы для хроматографии (колонки, фильтры, предколонки, фитинги), референтные лекарственные препараты для лабораторных испытаний, лабораторную тару и вспомогательное оборудование. Продукция ведущих мировых брендов соответствует строгим международным стандартам, а предложения локальных производителей помогают закрыть потребности лаборатории без потери качества.",
+        "captionLabel": "Поставляем:",
+        "chips": [
+         {
+          "label": "EDQM"
+         },
+         {
+          "label": "USP"
+         },
+         {
+          "label": "Merck"
+         },
+         {
+          "label": "LGC"
+         },
+         {
+          "label": "BioOrganics"
+         },
+         {
+          "label": "SynZeal"
+         },
+         {
+          "label": "SCIEX"
+         },
+         {
+          "label": "Waters"
+         },
+         {
+          "label": "Macklin"
+         },
+         {
+          "label": "Clearsynth"
+         },
+         {
+          "label": "Aozeal"
+         },
+         {
+          "label": "Agilent"
+         },
+         {
+          "label": "Welch"
+         },
+         {
+          "label": "Dayang Chem"
+         },
+         {
+          "label": "ATCC"
+         },
+         {
+          "label": "British Pharmacopoeia"
+         },
+         {
+          "label": "Shimadzu"
+         },
+         {
+          "label": "TRC"
+         }
+        ],
+        "image": {
+         "src": "/images/home/service-supply.png",
+         "alt": "Флакон реактива",
+         "width": 824,
+         "height": 1478
+        }
+       },
+       {
+        "id": "logistics",
+        "title": "Логистика и холодовая цепь",
+        "href": "/services/cold-chain/",
+        "text": "Доставка фармацевтики с полным контролем температурного режима. Поддерживаем холодовую цепь с помощью термоконтейнеров и хладоэлементов, контролируем температуру логгерами. Работаем с партнёрами из Америки, Европы, Азии и стран СНГ. Подбираем транспорт с учётом особенностей груза и специфики маршрута, адаптируем решения под разные типы отправлений и требования заказчиков.",
+        "captionLabel": "Доставим из:",
+        "chips": [
+         {
+          "label": "США"
+         },
+         {
+          "label": "Канады"
+         },
+         {
+          "label": "Великобритании"
+         },
+         {
+          "label": "Франции"
+         },
+         {
+          "label": "Швеции"
+         },
+         {
+          "label": "Германии"
+         },
+         {
+          "label": "Норвегии"
+         },
+         {
+          "label": "Китая"
+         },
+         {
+          "label": "Армении"
+         },
+         {
+          "label": "Грузии"
+         },
+         {
+          "label": "Нидерландов"
+         },
+         {
+          "label": "Швейцарии"
+         },
+         {
+          "label": "России"
+         },
+         {
+          "label": "Казахстана"
+         },
+         {
+          "label": "Узбекистана"
+         },
+         {
+          "label": "Азербайджана"
+         },
+         {
+          "label": "Австрии"
+         },
+         {
+          "label": "Бельгии"
+         },
+         {
+          "label": "Австралии"
+         },
+         {
+          "label": "Японии"
+         },
+         {
+          "label": "Южной Кореи"
+         },
+         {
+          "label": "Италии"
+         },
+         {
+          "label": "Испании"
+         }
+        ],
+        "image": {
+         "src": "/images/home/service-logistics.png",
+         "alt": "Грузовик, вид сверху",
+         "width": 824,
+         "height": 2082
+        }
+       },
+       {
+        "id": "customs",
+        "title": "Таможня",
+        "href": "/services/customs-clearance/",
+        "text": "Выполняем таможенное оформление фармацевтики и сопутствующих категорий товаров. Определяем коды ТН ВЭД, проверяем пакет документов и сопровождаем получение разрешительной документации для ввоза в Российскую Федерацию. Минимизируем риски задержек, обеспечиваем соответствие требованиям регуляторов и контролируем процесс на каждом этапе.",
+        "captionLabel": "Сделаем для вас:",
+        "chips": [
+         {
+          "label": "Оформление импорта",
+          "href": "/services/import-export/"
+         },
+         {
+          "label": "Оформление экспорта",
+          "href": "/services/import-export/"
+         },
+         {
+          "label": "Разрешение на ввоз — Минздрав",
+          "href": "/services/import-permits/"
+         },
+         {
+          "label": "Разрешение на ввоз — ФСТЭК",
+          "href": "/services/import-permits/"
+         },
+         {
+          "label": "Подбор кодов ТН ВЭД",
+          "href": "/services/tn-ved/"
+         },
+         {
+          "label": "Проверка пакета документов"
+         },
+         {
+          "label": "Консультирование"
+         }
+        ],
+        "image": {
+         "src": "/images/home/service-customs.png",
+         "alt": "Печать",
+         "width": 824,
+         "height": 966
+        }
+       }
+      ]
+     },
+     "whyUs": {
+      "title": "Почему",
+      "accent": "выбирают нас",
+      "textAccent": "ОГК-ХИМ",
+      "text": "является узкопрофильной компанией, которая обеспечивает фармацевтические предприятия всем необходимым для проведения точных лабораторных исследований и разработок. Мы помогаем клиентам оптимизировать закупки, гарантируя качество поставляемой продукции. В основе нашей работы лежит принцип клиентоориентированности и стремления к постоянному совершенствованию сервиса.",
+      "items": [
+       {
+        "id": "expertise",
+        "title": "Экспертность",
+        "icon": "users",
+        "text": "Наша команда профессионалов с многолетним опытом в фармацевтической отрасли поможет подобрать оптимальные решения для ваших лабораторных задач"
+       },
+       {
+        "id": "quality",
+        "title": "Гарантия качества",
+        "icon": "check",
+        "text": "Мы работаем только с проверенными производителями и обеспечиваем качественную продукцию"
+       },
+       {
+        "id": "speed",
+        "title": "Оперативность",
+        "icon": "zap",
+        "text": "Развитая логистическая сеть позволяет доставлять материалы в кратчайшие сроки в любую точку России, соблюдая подходящие условия транспортировки"
+       },
+       {
+        "id": "individual",
+        "title": "Индивидуальность",
+        "icon": "loader",
+        "text": "Мы разрабатываем персонализированные решения под специфику каждого клиента, учитывая особенности его работы"
+       }
+      ]
+     },
+     "capabilities": {
+      "title": "У нас вы сможете",
+      "items": [
+       {
+        "id": "c1",
+        "prefix": "Заказать",
+        "accent": "стандартные образцы",
+        "suffix": "для лаборатории",
+        "href": "/catalog/reference-standards/"
+       },
+       {
+        "id": "c2",
+        "prefix": "Заказать",
+        "accent": "реактивы",
+        "suffix": "для лаборатории",
+        "href": "/catalog/reagents/"
+       },
+       {
+        "id": "c3",
+        "prefix": "Заказать",
+        "accent": "расходные материалы",
+        "suffix": "для хроматографии",
+        "href": "/catalog/chromatography/"
+       },
+       {
+        "id": "c4",
+        "prefix": "Заказать",
+        "accent": "референтные лекарственные препараты",
+        "suffix": "для лабораторных исследований",
+        "href": "/catalog/reference-drugs/"
+       },
+       {
+        "id": "c5",
+        "prefix": "Заказать",
+        "accent": "микроорганизмы и биологические стандарты",
+        "suffix": "для лабораторных исследований",
+        "href": "/catalog/biological-standards/"
+       },
+       {
+        "id": "c6",
+        "prefix": "Заказать",
+        "accent": "лабораторное оборудование",
+        "suffix": "для лаборатории",
+        "href": "/catalog/laboratory-equipment/"
+       },
+       {
+        "id": "c7",
+        "prefix": "Приобрести годовую",
+        "accent": "подписку на онлайн-фармакопеи",
+        "suffix": "и справочники",
+        "href": "/catalog/pharmacopeias/"
+       },
+       {
+        "id": "c8",
+        "prefix": "Заказать",
+        "accent": "доставку",
+        "suffix": "вашего груза на ваш склад",
+        "href": "/services/pharma-logistics/"
+       },
+       {
+        "id": "c9",
+        "prefix": "Заказать",
+        "accent": "перевозку",
+        "suffix": "груза между складами или лабораториями",
+        "href": "/services/pharma-logistics/"
+       },
+       {
+        "id": "c10",
+        "prefix": "Заказать",
+        "accent": "термобоксы и хладоэлементы",
+        "suffix": "для вашего груза",
+        "href": "/services/cold-chain/"
+       },
+       {
+        "id": "c11",
+        "prefix": "Заказать",
+        "accent": "таможенное оформление",
+        "suffix": "вашего груза",
+        "href": "/services/customs-clearance/"
+       },
+       {
+        "id": "c12",
+        "prefix": "Получить",
+        "accent": "разрешения на ввоз",
+        "suffix": "для вашего груза",
+        "href": "/services/import-permits/"
+       }
+      ]
+     },
+     "request": {
+      "title": "Отправьте ваш",
+      "accent": "запрос",
+      "promises": [
+       {
+        "id": "fast",
+        "icon": "zap",
+        "title": "Быстро обработаем заявку",
+        "text": "Стандартное время — до 2 рабочих часов"
+       },
+       {
+        "id": "call",
+        "icon": "phone",
+        "title": "Свяжемся с вами",
+        "text": "Для уточнения деталей заявки"
+       },
+       {
+        "id": "manager",
+        "icon": "user",
+        "title": "Выделим персонального менеджера",
+        "text": "Для ведения вашего запроса"
+       },
+       {
+        "id": "offer",
+        "icon": "mail",
+        "title": "Отправим коммерческое предложение",
+        "text": "В соответствии с вашим запросом"
+       }
+      ]
+     },
+     "subscribe": {
+      "title": "Подпишитесь на",
+      "accent": "рассылку",
+      "text": "Новинки каталога, обзоры стандартов и новости фармлогистики"
+     }
+    },
+    "en": {
+     "hero": {
+      "slides": [
+       {
+        "id": "main",
+        "title": "Materials, reagents and equipment for pharmaceutical laboratories",
+        "subtitle": "End-to-end supply for pharmaceutical companies",
+        "ctas": [
+         {
+          "label": "Place an order",
+          "href": "#request",
+          "variant": "primary",
+          "icon": "plus"
+         },
+         {
+          "label": "Contact us",
+          "href": "/contacts/",
+          "variant": "secondary",
+          "icon": "dot"
+         }
+        ],
+        "imageMode": "cover",
+        "image": {
+         "src": "/images/home/hero-1.jpg",
+         "alt": "Reference standard vial with a green cap",
+         "width": 2880,
+         "height": 1728
+        }
+       },
+       {
+        "id": "standards",
+        "title": "Reference standards from leading manufacturers",
+        "subtitle": "EDQM, USP, LGC, Merck and other brands — supplied to order from manufacturer catalogues, with documents and controlled storage conditions",
+        "ctas": [
+         {
+          "label": "Browse the catalogue",
+          "href": "/catalog/reference-standards/",
+          "variant": "primary",
+          "icon": "arrow"
+         }
+        ],
+        "imageMode": "object",
+        "image": {
+         "src": "/images/home/hero-2.png",
+         "alt": "Merck reagent bottle",
+         "width": 824,
+         "height": 1478
+        }
+       },
+       {
+        "id": "logistics",
+        "title": "Cold chain logistics from 23 countries",
+        "subtitle": "Insulated shippers, coolant packs and temperature loggers, customs clearance and import permits",
+        "ctas": [
+         {
+          "label": "Get a delivery quote",
+          "href": "/services/cold-chain/",
+          "variant": "primary",
+          "icon": "arrow"
+         },
+         {
+          "label": "All services",
+          "href": "/services/",
+          "variant": "secondary",
+          "icon": "dot"
+         }
+        ],
+        "imageMode": "object",
+        "image": {
+         "src": "/images/home/hero-3.png",
+         "alt": "Truck for pharmaceutical cargo",
+         "width": 2082,
+         "height": 824
+        }
+       }
+      ],
+      "search": {
+       "title": "Find an item by name, catalogue number or CAS",
+       "examples": [
+        "Paracetamol",
+        "58-08-2",
+        "PHR6721",
+        "XBridge C18"
+       ]
+      },
+      "facts": [
+       {
+        "value": "60+",
+        "label": "global manufacturers"
+       },
+       {
+        "value": "23",
+        "label": "supply countries"
+       },
+       {
+        "value": "2 hours",
+        "label": "to reply to a request"
+       }
+      ]
+     },
+     "products": {
+      "title": "Product",
+      "accent": "catalogue",
+      "subtitle": "Reference standards, reagents, chromatography supplies and equipment from leading manufacturers"
+     },
+     "brands": {
+      "title": "Wide",
+      "accent": "range",
+      "subtitle": "For every production task",
+      "items": [
+       {
+        "slug": "edqm",
+        "name": "EDQM",
+        "logo": "/images/brands/edqm.svg"
+       },
+       {
+        "slug": "usp",
+        "name": "USP",
+        "logo": "/images/brands/usp.svg"
+       },
+       {
+        "slug": "merck",
+        "name": "Merck",
+        "logo": "/images/brands/merck.svg"
+       },
+       {
+        "slug": "lgc",
+        "name": "LGC",
+        "logo": "/images/brands/lgc.svg"
+       },
+       {
+        "slug": "bioorganics",
+        "name": "BioOrganics",
+        "logo": "/images/brands/bioorganics.svg"
+       },
+       {
+        "slug": "synzeal",
+        "name": "SynZeal",
+        "logo": "/images/brands/synzeal.svg"
+       },
+       {
+        "slug": "sciex",
+        "name": "SCIEX",
+        "logo": "/images/brands/sciex.svg"
+       },
+       {
+        "slug": "waters",
+        "name": "Waters",
+        "logo": "/images/brands/waters.svg"
+       },
+       {
+        "slug": "macklin",
+        "name": "Macklin",
+        "logo": "/images/brands/macklin.svg"
+       },
+       {
+        "slug": "clearsynth",
+        "name": "Clearsynth",
+        "logo": "/images/brands/clearsynth.svg"
+       },
+       {
+        "slug": "aozeal",
+        "name": "Aozeal",
+        "logo": "/images/brands/aozeal.svg"
+       },
+       {
+        "slug": "agilent",
+        "name": "Agilent",
+        "logo": "/images/brands/agilent.svg"
+       },
+       {
+        "slug": "welch",
+        "name": "Welch",
+        "logo": "/images/brands/welch.svg"
+       }
+      ]
+     },
+     "promo": {
+      "title": "Looking for a specific product?",
+      "text": "A large selection of products in the catalogue",
+      "cta": {
+       "label": "Browse the catalogue",
+       "href": "/catalog/",
+       "variant": "primary",
+       "icon": "arrow"
+      },
+      "image": {
+       "src": "/images/home/promo-vials.png",
+       "alt": "EDQM and USP reference standard vials",
+       "width": 1426,
+       "height": 972
+      }
+     },
+     "quality": {
+      "title": "Best",
+      "accent": "quality",
+      "subtitle": "We offer our clients only verified products",
+      "items": [
+       {
+        "id": "purchase",
+        "title": "Sourcing",
+        "icon": "globe",
+        "text": "From the USA, Europe, Asia, Latin America and other countries. We handle customs procedures and logistics"
+       },
+       {
+        "id": "documents",
+        "title": "Documents",
+        "icon": "file",
+        "text": "We provide all the documentation you need. Certification and control at every stage in line with the rules"
+       },
+       {
+        "id": "delivery",
+        "title": "Delivery",
+        "icon": "map",
+        "text": "To any region of Russia through established logistics. We keep the temperature range, lead times and storage conditions"
+       }
+      ]
+     },
+     "services": {
+      "title": "Turnkey",
+      "accent": "service",
+      "subtitle": "A full range of services for pharmaceutical companies",
+      "items": [
+       {
+        "id": "supply",
+        "title": "Supply of medicinal products for research",
+        "href": "/services/research-drug-supply/",
+        "text": "We supply medicinal products to Russia for research purposes, as well as reference standards, reagents, chromatography consumables (columns, filters, guard columns, fittings), reference medicinal products for laboratory testing, laboratory containers and auxiliary equipment. Products of leading global brands meet strict international standards, and local manufacturers help cover laboratory needs without compromising quality.",
+        "captionLabel": "We supply:",
+        "chips": [
+         {
+          "label": "EDQM"
+         },
+         {
+          "label": "USP"
+         },
+         {
+          "label": "Merck"
+         },
+         {
+          "label": "LGC"
+         },
+         {
+          "label": "BioOrganics"
+         },
+         {
+          "label": "SynZeal"
+         },
+         {
+          "label": "SCIEX"
+         },
+         {
+          "label": "Waters"
+         },
+         {
+          "label": "Macklin"
+         },
+         {
+          "label": "Clearsynth"
+         },
+         {
+          "label": "Aozeal"
+         },
+         {
+          "label": "Agilent"
+         },
+         {
+          "label": "Welch"
+         },
+         {
+          "label": "Dayang Chem"
+         },
+         {
+          "label": "ATCC"
+         },
+         {
+          "label": "British Pharmacopoeia"
+         },
+         {
+          "label": "Shimadzu"
+         },
+         {
+          "label": "TRC"
+         }
+        ],
+        "image": {
+         "src": "/images/home/service-supply.png",
+         "alt": "Reagent bottle",
+         "width": 824,
+         "height": 1478
+        }
+       },
+       {
+        "id": "logistics",
+        "title": "Logistics and cold chain",
+        "href": "/services/cold-chain/",
+        "text": "Pharmaceutical delivery with full temperature control. We maintain the cold chain with insulated shippers and coolant packs and monitor temperature with data loggers. We work with partners in the Americas, Europe, Asia and the CIS, choose transport for the cargo and route, and adapt solutions to different shipment types and customer requirements.",
+        "captionLabel": "We deliver from:",
+        "chips": [
+         {
+          "label": "USA"
+         },
+         {
+          "label": "Canada"
+         },
+         {
+          "label": "United Kingdom"
+         },
+         {
+          "label": "France"
+         },
+         {
+          "label": "Sweden"
+         },
+         {
+          "label": "Germany"
+         },
+         {
+          "label": "Norway"
+         },
+         {
+          "label": "China"
+         },
+         {
+          "label": "Armenia"
+         },
+         {
+          "label": "Georgia"
+         },
+         {
+          "label": "Netherlands"
+         },
+         {
+          "label": "Switzerland"
+         },
+         {
+          "label": "Russia"
+         },
+         {
+          "label": "Kazakhstan"
+         },
+         {
+          "label": "Uzbekistan"
+         },
+         {
+          "label": "Azerbaijan"
+         },
+         {
+          "label": "Austria"
+         },
+         {
+          "label": "Belgium"
+         },
+         {
+          "label": "Australia"
+         },
+         {
+          "label": "Japan"
+         },
+         {
+          "label": "South Korea"
+         },
+         {
+          "label": "Italy"
+         },
+         {
+          "label": "Spain"
+         }
+        ],
+        "image": {
+         "src": "/images/home/service-logistics.png",
+         "alt": "Truck, top view",
+         "width": 824,
+         "height": 2082
+        }
+       },
+       {
+        "id": "customs",
+        "title": "Customs",
+        "href": "/services/customs-clearance/",
+        "text": "We clear pharmaceuticals and related goods through customs. We determine HS (TN VED) codes, check the document package and support obtaining permits for import into the Russian Federation. We minimise the risk of delays, ensure regulatory compliance and control the process at every stage.",
+        "captionLabel": "We can:",
+        "chips": [
+         {
+          "label": "Import clearance",
+          "href": "/services/import-export/"
+         },
+         {
+          "label": "Export clearance",
+          "href": "/services/import-export/"
+         },
+         {
+          "label": "Import permit — Ministry of Health",
+          "href": "/services/import-permits/"
+         },
+         {
+          "label": "Import permit — FSTEC",
+          "href": "/services/import-permits/"
+         },
+         {
+          "label": "HS code classification",
+          "href": "/services/tn-ved/"
+         },
+         {
+          "label": "Document package review"
+         },
+         {
+          "label": "Consulting"
+         }
+        ],
+        "image": {
+         "src": "/images/home/service-customs.png",
+         "alt": "Stamp",
+         "width": 824,
+         "height": 966
+        }
+       }
+      ]
+     },
+     "whyUs": {
+      "title": "Why",
+      "accent": "choose us",
+      "textAccent": "OGK-CHEM",
+      "text": "is a specialised company that provides pharmaceutical manufacturers with everything they need for accurate laboratory research and development. We help clients optimise procurement while guaranteeing the quality of supplied products. Our work is built on a customer-first approach and continuous improvement of our service.",
+      "items": [
+       {
+        "id": "expertise",
+        "title": "Expertise",
+        "icon": "users",
+        "text": "Our team has many years of experience in the pharmaceutical industry and will help you find the right solutions for your laboratory tasks"
+       },
+       {
+        "id": "quality",
+        "title": "Quality assurance",
+        "icon": "check",
+        "text": "We work only with verified manufacturers and supply quality products"
+       },
+       {
+        "id": "speed",
+        "title": "Speed",
+        "icon": "zap",
+        "text": "Our logistics network delivers materials quickly to any part of Russia under the right transport conditions"
+       },
+       {
+        "id": "individual",
+        "title": "Tailored approach",
+        "icon": "loader",
+        "text": "We design solutions around each client and the specifics of their work"
+       }
+      ]
+     },
+     "capabilities": {
+      "title": "With us you can",
+      "items": [
+       {
+        "id": "c1",
+        "prefix": "Order",
+        "accent": "reference standards",
+        "suffix": "for your laboratory",
+        "href": "/catalog/reference-standards/"
+       },
+       {
+        "id": "c2",
+        "prefix": "Order",
+        "accent": "reagents",
+        "suffix": "for your laboratory",
+        "href": "/catalog/reagents/"
+       },
+       {
+        "id": "c3",
+        "prefix": "Order",
+        "accent": "consumables",
+        "suffix": "for chromatography",
+        "href": "/catalog/chromatography/"
+       },
+       {
+        "id": "c4",
+        "prefix": "Order",
+        "accent": "reference medicinal products",
+        "suffix": "for laboratory studies",
+        "href": "/catalog/reference-drugs/"
+       },
+       {
+        "id": "c5",
+        "prefix": "Order",
+        "accent": "microorganisms and biological standards",
+        "suffix": "for laboratory studies",
+        "href": "/catalog/biological-standards/"
+       },
+       {
+        "id": "c6",
+        "prefix": "Order",
+        "accent": "laboratory equipment",
+        "suffix": "for your laboratory",
+        "href": "/catalog/laboratory-equipment/"
+       },
+       {
+        "id": "c7",
+        "prefix": "Buy an annual",
+        "accent": "online pharmacopoeia subscription",
+        "suffix": "and reference books",
+        "href": "/catalog/pharmacopeias/"
+       },
+       {
+        "id": "c8",
+        "prefix": "Order",
+        "accent": "delivery",
+        "suffix": "of your cargo to your warehouse",
+        "href": "/services/pharma-logistics/"
+       },
+       {
+        "id": "c9",
+        "prefix": "Order",
+        "accent": "transport",
+        "suffix": "between warehouses or laboratories",
+        "href": "/services/pharma-logistics/"
+       },
+       {
+        "id": "c10",
+        "prefix": "Order",
+        "accent": "insulated boxes and coolant packs",
+        "suffix": "for your cargo",
+        "href": "/services/cold-chain/"
+       },
+       {
+        "id": "c11",
+        "prefix": "Order",
+        "accent": "customs clearance",
+        "suffix": "for your cargo",
+        "href": "/services/customs-clearance/"
+       },
+       {
+        "id": "c12",
+        "prefix": "Obtain",
+        "accent": "import permits",
+        "suffix": "for your cargo",
+        "href": "/services/import-permits/"
+       }
+      ]
+     },
+     "request": {
+      "title": "Send your",
+      "accent": "request",
+      "promises": [
+       {
+        "id": "fast",
+        "icon": "zap",
+        "title": "Fast processing",
+        "text": "Standard response time is up to 2 business hours"
+       },
+       {
+        "id": "call",
+        "icon": "phone",
+        "title": "We will contact you",
+        "text": "To clarify the details of your request"
+       },
+       {
+        "id": "manager",
+        "icon": "user",
+        "title": "A dedicated manager",
+        "text": "To handle your request"
+       },
+       {
+        "id": "offer",
+        "icon": "mail",
+        "title": "A commercial quotation",
+        "text": "Based on your request"
+       }
+      ]
+     },
+     "subscribe": {
+      "title": "Subscribe to our",
+      "accent": "newsletter",
+      "text": "New catalogue items, reviews of standards and pharma logistics news"
+     }
+    }
+   }
+  },
+  {
+   "kind": "service",
+   "slug": "research-drug-supply",
+   "position": 0,
+   "content": {
+    "ru": {
+     "slug": "research-drug-supply",
+     "name": "Поставка препаратов для исследований",
+     "h1": "Поставка лекарственных препаратов для исследований",
+     "title": "Поставка лекарственных препаратов в Россию для исследовательских целей | ОГК-ХИМ",
+     "description": "Поставляем в Россию лекарственные препараты для исследований и лабораторных испытаний: подбор, закупка у производителя, разрешение на ввоз, холодовая цепь и таможня. Ответ в течение 2 рабочих часов.",
+     "summary": "Подбор, закупка и ввоз препаратов, в том числе незарегистрированных в России, с разрешением на ввоз.",
+     "intro": "Поставляем лекарственные препараты для исследовательских целей и лабораторных испытаний — в том числе не зарегистрированные в России. Подбираем препарат, закупаем у производителя или дистрибьютора, получаем разрешение на ввоз и доставляем с соблюдением условий хранения.",
+     "includes": [
+      "Подбор препарата по МНН или торговому названию, производителю, форме и дозировке",
+      "Закупка у производителя или официального дистрибьютора в стране происхождения",
+      "Получение разрешения Минздрава России на ввоз, если препарат не зарегистрирован в РФ",
+      "Доставка с контролем температурного режима: +15…+25 °C, +2…+8 °C, −20 °C",
+      "Таможенное оформление и сопроводительные документы производителя",
+      "Референтные лекарственные препараты для сравнительных испытаний"
+     ],
+     "steps": [
+      {
+       "title": "Заявка",
+       "text": "Пришлите МНН или торговое название, производителя, лекарственную форму, дозировку, количество и цель ввоза."
+      },
+      {
+       "title": "Подбор и расчёт",
+       "text": "Проверяем доступность у производителей, сроки и необходимые разрешения. Присылаем коммерческое предложение."
+      },
+      {
+       "title": "Документы",
+       "text": "Готовим пакет документов и получаем разрешение на ввоз, если оно требуется."
+      },
+      {
+       "title": "Закупка и доставка",
+       "text": "Выкупаем партию, доставляем с контролем температуры, проходим таможенное оформление."
+      },
+      {
+       "title": "Передача",
+       "text": "Привозим на ваш склад или в лабораторию вместе с сопроводительными документами."
+      }
+     ],
+     "needs": [
+      "МНН или торговое наименование, производитель",
+      "Лекарственная форма, дозировка, количество упаковок",
+      "Цель ввоза и организация-получатель",
+      "Желаемый срок поставки"
+     ],
+     "faq": [
+      {
+       "q": "Можно ввезти препарат, который не зарегистрирован в России?",
+       "a": "Для исследовательских целей — да, по разрешению Минздрава России на ввоз конкретной партии. Поможем подготовить документы; срок зависит от препарата и полноты пакета."
+      },
+      {
+       "q": "Поставляете референтные препараты для сравнительных испытаний?",
+       "a": "Да. Референтные лекарственные препараты собраны в отдельном разделе каталога; если нужного там нет — пришлите запрос."
+      }
+     ],
+     "related": [
+      {
+       "label": "Референтные лекарственные препараты",
+       "href": "/catalog/reference-drugs/"
+      },
+      {
+       "label": "Получение разрешений на ввоз",
+       "href": "/services/import-permits/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ],
+     "form": {
+      "title": "Запросить поставку препаратов",
+      "text": "Опишите препараты и количество — проверим доступность и пришлём коммерческое предложение в течение 2 рабочих часов.",
+      "fields": [
+       "goods",
+       "permit",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/service-supply.png",
+      "alt": "Флакон с препаратом",
+      "width": 824,
+      "height": 1478
+     },
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "research-drug-supply",
+     "name": "Supply of medicines for research",
+     "h1": "Supply of medicinal products for research",
+     "title": "Supply of medicinal products to Russia for research purposes | OGK-CHEM",
+     "description": "We supply medicinal products to Russia for research and laboratory testing: selection, purchase from the manufacturer, import permit, cold chain and customs. Reply within 2 business hours.",
+     "summary": "Selection, purchase and import of medicines, including those not registered in Russia, with an import permit.",
+     "intro": "We supply medicinal products for research and laboratory testing, including products not registered in Russia. We select the product, buy it from the manufacturer or distributor, obtain the import permit and deliver under the required storage conditions.",
+     "includes": [
+      "Product selection by INN or trade name, manufacturer, dosage form and strength",
+      "Purchase from the manufacturer or an authorised distributor in the country of origin",
+      "Ministry of Health of Russia import permit if the product is not registered in Russia",
+      "Temperature-controlled delivery: +15…+25 °C, +2…+8 °C, −20 °C",
+      "Customs clearance and manufacturer accompanying documents",
+      "Reference medicinal products for comparative testing"
+     ],
+     "steps": [
+      {
+       "title": "Request",
+       "text": "Send the INN or trade name, manufacturer, dosage form, strength, quantity and purpose of import."
+      },
+      {
+       "title": "Selection and quote",
+       "text": "We check availability with manufacturers, lead times and required permits, then send a quotation."
+      },
+      {
+       "title": "Documents",
+       "text": "We prepare the document package and obtain the import permit if required."
+      },
+      {
+       "title": "Purchase and delivery",
+       "text": "We buy the batch, deliver it with temperature control and clear customs."
+      },
+      {
+       "title": "Handover",
+       "text": "We deliver to your warehouse or laboratory with the accompanying documents."
+      }
+     ],
+     "needs": [
+      "INN or trade name, manufacturer",
+      "Dosage form, strength, number of packs",
+      "Purpose of import and receiving organisation",
+      "Desired delivery date"
+     ],
+     "faq": [
+      {
+       "q": "Can a product not registered in Russia be imported?",
+       "a": "For research purposes, yes — under a Ministry of Health of Russia permit for the specific batch. We will help prepare the documents; the timing depends on the product and the completeness of the package."
+      },
+      {
+       "q": "Do you supply reference products for comparative testing?",
+       "a": "Yes. Reference medicinal products are in a separate catalogue section; if you can’t find what you need, send us a request."
+      }
+     ],
+     "related": [
+      {
+       "label": "Reference medicinal products",
+       "href": "/catalog/reference-drugs/"
+      },
+      {
+       "label": "Import permits",
+       "href": "/services/import-permits/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ],
+     "form": {
+      "title": "Request a supply of medicines",
+      "text": "Describe the products and quantities — we will check availability and send a quotation within 2 business hours.",
+      "fields": [
+       "goods",
+       "permit",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/service-supply.png",
+      "alt": "Medicine vial",
+      "width": 824,
+      "height": 1478
+     },
+     "updatedAt": "2026-10-20",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "kind": "service",
+   "slug": "pharma-logistics",
+   "position": 1,
+   "content": {
+    "ru": {
+     "slug": "pharma-logistics",
+     "name": "Фармацевтическая логистика",
+     "h1": "Логистика фармацевтических грузов",
+     "title": "Фармацевтическая логистика и доставка грузов | ОГК-ХИМ",
+     "description": "Доставка фармацевтических грузов, стандартных образцов и лабораторных материалов из 23 стран и по России: подбор транспорта и маршрута, контроль температуры, таможня. Расчёт за 2 рабочих часа.",
+     "summary": "Доставка из 23 стран и по России: маршрут, транспорт, контроль температуры и сроков.",
+     "intro": "Доставляем фармацевтические грузы, стандартные образцы и лабораторные материалы из 23 стран и по России. Подбираем транспорт под груз и маршрут, контролируем температурный режим и сроки, берём на себя таможню.",
+     "includes": [
+      "Международная доставка из Америки, Европы, Азии и стран СНГ",
+      "Доставка по России до склада или лаборатории",
+      "Перевозка между складами и лабораториями",
+      "Подбор транспорта и маршрута под особенности груза",
+      "Консолидация нескольких отправок в одну",
+      "Отслеживание груза и информирование на каждом этапе"
+     ],
+     "steps": [
+      {
+       "title": "Запрос",
+       "text": "Сообщите, откуда и куда везти, что за груз, его вес и температурный режим."
+      },
+      {
+       "title": "Маршрут и расчёт",
+       "text": "Подбираем транспорт и маршрут, рассчитываем сроки и стоимость, присылаем предложение."
+      },
+      {
+       "title": "Забор груза",
+       "text": "Забираем груз у отправителя, проверяем упаковку и документы."
+      },
+      {
+       "title": "Перевозка и таможня",
+       "text": "Везём с контролем условий, оформляем груз на границе."
+      },
+      {
+       "title": "Доставка",
+       "text": "Передаём груз получателю с документами и, если нужно, отчётом о температуре."
+      }
+     ],
+     "countries": [
+      "США",
+      "Канада",
+      "Великобритания",
+      "Франция",
+      "Швеция",
+      "Германия",
+      "Норвегия",
+      "Китай",
+      "Армения",
+      "Грузия",
+      "Нидерланды",
+      "Швейцария",
+      "Россия",
+      "Казахстан",
+      "Узбекистан",
+      "Азербайджан",
+      "Австрия",
+      "Бельгия",
+      "Австралия",
+      "Япония",
+      "Южная Корея",
+      "Италия",
+      "Испания"
+     ],
+     "related": [
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Оформление импорта и экспорта",
+       "href": "/services/import-export/"
+      }
+     ],
+     "form": {
+      "title": "Рассчитать доставку",
+      "text": "Укажите маршрут, груз и режим — рассчитаем сроки и стоимость в течение 2 рабочих часов.",
+      "fields": [
+       "route",
+       "cargo",
+       "temperature",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/service-logistics.png",
+      "alt": "Грузовик для перевозки фармацевтических грузов, вид сверху",
+      "width": 824,
+      "height": 2082
+     },
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "pharma-logistics",
+     "name": "Pharmaceutical logistics",
+     "h1": "Pharmaceutical cargo logistics",
+     "title": "Pharmaceutical logistics and cargo delivery | OGK-CHEM",
+     "description": "Delivery of pharmaceutical cargo, reference standards and laboratory materials from 23 countries and within Russia: transport and route selection, temperature control, customs. Quote within 2 business hours.",
+     "summary": "Delivery from 23 countries and within Russia: route, transport, temperature and lead time control.",
+     "intro": "We deliver pharmaceutical cargo, reference standards and laboratory materials from 23 countries and within Russia. We choose transport for the cargo and route, control temperature and lead times, and handle customs.",
+     "includes": [
+      "International delivery from the Americas, Europe, Asia and the CIS",
+      "Delivery within Russia to your warehouse or laboratory",
+      "Transport between warehouses and laboratories",
+      "Transport and route selection for the cargo",
+      "Consolidation of several shipments into one",
+      "Cargo tracking and updates at every stage"
+     ],
+     "steps": [
+      {
+       "title": "Request",
+       "text": "Tell us the origin and destination, the cargo, its weight and temperature range."
+      },
+      {
+       "title": "Route and quote",
+       "text": "We select transport and route, calculate lead time and cost, and send an offer."
+      },
+      {
+       "title": "Pick-up",
+       "text": "We collect the cargo from the shipper and check the packaging and documents."
+      },
+      {
+       "title": "Transport and customs",
+       "text": "We transport under controlled conditions and clear the cargo at the border."
+      },
+      {
+       "title": "Delivery",
+       "text": "We hand the cargo to the consignee with documents and, if needed, a temperature report."
+      }
+     ],
+     "countries": [
+      "USA",
+      "Canada",
+      "United Kingdom",
+      "France",
+      "Sweden",
+      "Germany",
+      "Norway",
+      "China",
+      "Armenia",
+      "Georgia",
+      "Netherlands",
+      "Switzerland",
+      "Russia",
+      "Kazakhstan",
+      "Uzbekistan",
+      "Azerbaijan",
+      "Austria",
+      "Belgium",
+      "Australia",
+      "Japan",
+      "South Korea",
+      "Italy",
+      "Spain"
+     ],
+     "related": [
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Import and export clearance",
+       "href": "/services/import-export/"
+      }
+     ],
+     "form": {
+      "title": "Get a delivery quote",
+      "text": "Enter the route, cargo and temperature range — we will calculate lead time and cost within 2 business hours.",
+      "fields": [
+       "route",
+       "cargo",
+       "temperature",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/service-logistics.png",
+      "alt": "Truck for pharmaceutical cargo, top view",
+      "width": 824,
+      "height": 2082
+     },
+     "updatedAt": "2026-10-20",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "kind": "service",
+   "slug": "cold-chain",
+   "position": 2,
+   "content": {
+    "ru": {
+     "slug": "cold-chain",
+     "name": "Холодовая цепь",
+     "h1": "Холодовая цепь для фармацевтических грузов",
+     "title": "Холодовая цепь и температурная доставка фармацевтики | ОГК-ХИМ",
+     "description": "Перевозка термолабильных грузов при +15…+25, +2…+8, −20 °C и на сухом льду: термоконтейнеры, хладоэлементы, логгеры температуры. Доставка из 23 стран, таможня. Расчёт за 2 рабочих часа.",
+     "summary": "Термоконтейнеры, хладоэлементы и сухой лёд, логгеры температуры на всём маршруте.",
+     "intro": "Перевозим термолабильные грузы с соблюдением температурного режима на всём маршруте — от склада производителя до вашей лаборатории. Термоконтейнеры, хладоэлементы и сухой лёд, логгеры температуры с отчётом о поездке.",
+     "includes": [
+      "Подбор термоупаковки под режим и длительность маршрута",
+      "Режимы +15…+25 °C, +2…+8 °C, −20 °C и сухой лёд",
+      "Логгеры температуры и отчёт о соблюдении режима",
+      "Перевозка сухого льда как опасного груза с оформлением",
+      "Документы для таможни готовим заранее, чтобы груз не простаивал",
+      "Доставка из 23 стран до склада или лаборатории"
+     ],
+     "steps": [
+      {
+       "title": "Режим и маршрут",
+       "text": "Уточняем температурный режим по документам производителя, маршрут и сроки."
+      },
+      {
+       "title": "Упаковка и расчёт",
+       "text": "Подбираем термоконтейнер и хладагент с запасом по времени, присылаем расчёт."
+      },
+      {
+       "title": "Отправка с логгером",
+       "text": "Упаковываем груз, включаем логгер температуры, передаём перевозчику."
+      },
+      {
+       "title": "Контроль в пути",
+       "text": "Отслеживаем груз и сроки, при необходимости заменяем хладагент на маршруте."
+      },
+      {
+       "title": "Доставка и отчёт",
+       "text": "Передаём груз получателю вместе с отчётом логгера о температуре в пути."
+      }
+     ],
+     "table": {
+      "caption": "Температурные режимы перевозки",
+      "head": [
+       "Режим",
+       "Что перевозим",
+       "Чем обеспечиваем"
+      ],
+      "rows": [
+       [
+        "+15…+25 °C",
+        "Реактивы, многие стандартные образцы и препараты",
+        "Термоконтейнер, кондиционированные хладоэлементы"
+       ],
+       [
+        "+2…+8 °C",
+        "Термолабильные стандартные образцы и препараты",
+        "Термоконтейнер с хладоэлементами, логгер"
+       ],
+       [
+        "−20 °C",
+        "Стандарты и реактивы, требующие заморозки",
+        "Замороженные хладоэлементы или сухой лёд"
+       ],
+       [
+        "Сухой лёд, около −78 °C",
+        "Биологические материалы и глубокозамороженные образцы",
+        "Сухой лёд, оформление как опасного груза"
+       ]
+      ]
+     },
+     "countries": [
+      "США",
+      "Канада",
+      "Великобритания",
+      "Франция",
+      "Швеция",
+      "Германия",
+      "Норвегия",
+      "Китай",
+      "Армения",
+      "Грузия",
+      "Нидерланды",
+      "Швейцария",
+      "Россия",
+      "Казахстан",
+      "Узбекистан",
+      "Азербайджан",
+      "Австрия",
+      "Бельгия",
+      "Австралия",
+      "Япония",
+      "Южная Корея",
+      "Италия",
+      "Испания"
+     ],
+     "faq": [
+      {
+       "q": "Как подтверждается, что режим соблюдён?",
+       "a": "В каждую отправку кладём логгер температуры. После доставки передаём отчёт о температуре за всё время в пути."
+      },
+      {
+       "q": "Что делать, если маршрут долгий?",
+       "a": "Подбираем термоконтейнер с запасом по времени и при необходимости заменяем хладагент на промежуточном складе."
+      }
+     ],
+     "related": [
+      {
+       "label": "Фармацевтическая логистика",
+       "href": "/services/pharma-logistics/"
+      },
+      {
+       "label": "Стандартные образцы",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Микроорганизмы и биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ],
+     "form": {
+      "title": "Рассчитать доставку в холодовой цепи",
+      "text": "Укажите маршрут, режим, вес и срок — рассчитаем доставку в течение 2 рабочих часов.",
+      "fields": [
+       "route",
+       "temperature",
+       "cargo",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/hero-3.png",
+      "alt": "Грузовик для перевозки грузов с контролем температуры",
+      "width": 2082,
+      "height": 824
+     },
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "cold-chain",
+     "name": "Cold chain",
+     "h1": "Cold chain for pharmaceutical cargo",
+     "title": "Cold chain and temperature-controlled pharma delivery | OGK-CHEM",
+     "description": "Transport of temperature-sensitive cargo at +15…+25, +2…+8, −20 °C and on dry ice: insulated shippers, coolant packs, temperature loggers. Delivery from 23 countries, customs. Quote within 2 business hours.",
+     "summary": "Insulated shippers, coolant packs and dry ice, temperature loggers along the whole route.",
+     "intro": "We transport temperature-sensitive cargo under the required temperature range along the whole route — from the manufacturer’s warehouse to your laboratory. Insulated shippers, coolant packs and dry ice, temperature loggers with a trip report.",
+     "includes": [
+      "Insulated packaging chosen for the temperature range and route duration",
+      "Ranges +15…+25 °C, +2…+8 °C, −20 °C and dry ice",
+      "Temperature loggers and a compliance report",
+      "Dry ice shipped as dangerous goods with the required paperwork",
+      "Customs documents prepared in advance so the cargo is not delayed",
+      "Delivery from 23 countries to your warehouse or laboratory"
+     ],
+     "steps": [
+      {
+       "title": "Range and route",
+       "text": "We confirm the temperature range from the manufacturer’s documents, the route and lead time."
+      },
+      {
+       "title": "Packaging and quote",
+       "text": "We select an insulated shipper and coolant with a time margin and send a quote."
+      },
+      {
+       "title": "Dispatch with a logger",
+       "text": "We pack the cargo, start the temperature logger and hand it to the carrier."
+      },
+      {
+       "title": "In-transit control",
+       "text": "We track the cargo and timing, and replace the coolant en route if needed."
+      },
+      {
+       "title": "Delivery and report",
+       "text": "We hand over the cargo together with the logger’s in-transit temperature report."
+      }
+     ],
+     "table": {
+      "caption": "Transport temperature ranges",
+      "head": [
+       "Range",
+       "What we ship",
+       "How we keep it"
+      ],
+      "rows": [
+       [
+        "+15…+25 °C",
+        "Reagents, many reference standards and medicines",
+        "Insulated shipper, conditioned coolant packs"
+       ],
+       [
+        "+2…+8 °C",
+        "Temperature-sensitive standards and medicines",
+        "Insulated shipper with coolant packs, logger"
+       ],
+       [
+        "−20 °C",
+        "Standards and reagents that must stay frozen",
+        "Frozen coolant packs or dry ice"
+       ],
+       [
+        "Dry ice, about −78 °C",
+        "Biological materials and deep-frozen samples",
+        "Dry ice, shipped as dangerous goods"
+       ]
+      ]
+     },
+     "countries": [
+      "USA",
+      "Canada",
+      "United Kingdom",
+      "France",
+      "Sweden",
+      "Germany",
+      "Norway",
+      "China",
+      "Armenia",
+      "Georgia",
+      "Netherlands",
+      "Switzerland",
+      "Russia",
+      "Kazakhstan",
+      "Uzbekistan",
+      "Azerbaijan",
+      "Austria",
+      "Belgium",
+      "Australia",
+      "Japan",
+      "South Korea",
+      "Italy",
+      "Spain"
+     ],
+     "faq": [
+      {
+       "q": "How is compliance with the temperature range confirmed?",
+       "a": "We put a temperature logger in every shipment. After delivery we provide a temperature report for the whole time in transit."
+      },
+      {
+       "q": "What if the route is long?",
+       "a": "We choose an insulated shipper with a time margin and, if needed, replace the coolant at an intermediate warehouse."
+      }
+     ],
+     "related": [
+      {
+       "label": "Pharmaceutical logistics",
+       "href": "/services/pharma-logistics/"
+      },
+      {
+       "label": "Reference standards",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Microorganisms and biological standards",
+       "href": "/catalog/biological-standards/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ],
+     "form": {
+      "title": "Get a cold chain delivery quote",
+      "text": "Enter the route, temperature range, weight and date — we will calculate delivery within 2 business hours.",
+      "fields": [
+       "route",
+       "temperature",
+       "cargo",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/hero-3.png",
+      "alt": "Truck for temperature-controlled cargo",
+      "width": 2082,
+      "height": 824
+     },
+     "updatedAt": "2026-10-20",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "kind": "service",
+   "slug": "customs-clearance",
+   "position": 3,
+   "content": {
+    "ru": {
+     "slug": "customs-clearance",
+     "name": "Таможенное оформление",
+     "h1": "Таможенное оформление фармацевтических грузов",
+     "title": "Таможенное оформление фармацевтики | ОГК-ХИМ",
+     "description": "Таможенное оформление фармацевтики, стандартных образцов, реактивов и лабораторного оборудования: коды ТН ВЭД, проверка документов, разрешения на ввоз, расчёт платежей.",
+     "summary": "Коды ТН ВЭД, проверка документов, расчёт платежей, декларирование и выпуск.",
+     "intro": "Оформляем импорт фармацевтики, стандартных образцов, реактивов и лабораторного оборудования. Определяем коды ТН ВЭД, проверяем пакет документов до отправки груза и сопровождаем получение разрешительных документов.",
+     "includes": [
+      "Классификация товара и подбор кода ТН ВЭД",
+      "Проверка пакета документов до отправки груза",
+      "Расчёт таможенных платежей",
+      "Декларирование и сопровождение выпуска",
+      "Разрешительные документы для ввоза — по необходимости",
+      "Консультации по требованиям к ввозу"
+     ],
+     "steps": [
+      {
+       "title": "Описание груза",
+       "text": "Пришлите описание товара, инвойс и документы производителя."
+      },
+      {
+       "title": "Классификация и проверка",
+       "text": "Определяем коды ТН ВЭД, проверяем документы и нужны ли разрешения."
+      },
+      {
+       "title": "Расчёт",
+       "text": "Считаем платежи и сроки оформления, присылаем предложение."
+      },
+      {
+       "title": "Декларирование",
+       "text": "Подаём декларацию и сопровождаем груз до выпуска."
+      },
+      {
+       "title": "Выпуск",
+       "text": "Передаём груз вам или везём дальше по России."
+      }
+     ],
+     "faq": [
+      {
+       "q": "Какие документы нужны для таможенного оформления?",
+       "a": "Обычно — контракт, инвойс, упаковочный лист, транспортные документы и документы производителя на товар. Для части товаров нужны разрешения: перечень определяем по коду ТН ВЭД."
+      }
+     ],
+     "related": [
+      {
+       "label": "Подбор кодов ТН ВЭД",
+       "href": "/services/tn-ved/"
+      },
+      {
+       "label": "Получение разрешений на ввоз",
+       "href": "/services/import-permits/"
+      },
+      {
+       "label": "Оформление импорта и экспорта",
+       "href": "/services/import-export/"
+      }
+     ],
+     "form": {
+      "title": "Запросить таможенное оформление",
+      "text": "Опишите товар и маршрут — оценим документы, платежи и сроки в течение 2 рабочих часов.",
+      "fields": [
+       "goods",
+       "route",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/service-customs.png",
+      "alt": "Таможенная печать",
+      "width": 824,
+      "height": 966
+     },
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "customs-clearance",
+     "name": "Customs clearance",
+     "h1": "Customs clearance of pharmaceutical cargo",
+     "title": "Customs clearance of pharmaceuticals | OGK-CHEM",
+     "description": "Customs clearance of pharmaceuticals, reference standards, reagents and laboratory equipment: HS codes, document review, import permits, duty calculation.",
+     "summary": "HS codes, document review, duty calculation, declaration and release.",
+     "intro": "We clear imports of pharmaceuticals, reference standards, reagents and laboratory equipment. We determine HS (TN VED) codes, review the document package before the cargo is shipped and support obtaining permits.",
+     "includes": [
+      "Goods classification and HS code selection",
+      "Document package review before shipment",
+      "Customs duty calculation",
+      "Declaration and support until release",
+      "Import permits — where required",
+      "Advice on import requirements"
+     ],
+     "steps": [
+      {
+       "title": "Cargo description",
+       "text": "Send the product description, invoice and manufacturer documents."
+      },
+      {
+       "title": "Classification and review",
+       "text": "We determine HS codes, check the documents and whether permits are needed."
+      },
+      {
+       "title": "Quote",
+       "text": "We calculate duties and clearance time and send an offer."
+      },
+      {
+       "title": "Declaration",
+       "text": "We file the declaration and support the cargo until release."
+      },
+      {
+       "title": "Release",
+       "text": "We hand the cargo to you or deliver it onward within Russia."
+      }
+     ],
+     "faq": [
+      {
+       "q": "What documents are needed for customs clearance?",
+       "a": "Usually the contract, invoice, packing list, transport documents and manufacturer documents for the goods. Some goods require permits — the list depends on the HS code."
+      }
+     ],
+     "related": [
+      {
+       "label": "HS code classification",
+       "href": "/services/tn-ved/"
+      },
+      {
+       "label": "Import permits",
+       "href": "/services/import-permits/"
+      },
+      {
+       "label": "Import and export clearance",
+       "href": "/services/import-export/"
+      }
+     ],
+     "form": {
+      "title": "Request customs clearance",
+      "text": "Describe the goods and route — we will assess documents, duties and timing within 2 business hours.",
+      "fields": [
+       "goods",
+       "route",
+       "date"
+      ]
+     },
+     "image": {
+      "src": "/images/home/service-customs.png",
+      "alt": "Customs stamp",
+      "width": 824,
+      "height": 966
+     },
+     "updatedAt": "2026-10-20",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "kind": "service",
+   "slug": "import-export",
+   "position": 4,
+   "content": {
+    "ru": {
+     "slug": "import-export",
+     "name": "Оформление импорта и экспорта",
+     "h1": "Оформление импорта и экспорта",
+     "title": "Оформление импорта и экспорта лабораторных товаров и фармацевтики | ОГК-ХИМ",
+     "description": "Сопровождение импорта и экспорта фармацевтических и лабораторных товаров: внешнеторговые документы, логистика, таможенное оформление. Запрос — ответ в течение 2 рабочих часов.",
+     "summary": "Внешнеторговые сделки под ключ: документы, логистика, таможня.",
+     "intro": "Сопровождаем внешнеторговые сделки с фармацевтическими и лабораторными товарами: импорт для вашей лаборатории и экспорт продукции за рубеж. Документы, логистика и таможня — у одного исполнителя.",
+     "includes": [
+      "Импорт под ключ: закупка, доставка, таможенное оформление",
+      "Экспорт: подготовка документов и таможенное оформление",
+      "Внешнеторговые документы: инвойс, упаковочный лист, спецификация",
+      "Проверка требований страны назначения к товару",
+      "Логистика с контролем температуры"
+     ],
+     "steps": [
+      {
+       "title": "Задача",
+       "text": "Расскажите, что, откуда и куда нужно доставить."
+      },
+      {
+       "title": "Схема сделки",
+       "text": "Предлагаем схему поставки, документы и сроки."
+      },
+      {
+       "title": "Документы",
+       "text": "Готовим внешнеторговые документы и проверяем требования."
+      },
+      {
+       "title": "Доставка и таможня",
+       "text": "Везём груз и оформляем его на границе."
+      }
+     ],
+     "related": [
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Фармацевтическая логистика",
+       "href": "/services/pharma-logistics/"
+      },
+      {
+       "label": "Подбор кодов ТН ВЭД",
+       "href": "/services/tn-ved/"
+      }
+     ],
+     "form": {
+      "title": "Обсудить импорт или экспорт",
+      "text": "Опишите товар и направление — предложим схему и сроки в течение 2 рабочих часов.",
+      "fields": [
+       "goods",
+       "route",
+       "date"
+      ]
+     },
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "import-export",
+     "name": "Import and export clearance",
+     "h1": "Import and export clearance",
+     "title": "Import and export clearance for laboratory goods and pharmaceuticals | OGK-CHEM",
+     "description": "Support for import and export of pharmaceutical and laboratory goods: foreign trade documents, logistics, customs clearance. Reply within 2 business hours.",
+     "summary": "End-to-end foreign trade deals: documents, logistics, customs.",
+     "intro": "We support foreign trade deals with pharmaceutical and laboratory goods: imports for your laboratory and exports abroad. Documents, logistics and customs from one provider.",
+     "includes": [
+      "Turnkey import: purchase, delivery, customs clearance",
+      "Export: document preparation and customs clearance",
+      "Foreign trade documents: invoice, packing list, specification",
+      "Check of the destination country’s requirements for the goods",
+      "Temperature-controlled logistics"
+     ],
+     "steps": [
+      {
+       "title": "Task",
+       "text": "Tell us what needs to be delivered, from where and to where."
+      },
+      {
+       "title": "Deal structure",
+       "text": "We propose a supply scheme, documents and timing."
+      },
+      {
+       "title": "Documents",
+       "text": "We prepare foreign trade documents and check the requirements."
+      },
+      {
+       "title": "Delivery and customs",
+       "text": "We transport the cargo and clear it at the border."
+      }
+     ],
+     "related": [
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Pharmaceutical logistics",
+       "href": "/services/pharma-logistics/"
+      },
+      {
+       "label": "HS code classification",
+       "href": "/services/tn-ved/"
+      }
+     ],
+     "form": {
+      "title": "Discuss import or export",
+      "text": "Describe the goods and direction — we will propose a scheme and timing within 2 business hours.",
+      "fields": [
+       "goods",
+       "route",
+       "date"
+      ]
+     },
+     "updatedAt": "2026-10-20",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "kind": "service",
+   "slug": "import-permits",
+   "position": 5,
+   "content": {
+    "ru": {
+     "slug": "import-permits",
+     "name": "Разрешения на ввоз",
+     "h1": "Получение разрешений на ввоз",
+     "title": "Разрешения Минздрава и ФСТЭК на ввоз продукции | ОГК-ХИМ",
+     "description": "Помогаем получить разрешения на ввоз: Минздрав России — для лекарственных средств в исследовательских целях, ФСТЭК России — для продукции двойного назначения. Подготовка документов и сопровождение.",
+     "summary": "Определяем, какой документ нужен, готовим пакет и сопровождаем до получения.",
+     "intro": "Помогаем получить разрешительные документы для ввоза в Россию: разрешение Минздрава России на ввоз лекарственных средств для исследований и документы ФСТЭК России для продукции, которая относится к двойному назначению.",
+     "includes": [
+      "Определяем, какое разрешение нужно для конкретного товара",
+      "Разрешение Минздрава России на ввоз партии лекарственных средств для исследований",
+      "Документы ФСТЭК России для продукции двойного назначения",
+      "Подготовка и подача пакета документов",
+      "Сопровождение до получения разрешения",
+      "Использование разрешения при таможенном оформлении груза"
+     ],
+     "steps": [
+      {
+       "title": "Описание товара",
+       "text": "Пришлите описание, состав, назначение и документы производителя."
+      },
+      {
+       "title": "Оценка",
+       "text": "Определяем, нужно ли разрешение и какое, и сообщаем сроки."
+      },
+      {
+       "title": "Пакет документов",
+       "text": "Готовим заявление и комплект документов, согласуем с вами."
+      },
+      {
+       "title": "Подача и сопровождение",
+       "text": "Подаём документы и отвечаем на запросы ведомства."
+      },
+      {
+       "title": "Разрешение",
+       "text": "Получаем разрешение и используем его при оформлении груза."
+      }
+     ],
+     "faq": [
+      {
+       "q": "Как понять, нужно ли разрешение на мой товар?",
+       "a": "Это зависит от товара, его кода ТН ВЭД и цели ввоза. Пришлите описание — подскажем, нужен ли документ и какой."
+      }
+     ],
+     "related": [
+      {
+       "label": "Поставка препаратов для исследований",
+       "href": "/services/research-drug-supply/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Подбор кодов ТН ВЭД",
+       "href": "/services/tn-ved/"
+      }
+     ],
+     "form": {
+      "title": "Получить разрешение на ввоз",
+      "text": "Опишите товар и выберите ведомство — оценим, нужен ли документ, и назовём сроки.",
+      "fields": [
+       "regulator",
+       "goods",
+       "date"
+      ]
+     },
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "import-permits",
+     "name": "Import permits",
+     "h1": "Import permits",
+     "title": "Ministry of Health and FSTEC import permits | OGK-CHEM",
+     "description": "We help obtain import permits: the Ministry of Health of Russia for medicinal products for research, FSTEC of Russia for dual-use goods. Document preparation and support.",
+     "summary": "We determine which document is needed, prepare the package and support you until it is issued.",
+     "intro": "We help obtain permits for import into Russia: a Ministry of Health of Russia permit to import medicinal products for research, and FSTEC of Russia documents for dual-use goods.",
+     "includes": [
+      "Determining which permit a specific product needs",
+      "Ministry of Health of Russia permit to import a batch of medicines for research",
+      "FSTEC of Russia documents for dual-use goods",
+      "Preparing and filing the document package",
+      "Support until the permit is issued",
+      "Using the permit during customs clearance"
+     ],
+     "steps": [
+      {
+       "title": "Product description",
+       "text": "Send the description, composition, intended use and manufacturer documents."
+      },
+      {
+       "title": "Assessment",
+       "text": "We determine whether a permit is needed and which one, and give the timing."
+      },
+      {
+       "title": "Document package",
+       "text": "We prepare the application and documents and agree them with you."
+      },
+      {
+       "title": "Filing and support",
+       "text": "We file the documents and answer the authority’s queries."
+      },
+      {
+       "title": "Permit",
+       "text": "We obtain the permit and use it to clear the cargo."
+      }
+     ],
+     "faq": [
+      {
+       "q": "How do I know whether my product needs a permit?",
+       "a": "It depends on the product, its HS code and the purpose of import. Send a description and we will tell you whether a document is needed and which one."
+      }
+     ],
+     "related": [
+      {
+       "label": "Supply of medicines for research",
+       "href": "/services/research-drug-supply/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "HS code classification",
+       "href": "/services/tn-ved/"
+      }
+     ],
+     "form": {
+      "title": "Obtain an import permit",
+      "text": "Describe the product and choose the authority — we will assess whether a document is needed and give the timing.",
+      "fields": [
+       "regulator",
+       "goods",
+       "date"
+      ]
+     },
+     "updatedAt": "2026-10-20",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "kind": "service",
+   "slug": "tn-ved",
+   "position": 6,
+   "content": {
+    "ru": {
+     "slug": "tn-ved",
+     "name": "Подбор кодов ТН ВЭД",
+     "h1": "Подбор кодов ТН ВЭД",
+     "title": "Подбор кода ТН ВЭД для фармацевтических товаров | ОГК-ХИМ",
+     "description": "Определяем код ТН ВЭД ЕАЭС для субстанций, стандартных образцов, реактивов и лабораторного оборудования: обоснование классификации, ставки платежей, нетарифные меры.",
+     "summary": "Код ТН ВЭД ЕАЭС с обоснованием, ставками платежей и требованиями к ввозу.",
+     "intro": "Определяем код ТН ВЭД ЕАЭС для фармацевтических субстанций, стандартных образцов, реактивов и лабораторного оборудования — с обоснованием по описанию, составу и назначению товара.",
+     "includes": [
+      "Анализ описания, состава и назначения товара",
+      "Подбор кода по основным правилам интерпретации ТН ВЭД",
+      "Письменное обоснование классификации",
+      "Ставки пошлины и НДС, нетарифные меры для кода",
+      "Перечень документов, которые понадобятся при ввозе"
+     ],
+     "steps": [
+      {
+       "title": "Описание",
+       "text": "Пришлите описание товара, состав и документы производителя."
+      },
+      {
+       "title": "Анализ",
+       "text": "Изучаем товар и применимые правила классификации."
+      },
+      {
+       "title": "Код и обоснование",
+       "text": "Присылаем код ТН ВЭД с обоснованием."
+      },
+      {
+       "title": "Требования",
+       "text": "Указываем ставки платежей и документы для ввоза."
+      }
+     ],
+     "faq": [
+      {
+       "q": "Чем грозит неверный код ТН ВЭД?",
+       "a": "Корректировкой декларации, доначислением платежей и задержкой выпуска груза. Поэтому код лучше определить до отправки."
+      }
+     ],
+     "related": [
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Получение разрешений на ввоз",
+       "href": "/services/import-permits/"
+      }
+     ],
+     "form": {
+      "title": "Подобрать код ТН ВЭД",
+      "text": "Опишите товар: что это, из чего состоит и для чего применяется. Ответим в течение 2 рабочих часов.",
+      "fields": [
+       "goods"
+      ]
+     },
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "tn-ved",
+     "name": "HS code classification",
+     "h1": "HS (TN VED) code classification",
+     "title": "HS (TN VED) code classification for pharmaceutical goods | OGK-CHEM",
+     "description": "We determine the EAEU HS (TN VED) code for substances, reference standards, reagents and laboratory equipment: classification rationale, duty rates, non-tariff measures.",
+     "summary": "EAEU HS code with rationale, duty rates and import requirements.",
+     "intro": "We determine the EAEU HS (TN VED) code for pharmaceutical substances, reference standards, reagents and laboratory equipment — with a rationale based on the description, composition and intended use of the goods.",
+     "includes": [
+      "Analysis of the product description, composition and intended use",
+      "Code selection under the General Rules of Interpretation",
+      "Written classification rationale",
+      "Duty and VAT rates, non-tariff measures for the code",
+      "List of documents needed for import"
+     ],
+     "steps": [
+      {
+       "title": "Description",
+       "text": "Send the product description, composition and manufacturer documents."
+      },
+      {
+       "title": "Analysis",
+       "text": "We study the product and the applicable classification rules."
+      },
+      {
+       "title": "Code and rationale",
+       "text": "We send the HS code with a rationale."
+      },
+      {
+       "title": "Requirements",
+       "text": "We list duty rates and import documents."
+      }
+     ],
+     "faq": [
+      {
+       "q": "What happens if the HS code is wrong?",
+       "a": "The declaration may be corrected, additional duties charged and the release of the cargo delayed. That is why it is better to determine the code before shipment."
+      }
+     ],
+     "related": [
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Import permits",
+       "href": "/services/import-permits/"
+      }
+     ],
+     "form": {
+      "title": "Find an HS code",
+      "text": "Describe the product: what it is, what it consists of and what it is used for. We reply within 2 business hours.",
+      "fields": [
+       "goods"
+      ]
+     },
+     "updatedAt": "2026-10-20",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "kind": "solution",
+   "slug": "pharmaceutical-quality-control",
+   "position": 0,
+   "content": {
+    "ru": {
+     "slug": "pharmaceutical-quality-control",
+     "name": "Лаборатория контроля качества",
+     "h1": "Всё для лаборатории контроля качества",
+     "title": "Оснащение лаборатории контроля качества: стандарты, колонки, реактивы | ОГК-ХИМ",
+     "description": "Стандартные образцы EDQM, USP и BP, стандарты примесей, колонки для ВЭЖХ, реактивы, фармакопеи и тест-штаммы для лаборатории ОКК фармацевтического предприятия. Один запрос — одно КП.",
+     "summary": "Стандартные образцы, примеси, колонки, реактивы и фармакопеи для испытаний по монографиям.",
+     "intro": "Стандартные образцы, колонки, реактивы и фармакопеи для испытаний по монографиям и методикам предприятия. Соберите всё в одну корзину — пришлём одно коммерческое предложение в течение 2 рабочих часов.",
+     "tasks": [
+      "Испытания по монографиям Ph. Eur., USP и BP",
+      "Контроль примесей и валидация методик",
+      "Входной контроль субстанций и выпуск серий",
+      "Микробиологическая чистота и испытания на стерильность"
+     ],
+     "groups": [
+      {
+       "title": "Фармакопейные стандарты",
+       "text": "Первичные стандарты EDQM, USP и British Pharmacopoeia для испытаний строго по монографии, вторичные стандарты Merck — для рутинного контроля.",
+       "links": [
+        {
+         "label": "EDQM",
+         "href": "/catalog/reference-standards/edqm/"
+        },
+        {
+         "label": "USP",
+         "href": "/catalog/reference-standards/usp/"
+        },
+        {
+         "label": "British Pharmacopoeia",
+         "href": "/catalog/reference-standards/british-pharmacopoeia/"
+        },
+        {
+         "label": "Вторичные Merck",
+         "href": "/catalog/reference-standards/merck/"
+        }
+       ],
+       "scope": [
+        "reference-standards/edqm",
+        "reference-standards/usp",
+        "reference-standards/british-pharmacopoeia",
+        "reference-standards/merck"
+       ]
+      },
+      {
+       "title": "Стандарты примесей",
+       "text": "Примеси по Ph. Eur. и USP, метаболиты и меченые соединения от SynZeal, Clearsynth, TRC и Aozeal — в любой фасовке под запрос.",
+       "links": [
+        {
+         "label": "Стандарты примесей",
+         "href": "/catalog/reference-standards/impurity-standards/"
+        },
+        {
+         "label": "Изотопно-меченые",
+         "href": "/catalog/reference-standards/impurity-standards/labeled-compounds/"
+        },
+        {
+         "label": "Субстанции A–Я",
+         "href": "/substances/"
+        }
+       ],
+       "scope": [
+        "reference-standards/impurity-standards"
+       ]
+      },
+      {
+       "title": "Хроматография",
+       "text": "Колонки и предколонки для ВЭЖХ и УВЭЖХ, шприцевые фильтры и фитинги. Подберём колонку под методику.",
+       "links": [
+        {
+         "label": "Колонки для ВЭЖХ",
+         "href": "/catalog/chromatography/hplc-columns/"
+        },
+        {
+         "label": "Колонки C18 4,6 × 150 мм",
+         "href": "/catalog/chromatography/hplc-columns/c18-4-6x150/"
+        },
+        {
+         "label": "Предколонки",
+         "href": "/catalog/chromatography/precolumns/"
+        },
+        {
+         "label": "Фильтры",
+         "href": "/catalog/chromatography/filters/"
+        }
+       ],
+       "scope": [
+        "chromatography"
+       ]
+      },
+      {
+       "title": "Реактивы и растворители",
+       "text": "Растворители для ВЭЖХ и ЖХ-МС, кислоты и соли для подвижных фаз и пробоподготовки.",
+       "links": [
+        {
+         "label": "Реактивы",
+         "href": "/catalog/reagents/"
+        }
+       ],
+       "scope": [
+        "reagents"
+       ]
+      },
+      {
+       "title": "Фармакопеи",
+       "text": "Печатные издания и годовые онлайн-подписки на Европейскую, Британскую фармакопеи и USP–NF.",
+       "links": [
+        {
+         "label": "Фармакопеи и справочники",
+         "href": "/catalog/pharmacopeias/"
+        }
+       ],
+       "scope": [
+        "pharmacopeias"
+       ]
+      },
+      {
+       "title": "Тест-штаммы",
+       "text": "Штаммы ATCC для испытаний на микробиологическую чистоту, стерильность и эффективность консервантов.",
+       "links": [
+        {
+         "label": "Микроорганизмы и биологические стандарты",
+         "href": "/catalog/biological-standards/"
+        }
+       ],
+       "scope": [
+        "biological-standards"
+       ]
+      }
+     ],
+     "featured": [
+      "reference-standards/edqm",
+      "reference-standards/usp",
+      "reference-standards/impurity-standards",
+      "chromatography/hplc-columns"
+     ],
+     "services": [
+      "cold-chain",
+      "customs-clearance",
+      "import-permits"
+     ],
+     "articles": [
+      "edqm-vs-usp",
+      "how-to-choose-reference-standard",
+      "what-are-edqm-reference-standards",
+      "how-to-order-standards-from-europe"
+     ],
+     "faq": [
+      {
+       "q": "Можно отправить один запрос на стандарты, колонки и реактивы?",
+       "a": "Да. Добавьте позиции из разных разделов в одну корзину или загрузите список до 200 строк — пришлём одно коммерческое предложение."
+      },
+      {
+       "q": "Предоставляете документы для закупки по 44-ФЗ и 223-ФЗ?",
+       "a": "Да. Укажите требования к документам в комментарии к заявке — подготовим комплект вместе с коммерческим предложением."
+      },
+      {
+       "q": "Как перевозите стандарты с хранением при −20 °C?",
+       "a": "В термоконтейнерах с хладоэлементами или сухим льдом и логгером температуры. Запись логгера передаём вместе с грузом."
+      }
+     ],
+     "updatedAt": "2026-10-22"
+    }
+   }
+  },
+  {
+   "kind": "solution",
+   "slug": "hplc-laboratory",
+   "position": 1,
+   "content": {
+    "ru": {
+     "slug": "hplc-laboratory",
+     "name": "Лаборатория ВЭЖХ",
+     "h1": "Оснащение лаборатории ВЭЖХ",
+     "title": "Оснащение лаборатории ВЭЖХ: колонки, предколонки, фильтры, приборы | ОГК-ХИМ",
+     "description": "Колонки и предколонки Waters, Agilent, Shimadzu и Welch, шприцевые фильтры, фитинги, растворители и приборы для ВЭЖХ. Подбор колонки под методику и одно КП на весь список.",
+     "summary": "Колонки, предколонки, фильтры, фитинги, растворители и приборы для ВЭЖХ и УВЭЖХ.",
+     "intro": "Колонки, предколонки, фильтры, фитинги и растворители для ВЭЖХ и УВЭЖХ, а также модули хроматографов. Пришлите методику — подберём колонку и всё, что к ней нужно.",
+     "tasks": [
+      "Подбор колонки под фармакопейную методику",
+      "Перенос методики с ВЭЖХ на УВЭЖХ",
+      "Регулярное пополнение расходников",
+      "Оснащение новой хроматографической линии"
+     ],
+     "groups": [
+      {
+       "title": "Колонки для ВЭЖХ и УВЭЖХ",
+       "text": "C18, C8, фенильные и HILIC от Waters, Agilent, Shimadzu и Welch. Фильтры по длине, диаметру, размеру частиц и pH.",
+       "links": [
+        {
+         "label": "Все колонки",
+         "href": "/catalog/chromatography/hplc-columns/"
+        },
+        {
+         "label": "Waters C18",
+         "href": "/catalog/chromatography/hplc-columns/waters-c18/"
+        },
+        {
+         "label": "Agilent C18",
+         "href": "/catalog/chromatography/hplc-columns/agilent-c18/"
+        },
+        {
+         "label": "Фенильные",
+         "href": "/catalog/chromatography/hplc-columns/phenyl/"
+        },
+        {
+         "label": "HILIC",
+         "href": "/catalog/chromatography/hplc-columns/hilic/"
+        }
+       ],
+       "scope": [
+        "chromatography/hplc-columns"
+       ]
+      },
+      {
+       "title": "Предколонки",
+       "text": "Защитные картриджи и держатели VanGuard, Sentry, ZORBAX Guard и Fast Guard продлевают срок службы колонки.",
+       "links": [
+        {
+         "label": "Предколонки",
+         "href": "/catalog/chromatography/precolumns/"
+        }
+       ],
+       "scope": [
+        "chromatography/precolumns"
+       ]
+      },
+      {
+       "title": "Пробоподготовка",
+       "text": "Шприцевые фильтры PTFE, Nylon, PVDF, PES и RC с порами 0,22 и 0,45 мкм, виалы и крышки для автосамплера.",
+       "links": [
+        {
+         "label": "Фильтры",
+         "href": "/catalog/chromatography/filters/"
+        },
+        {
+         "label": "Посуда и тара",
+         "href": "/catalog/laboratory-glassware/"
+        }
+       ],
+       "scope": [
+        "chromatography/filters",
+        "laboratory-glassware"
+       ]
+      },
+      {
+       "title": "Фитинги и капилляры",
+       "text": "PEEK-фитинги, обжимные кольца, соединители и капилляры — без мёртвого объёма.",
+       "links": [
+        {
+         "label": "Фитинги",
+         "href": "/catalog/chromatography/fittings/"
+        }
+       ],
+       "scope": [
+        "chromatography/fittings"
+       ]
+      },
+      {
+       "title": "Растворители",
+       "text": "Ацетонитрил, метанол и другие растворители квалификации для ВЭЖХ и ЖХ-МС.",
+       "links": [
+        {
+         "label": "Реактивы",
+         "href": "/catalog/reagents/"
+        }
+       ],
+       "scope": [
+        "reagents"
+       ]
+      },
+      {
+       "title": "Приборы и модули",
+       "text": "Хроматографы, насосы и детекторы Waters, Agilent и Shimadzu, спектрофотометры.",
+       "links": [
+        {
+         "label": "Лабораторное оборудование",
+         "href": "/catalog/laboratory-equipment/"
+        }
+       ],
+       "scope": [
+        "laboratory-equipment"
+       ]
+      }
+     ],
+     "featured": [
+      "chromatography/hplc-columns",
+      "chromatography/precolumns",
+      "chromatography/filters"
+     ],
+     "services": [
+      "customs-clearance",
+      "tn-ved"
+     ],
+     "articles": [
+      "how-to-choose-hplc-column",
+      "hplc-consumables",
+      "why-use-guard-columns"
+     ],
+     "faq": [
+      {
+       "q": "Подберёте колонку, если в методике указана снятая с производства?",
+       "a": "Да. Пришлите методику — предложим колонку с близкой фазой, геометрией и селективностью. Перед заменой в валидированной методике проверьте пригодность системы."
+      },
+      {
+       "q": "Можно заказать колонку вместе с совместимой предколонкой?",
+       "a": "Да. Добавьте колонку в корзину и отметьте в комментарии, что нужна предколонка, — включим картридж и держатель в КП."
+      }
+     ],
+     "updatedAt": "2026-10-22"
+    }
+   }
+  },
+  {
+   "kind": "solution",
+   "slug": "pharmaceutical-rnd",
+   "position": 2,
+   "content": {
+    "ru": {
+     "slug": "pharmaceutical-rnd",
+     "name": "Фармацевтическая разработка",
+     "h1": "Материалы для фармацевтической разработки",
+     "title": "Материалы для фармразработки: референтные препараты, стандарты, примеси | ОГК-ХИМ",
+     "description": "Референтные препараты для исследований биоэквивалентности, стандарты субстанций и примесей, изотопно-меченые соединения и реактивы для R&D. Ввоз под разрешение Минздрава и холодовая цепь.",
+     "summary": "Референтные препараты, стандарты API и примесей, меченые соединения и реактивы для R&D.",
+     "intro": "Референтные препараты, стандарты субстанций и примесей, меченые соединения и реактивы для разработки воспроизведённых препаратов. Организуем ввоз под разрешение и перевозку в нужном температурном режиме.",
+     "tasks": [
+      "Разработка воспроизведённого препарата",
+      "Тест сравнительной кинетики растворения",
+      "Исследования биоэквивалентности",
+      "Разработка и валидация аналитических методик"
+     ],
+     "groups": [
+      {
+       "title": "Референтные препараты",
+       "text": "Оригинальные препараты для сравнения при разработке и в исследованиях биоэквивалентности. Несколько серий с нужным остаточным сроком годности.",
+       "links": [
+        {
+         "label": "Референтные препараты",
+         "href": "/catalog/reference-drugs/"
+        },
+        {
+         "label": "Поставка для исследований",
+         "href": "/services/research-drug-supply/"
+        }
+       ],
+       "scope": [
+        "reference-drugs"
+       ]
+      },
+      {
+       "title": "Стандарты субстанций",
+       "text": "Фармакопейные и вторичные стандарты API для количественного определения и идентификации.",
+       "links": [
+        {
+         "label": "Стандартные образцы",
+         "href": "/catalog/reference-standards/"
+        },
+        {
+         "label": "Субстанции A–Я",
+         "href": "/substances/"
+        }
+       ],
+       "scope": [
+        "reference-standards/edqm",
+        "reference-standards/usp",
+        "reference-standards/lgc",
+        "reference-standards/merck"
+       ]
+      },
+      {
+       "title": "Примеси и метаболиты",
+       "text": "Стандарты примесей для изучения профиля примесей и валидации методик — любая фасовка под запрос.",
+       "links": [
+        {
+         "label": "Стандарты примесей",
+         "href": "/catalog/reference-standards/impurity-standards/"
+        }
+       ],
+       "scope": [
+        "reference-standards/impurity-standards"
+       ]
+      },
+      {
+       "title": "Меченые соединения",
+       "text": "Дейтерированные внутренние стандарты для биоаналитики методом ЖХ-МС/МС.",
+       "links": [
+        {
+         "label": "Изотопно-меченые",
+         "href": "/catalog/reference-standards/impurity-standards/labeled-compounds/"
+        }
+       ],
+       "scope": [
+        "reference-standards/impurity-standards"
+       ]
+      }
+     ],
+     "featured": [
+      "reference-drugs",
+      "reference-standards/impurity-standards"
+     ],
+     "services": [
+      "research-drug-supply",
+      "import-permits",
+      "cold-chain"
+     ],
+     "articles": [
+      "what-is-reference-drug",
+      "how-to-choose-reference-standard",
+      "pharma-shipping-2-8"
+     ],
+     "faq": [
+      {
+       "q": "Поможете с разрешением на ввоз незарегистрированного препарата?",
+       "a": "Да. Подготовим комплект документов для разрешения Минздрава на ввоз партии для исследований и организуем поставку после его получения."
+      },
+      {
+       "q": "Можно получить несколько серий референтного препарата?",
+       "a": "Да. Укажите в запросе число серий и минимальный остаточный срок годности — подберём партии под график исследований."
+      }
+     ],
+     "updatedAt": "2026-10-22"
+    }
+   }
+  },
+  {
+   "kind": "solution",
+   "slug": "microbiology-laboratory",
+   "position": 3,
+   "content": {
+    "ru": {
+     "slug": "microbiology-laboratory",
+     "name": "Микробиологическая лаборатория",
+     "h1": "Оснащение микробиологической лаборатории",
+     "title": "Тест-штаммы ATCC и оснащение микробиологической лаборатории | ОГК-ХИМ",
+     "description": "Тест-штаммы ATCC для фармакопейных микробиологических испытаний, лабораторная посуда и фармакопеи. Перевозка штаммов в нужном температурном режиме.",
+     "summary": "Тест-штаммы ATCC, посуда и фармакопеи для микробиологических испытаний.",
+     "intro": "Тест-штаммы ATCC для испытаний на микробиологическую чистоту, стерильность и эффективность консервантов, а также посуда и фармакопеи. Штаммы перевозим в нужном температурном режиме.",
+     "tasks": [
+      "Испытание на микробиологическую чистоту",
+      "Испытание на стерильность",
+      "Проверка ростовых свойств питательных сред",
+      "Испытание эффективности антимикробных консервантов"
+     ],
+     "groups": [
+      {
+       "title": "Тест-штаммы ATCC",
+       "text": "Escherichia coli, Staphylococcus aureus, Pseudomonas aeruginosa, Candida albicans, Aspergillus brasiliensis, Bacillus subtilis и другие штаммы, указанные в фармакопеях.",
+       "links": [
+        {
+         "label": "Микроорганизмы и биологические стандарты",
+         "href": "/catalog/biological-standards/"
+        }
+       ],
+       "scope": [
+        "biological-standards"
+       ]
+      },
+      {
+       "title": "Лабораторная посуда",
+       "text": "Мерные колбы класса A, лабораторные бутыли и стаканы DURAN.",
+       "links": [
+        {
+         "label": "Посуда и тара",
+         "href": "/catalog/laboratory-glassware/"
+        }
+       ],
+       "scope": [
+        "laboratory-glassware"
+       ]
+      },
+      {
+       "title": "Фармакопеи",
+       "text": "Европейская и Британская фармакопеи, USP–NF — печатные издания и онлайн-подписки.",
+       "links": [
+        {
+         "label": "Фармакопеи",
+         "href": "/catalog/pharmacopeias/"
+        }
+       ],
+       "scope": [
+        "pharmacopeias"
+       ]
+      }
+     ],
+     "featured": [
+      "biological-standards"
+     ],
+     "services": [
+      "cold-chain",
+      "import-permits",
+      "customs-clearance"
+     ],
+     "articles": [
+      "what-is-cold-chain",
+      "pharma-shipping-2-8"
+     ],
+     "faq": [
+      {
+       "q": "В каком виде поставляются штаммы ATCC?",
+       "a": "Как правило, в лиофилизированном виде во флаконе. Условия хранения указаны в карточке штамма и паспорте."
+      },
+      {
+       "q": "Нужны ли документы на ввоз штаммов?",
+       "a": "Зависит от штамма и его группы патогенности. Уточним требования по вашему списку и поможем с разрешительными документами, если они нужны."
+      }
+     ],
+     "updatedAt": "2026-10-22"
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "edqm-vs-usp",
+   "position": 0,
+   "content": {
+    "ru": {
+     "slug": "edqm-vs-usp",
+     "h1": "Стандартные образцы EDQM и USP: в чём отличие",
+     "title": "Стандартные образцы EDQM и USP: в чём отличие и какой выбрать | ОГК-ХИМ",
+     "description": "Чем стандартные образцы EDQM отличаются от USP, когда нужен каждый из них, можно ли заменить один другим и при чём здесь вторичные стандарты. Разбор для лабораторий контроля качества.",
+     "lead": "EDQM и USP выпускают фармакопейные стандартные образцы для разных фармакопей. Разбираемся, чем они отличаются, какой нужен в вашем испытании и когда уместен вторичный стандарт.",
+     "publishedAt": "2026-10-06",
+     "updatedAt": "2026-10-15",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 6,
+     "body": [
+      {
+       "type": "h2",
+       "id": "who",
+       "text": "Кто выпускает стандарты"
+      },
+      {
+       "type": "p",
+       "text": "EDQM — Европейский директорат по качеству лекарственных средств и здравоохранения, структура Совета Европы. Он издаёт Европейскую фармакопею (Ph. Eur.) и устанавливает стандартные образцы для испытаний по её монографиям: химические (CRS), биологические (BRP) и стандарты для проверки пригодности хроматографических систем."
+      },
+      {
+       "type": "p",
+       "text": "USP — Фармакопейная конвенция США, некоммерческая научная организация. Она издаёт фармакопею USP–NF и выпускает стандартные образцы USP Reference Standards для испытаний, указанных в её монографиях и общих главах."
+      },
+      {
+       "type": "h2",
+       "id": "main",
+       "text": "Главное отличие — фармакопея, а не качество"
+      },
+      {
+       "type": "p",
+       "text": "Оба производителя выпускают первичные фармакопейные стандарты высокого качества. Различаются они тем, для какой фармакопеи установлены. Стандарт применяют в испытании той фармакопеи, в монографии которой он указан: методика по Ph. Eur. — стандарт EDQM, методика по USP — стандарт USP."
+      },
+      {
+       "type": "table",
+       "caption": "Сравнение стандартов EDQM и USP",
+       "head": [
+        "",
+        "EDQM",
+        "USP"
+       ],
+       "rows": [
+        [
+         "Фармакопея",
+         "Европейская (Ph. Eur.)",
+         "Фармакопея США (USP–NF)"
+        ],
+        [
+         "Обозначение",
+         "CRS — химические, BRP — биологические",
+         "Reference Standards (RS)"
+        ],
+        [
+         "Фасовка",
+         "Одна фиксированная",
+         "Одна фиксированная"
+        ],
+        [
+         "Пригодность партии",
+         "Партия действует, пока указана в каталоге EDQM",
+         "Лот действует, пока указан в каталоге USP"
+        ],
+        [
+         "Срок на этикетке",
+         "Не указывается",
+         "Не указывается"
+        ]
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "replace",
+       "text": "Можно ли заменить один стандарт другим"
+      },
+      {
+       "type": "p",
+       "text": "В испытании по монографии официальным является стандарт той фармакопеи, по которой оно выполняется. Применение другого стандарта лаборатория должна обосновать в рамках своей системы качества — например, показать прослеживаемость к первичному образцу и пригодность для конкретной методики."
+      },
+      {
+       "type": "note",
+       "text": "Решение о том, какой стандарт применять, принимает лаборатория по своей методике и системе качества. Мы поможем подобрать позиции и проверим их наличие у производителей."
+      },
+      {
+       "type": "h2",
+       "id": "secondary",
+       "text": "Когда уместен вторичный стандарт"
+      },
+      {
+       "type": "p",
+       "text": "Вторичные стандарты — например, Pharmaceutical Secondary Standards Merck — прослеживаются к первичным фармакопейным образцам и сопровождаются сертификатом анализа. Их выбирают для рутинного контроля, когда первичный стандарт дорог или расходуется быстро."
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Первичный стандарт EDQM или USP — арбитражные испытания и испытания строго по монографии",
+        "Вторичный стандарт — рутинный контроль по валидированной методике предприятия",
+        "Стандарты примесей от синтезаторов — идентификация пиков и валидация методик, любая фасовка под запрос"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "order",
+       "text": "Как заказать стандарты"
+      },
+      {
+       "type": "p",
+       "text": "Найдите позицию по каталожному номеру или CAS и добавьте в корзину запроса — можно сразу несколько, в том числе от разных производителей. Если позиции нет на сайте, пришлите список: поставим под заказ из каталогов производителей. Многие стандарты требуют хранения при +2…+8 °C или −20 °C — перевозим их в холодовой цепи."
+      }
+     ],
+     "links": [
+      {
+       "label": "Что такое стандартные образцы EDQM",
+       "href": "/articles/what-are-edqm-reference-standards/"
+      },
+      {
+       "label": "Стандартные образцы EDQM",
+       "href": "/catalog/reference-standards/edqm/"
+      },
+      {
+       "label": "Стандартные образцы USP",
+       "href": "/catalog/reference-standards/usp/"
+      },
+      {
+       "label": "Вторичные стандарты Merck",
+       "href": "/catalog/reference-standards/merck/"
+      },
+      {
+       "label": "Бренд EDQM",
+       "href": "/brands/edqm/"
+      },
+      {
+       "label": "Бренд USP",
+       "href": "/brands/usp/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      }
+     ],
+     "cta": {
+      "title": "Нужны стандарты EDQM или USP?",
+      "text": "Найдите позиции в каталоге или пришлите список кат. номеров — ответим в течение 2 рабочих часов.",
+      "href": "/catalog/reference-standards/",
+      "label": "Перейти к стандартам"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "what-is-cold-chain",
+   "position": 1,
+   "content": {
+    "ru": {
+     "slug": "what-is-cold-chain",
+     "h1": "Холодовая цепь: как перевозят термолабильные фармгрузы",
+     "title": "Что такое холодовая цепь: температурные режимы и контроль | ОГК-ХИМ",
+     "description": "Что такое холодовая цепь, какие бывают температурные режимы, чем поддерживают температуру в пути и как подтверждают, что режим соблюдён. Практические советы для заказчиков.",
+     "lead": "Многие стандартные образцы, препараты и биологические материалы теряют свойства при нарушении температуры. Холодовая цепь — способ довезти их от производителя до лаборатории в нужном режиме.",
+     "publishedAt": "2026-09-29",
+     "updatedAt": "2026-10-12",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 5,
+     "body": [
+      {
+       "type": "h2",
+       "id": "what",
+       "text": "Что такое холодовая цепь"
+      },
+      {
+       "type": "p",
+       "text": "Холодовая цепь — это непрерывное соблюдение заданного температурного режима на всех этапах: хранение у производителя, упаковка, перевозка, таможня, склад и доставка получателю. Если режим нарушен хотя бы на одном звене, качество груза уже нельзя гарантировать."
+      },
+      {
+       "type": "h2",
+       "id": "modes",
+       "text": "Температурные режимы"
+      },
+      {
+       "type": "table",
+       "caption": "Основные режимы перевозки фармацевтических грузов",
+       "head": [
+        "Режим",
+        "Что обычно перевозят"
+       ],
+       "rows": [
+        [
+         "+15…+25 °C",
+         "Реактивы, многие стандартные образцы и препараты с хранением при комнатной температуре"
+        ],
+        [
+         "+2…+8 °C",
+         "Термолабильные стандартные образцы, многие биопрепараты"
+        ],
+        [
+         "−20 °C",
+         "Стандарты и реактивы, которые хранят замороженными"
+        ],
+        [
+         "Сухой лёд, около −78 °C",
+         "Биологические материалы и глубокозамороженные образцы"
+        ]
+       ]
+      },
+      {
+       "type": "p",
+       "text": "Нужный режим указан в документах производителя — на этикетке, в листке-вкладыше или паспорте безопасности. С него начинается расчёт перевозки."
+      },
+      {
+       "type": "h2",
+       "id": "how",
+       "text": "Чем поддерживают температуру"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Термоконтейнеры — изолированные коробки, рассчитанные на определённое время удержания режима",
+        "Хладоэлементы, подготовленные под нужный режим: охлаждённые, замороженные или кондиционированные",
+        "Сухой лёд для глубокой заморозки — его перевозят как опасный груз с отдельным оформлением",
+        "Активные контейнеры с собственным охлаждением — для крупных и длительных отправок"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "control",
+       "text": "Как подтвердить, что режим соблюдён"
+      },
+      {
+       "type": "p",
+       "text": "В отправку кладут логгер — прибор, который записывает температуру через заданные интервалы. После доставки данные выгружают в отчёт: по нему видно, оставалась ли температура в допустимых пределах всё время в пути."
+      },
+      {
+       "type": "h2",
+       "id": "tips",
+       "text": "Что важно учесть при заказе"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Режим берите из документов производителя, а не «по аналогии» с похожим товаром",
+        "Время удержания режима должно быть больше длительности маршрута с запасом на задержки",
+        "Документы для таможни готовьте заранее — простой на границе съедает запас времени",
+        "Планируйте отправку так, чтобы груз не пришёлся на выходные на промежуточных складах"
+       ]
+      }
+     ],
+     "links": [
+      {
+       "label": "Перевозка при +2…+8 °C: практика",
+       "href": "/articles/pharma-shipping-2-8/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Фармацевтическая логистика",
+       "href": "/services/pharma-logistics/"
+      },
+      {
+       "label": "Стандартные образцы",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Микроорганизмы и биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      }
+     ],
+     "cta": {
+      "title": "Нужно перевезти груз в холодовой цепи?",
+      "text": "Укажите маршрут, режим и вес — рассчитаем доставку в течение 2 рабочих часов.",
+      "href": "/services/cold-chain/",
+      "label": "Рассчитать доставку"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "how-to-choose-hplc-column",
+   "position": 2,
+   "content": {
+    "ru": {
+     "slug": "how-to-choose-hplc-column",
+     "h1": "Как выбрать колонку для ВЭЖХ",
+     "title": "Как выбрать колонку для ВЭЖХ: фаза, размеры, частицы, pH | ОГК-ХИМ",
+     "description": "Как подобрать колонку для ВЭЖХ под методику: классификация USP, длина и диаметр, размер частиц и пор, диапазон pH, эндкеппирование и предколонки. Практическая шпаргалка.",
+     "lead": "Колонку для ВЭЖХ выбирают под методику: по фазе, размерам, частицам и условиям разделения. Разбираем, на что смотреть и как подобрать аналог, если нужной колонки нет.",
+     "publishedAt": "2026-09-22",
+     "updatedAt": "2026-10-10",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 7,
+     "body": [
+      {
+       "type": "h2",
+       "id": "method",
+       "text": "Начните с методики"
+      },
+      {
+       "type": "p",
+       "text": "Фармакопейные монографии описывают колонку не маркой, а типом сорбента по классификации USP, размерами и размером частиц. Например, L1 — октадецилсилан (C18) на пористом носителе, L7 — октилсилан (C8), L11 — фенильные группы. Это отправная точка: подходят колонки разных производителей с той же классификацией."
+      },
+      {
+       "type": "h2",
+       "id": "params",
+       "text": "Ключевые параметры"
+      },
+      {
+       "type": "table",
+       "caption": "Параметры колонки и на что они влияют",
+       "head": [
+        "Параметр",
+        "На что влияет",
+        "Типичные значения"
+       ],
+       "rows": [
+        [
+         "Фаза",
+         "Селективность разделения",
+         "C18, C8, Phenyl, HILIC"
+        ],
+        [
+         "Длина",
+         "Разрешение и время анализа",
+         "50, 100, 150, 250 мм"
+        ],
+        [
+         "Внутренний диаметр",
+         "Расход подвижной фазы и чувствительность",
+         "2,1; 3,0; 4,6 мм"
+        ],
+        [
+         "Размер частиц",
+         "Эффективность и давление",
+         "5; 3,5; 2,7; 1,7 мкм"
+        ],
+        [
+         "Размер пор",
+         "Доступ молекул к поверхности",
+         "80–130 Å для малых молекул"
+        ],
+        [
+         "Диапазон pH",
+         "Стабильность сорбента",
+         "2–8 для силикагеля, 1–12 для гибридных частиц"
+        ]
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "particles",
+       "text": "Размер частиц и давление"
+      },
+      {
+       "type": "p",
+       "text": "Мелкие частицы дают более узкие пики, но повышают давление. Колонки с частицами меньше 2 мкм требуют УВЭЖХ-систем. Поверхностно-пористые частицы около 2,7 мкм дают эффективность, близкую к УВЭЖХ, при давлении, доступном обычной ВЭЖХ-системе."
+      },
+      {
+       "type": "h2",
+       "id": "ph",
+       "text": "pH подвижной фазы и основные соединения"
+      },
+      {
+       "type": "p",
+       "text": "Классический силикагель стабилен примерно в диапазоне pH 2–8. Для работы при высоком pH выбирают колонки на гибридных частицах. Для основных соединений важны чистота силикагеля и эндкеппирование — они уменьшают взаимодействие с остаточными силанольными группами и хвосты пиков."
+      },
+      {
+       "type": "h2",
+       "id": "analogue",
+       "text": "Как подобрать аналог"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Сохраните классификацию USP, размеры и размер частиц",
+        "Сравните размер пор, плотность прививки и эндкеппирование",
+        "Учтите, что колонки одной классификации могут отличаться селективностью",
+        "После замены проверьте пригодность хроматографической системы по методике"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "guard",
+       "text": "Не забудьте предколонку"
+      },
+      {
+       "type": "p",
+       "text": "Предколонка с той же фазой задерживает загрязнения образца и продлевает срок службы аналитической колонки. Её меняют чаще, но она стоит заметно дешевле колонки."
+      }
+     ],
+     "links": [
+      {
+       "label": "Зачем нужны предколонки",
+       "href": "/articles/why-use-guard-columns/"
+      },
+      {
+       "label": "Колонки Waters C18",
+       "href": "/catalog/chromatography/hplc-columns/waters-c18/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Предколонки",
+       "href": "/catalog/chromatography/precolumns/"
+      },
+      {
+       "label": "Фильтры",
+       "href": "/catalog/chromatography/filters/"
+      },
+      {
+       "label": "Waters",
+       "href": "/brands/waters/"
+      },
+      {
+       "label": "Agilent",
+       "href": "/brands/agilent/"
+      },
+      {
+       "label": "Welch",
+       "href": "/brands/welch/"
+      }
+     ],
+     "cta": {
+      "title": "Подберём колонку под вашу методику",
+      "text": "Пришлите фазу, размеры и условия разделения — предложим колонку и аналоги других производителей.",
+      "href": "/catalog/chromatography/hplc-columns/",
+      "label": "Смотреть колонки"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "what-are-edqm-reference-standards",
+   "position": 3,
+   "content": {
+    "ru": {
+     "slug": "what-are-edqm-reference-standards",
+     "h1": "Что такое стандартные образцы EDQM",
+     "title": "Стандартные образцы EDQM (CRS): что это и как их применяют | ОГК-ХИМ",
+     "description": "Что такое стандартные образцы EDQM: CRS, BRP и HRS, для каких испытаний они нужны, как читать каталог и листок-вкладыш, как хранить и когда партия перестаёт быть действующей.",
+     "lead": "Стандартные образцы EDQM — официальные образцы сравнения для испытаний по монографиям Европейской фармакопеи. Рассказываем, какие они бывают, как их выбирать и на что смотреть при заказе.",
+     "publishedAt": "2026-10-01",
+     "updatedAt": "2026-10-20",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 6,
+     "body": [
+      {
+       "type": "h2",
+       "id": "what",
+       "text": "Что это за стандарты"
+      },
+      {
+       "type": "p",
+       "text": "EDQM — Европейский директорат по качеству лекарственных средств и здравоохранения — издаёт Европейскую фармакопею и устанавливает стандартные образцы для её монографий. Если в монографии сказано «сравните с CRS», имеется в виду именно образец EDQM: результат испытания получают относительно него."
+      },
+      {
+       "type": "ul",
+       "items": [
+        "CRS (Chemical Reference Substances) — химические стандартные образцы: субстанции, примеси, смеси для проверки пригодности хроматографической системы",
+        "BRP (Biological Reference Preparations) — биологические стандарты, например для определения активности",
+        "HRS (Herbal Reference Standards) — стандарты растительного сырья и экстрактов"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "purpose",
+       "text": "Для каких испытаний они нужны"
+      },
+      {
+       "type": "p",
+       "text": "Назначение стандарта указано в каталоге EDQM и в монографии: количественное определение, идентификация, контроль примесей или проверка пригодности системы. Один и тот же CRS может быть установлен только для части испытаний — например, для идентификации, но не для количественного определения. Перед заказом сверьте, для чего стандарт заявлен."
+      },
+      {
+       "type": "note",
+       "text": "Для количественного определения у CRS указано установленное содержание — оно приведено в листке-вкладыше или на этикетке. Используйте значение для той партии, которая у вас в руках."
+      },
+      {
+       "type": "h2",
+       "id": "catalogue",
+       "text": "Как читать каталог EDQM"
+      },
+      {
+       "type": "p",
+       "text": "У каждого стандарта есть каталожный код из буквы и семи цифр, например Y0001897 — окскарбазепин CRS. В каталоге указаны название, номер текущей партии, фасовка и условия хранения. Фасовка одна и фиксированная: количество рассчитано на выполнение испытания, а не на долгий запас."
+      },
+      {
+       "type": "table",
+       "caption": "Что указано в карточке стандарта EDQM",
+       "head": [
+        "Поле",
+        "Что означает"
+       ],
+       "rows": [
+        [
+         "Каталожный код",
+         "Буква и семь цифр; по нему стандарт ищется точно"
+        ],
+        [
+         "Партия (batch)",
+         "Действующая партия; при выпуске новой старая со временем перестаёт быть действующей"
+        ],
+        [
+         "Фасовка",
+         "Одна для каждого стандарта, обычно миллиграммы"
+        ],
+        [
+         "Хранение",
+         "Температура хранения после получения: комнатная, +2…+8 °C или −20 °C"
+        ],
+        [
+         "Листок-вкладыш",
+         "Есть не у всех стандартов: установленное содержание и указания по применению"
+        ]
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "validity",
+       "text": "Срок годности и действующая партия"
+      },
+      {
+       "type": "p",
+       "text": "Срока годности на этикетке CRS нет. Пригодность определяется тем, действует ли партия: информацию о ней EDQM публикует в каталоге и в заявлении о действительности партии (batch validity statement). Если партия заменена, проверьте по данным EDQM, можно ли ещё использовать вашу."
+      },
+      {
+       "type": "h2",
+       "id": "storage",
+       "text": "Хранение и перевозка"
+      },
+      {
+       "type": "p",
+       "text": "Условия хранения указаны для каждого стандарта. Часть CRS хранят в холодильнике или морозильнике, поэтому важно, как стандарт ехал от производителя. Мы перевозим такие позиции в холодовой цепи с контролем температуры."
+      },
+      {
+       "type": "h2",
+       "id": "order",
+       "text": "Как заказать"
+      },
+      {
+       "type": "p",
+       "text": "Найдите стандарт по каталожному коду или CAS и добавьте в корзину запроса. Можно отправить сразу список: сайт сопоставит строки с каталогом, а позиции, которых нет на сайте, мы найдём у производителя. Коммерческое предложение с ценой и сроком пришлём в течение 2 рабочих часов."
+      }
+     ],
+     "links": [
+      {
+       "label": "Стандартные образцы EDQM",
+       "href": "/catalog/reference-standards/edqm/"
+      },
+      {
+       "label": "Бренд EDQM",
+       "href": "/brands/edqm/"
+      },
+      {
+       "label": "EDQM и USP — в чём отличие",
+       "href": "/articles/edqm-vs-usp/"
+      },
+      {
+       "label": "Стандарты примесей",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      }
+     ],
+     "cta": {
+      "title": "Нужны стандарты EDQM?",
+      "text": "Пришлите каталожные коды или CAS — проверим партии и пришлём КП в течение 2 рабочих часов.",
+      "href": "/catalog/reference-standards/edqm/",
+      "label": "Перейти к стандартам EDQM"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "how-to-choose-reference-standard",
+   "position": 4,
+   "content": {
+    "ru": {
+     "slug": "how-to-choose-reference-standard",
+     "h1": "Как подобрать стандартный образец",
+     "title": "Как подобрать стандартный образец: фармакопея, назначение, форма | ОГК-ХИМ",
+     "description": "Пошаговый подбор стандартного образца: какая фармакопея, для какого испытания, первичный или вторичный стандарт, соль или основание, сколько заказать и какие документы нужны.",
+     "lead": "Ошибка в выборе стандарта — это потерянные недели и повторный заказ. Собрали проверки, которые стоит сделать до отправки запроса.",
+     "publishedAt": "2026-10-08",
+     "updatedAt": "2026-10-19",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 5,
+     "body": [
+      {
+       "type": "h2",
+       "id": "method",
+       "text": "1. Начните с методики"
+      },
+      {
+       "type": "p",
+       "text": "Стандарт выбирают под конкретное испытание. Откройте монографию или методику предприятия и найдите, какой образец сравнения в ней указан. Если методика по Европейской фармакопее — нужен стандарт EDQM, по фармакопее США — USP, по Британской — BP. Для собственной валидированной методики допустим вторичный стандарт с прослеживаемостью к первичному."
+      },
+      {
+       "type": "h2",
+       "id": "purpose",
+       "text": "2. Определите назначение"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Количественное определение — нужен стандарт с установленным содержанием для этого испытания",
+        "Идентификация — подходит стандарт, заявленный для идентификации",
+        "Контроль примесей — стандарты конкретных примесей (EP Impurity A, B, C…) или смесь для проверки пригодности системы",
+        "Биоаналитика и ЖХ-МС — изотопно-меченые внутренние стандарты"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "form",
+       "text": "3. Проверьте форму вещества"
+      },
+      {
+       "type": "p",
+       "text": "Соль и основание, безводная форма и гидрат имеют разные CAS и разную молекулярную массу. Сверьте CAS и брутто-формулу в методике с карточкой стандарта: метформин и метформина гидрохлорид — разные позиции. Если в методике указан пересчёт на основание, это учитывают в расчёте, а не при выборе стандарта."
+      },
+      {
+       "type": "table",
+       "caption": "Что сверить перед заказом",
+       "head": [
+        "Параметр",
+        "Где смотреть"
+       ],
+       "rows": [
+        [
+         "Фармакопея и код стандарта",
+         "Монография или методика"
+        ],
+        [
+         "CAS и брутто-формула",
+         "Методика и карточка товара"
+        ],
+        [
+         "Назначение стандарта",
+         "Каталог производителя"
+        ],
+        [
+         "Фасовка и количество упаковок",
+         "Расход на испытание × число серий"
+        ],
+        [
+         "Условия хранения",
+         "Карточка товара, раздел «Технические данные»"
+        ]
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "quantity",
+       "text": "4. Рассчитайте количество"
+      },
+      {
+       "type": "p",
+       "text": "Фармакопейные стандарты продаются в одной фиксированной фасовке, рассчитанной на испытание. Посчитайте расход на серию и число серий до следующей закупки. Стандарты примесей от синтезаторов можно заказать в любой фасовке — укажите нужное количество в корзине."
+      },
+      {
+       "type": "h2",
+       "id": "docs",
+       "text": "5. Уточните документы"
+      },
+      {
+       "type": "p",
+       "text": "К фармакопейным стандартам прилагается листок-вкладыш или этикетка с данными партии, к стандартам примесей и вторичным стандартам — сертификат анализа (CoA). Если для закупки по 44-ФЗ или 223-ФЗ нужны конкретные документы, напишите об этом в комментарии к заявке."
+      },
+      {
+       "type": "note",
+       "text": "Не нашли нужный стандарт или сомневаетесь в выборе? Пришлите методику — специалист предложит позиции и альтернативы."
+      }
+     ],
+     "links": [
+      {
+       "label": "Стандартные образцы",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Стандарты примесей",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "Изотопно-меченые стандарты",
+       "href": "/catalog/reference-standards/impurity-standards/labeled-compounds/"
+      },
+      {
+       "label": "Вторичные стандарты Merck",
+       "href": "/catalog/reference-standards/merck/"
+      },
+      {
+       "label": "Субстанции A–Я",
+       "href": "/substances/"
+      }
+     ],
+     "cta": {
+      "title": "Подберём стандарт под вашу методику",
+      "text": "Пришлите монографию или список позиций — ответим в течение 2 рабочих часов.",
+      "href": "/rfq/",
+      "label": "Отправить запрос"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "how-to-order-standards-from-europe",
+   "position": 5,
+   "content": {
+    "ru": {
+     "slug": "how-to-order-standards-from-europe",
+     "h1": "Как заказать стандартные образцы из Европы",
+     "title": "Как заказать стандартные образцы из Европы в Россию | ОГК-ХИМ",
+     "description": "Как устроена поставка стандартных образцов из Европы: какие данные подготовить, от чего зависит срок, как перевозят термолабильные позиции и какие документы приходят с грузом.",
+     "lead": "Стандартные образцы EDQM, LGC и европейских синтезаторов поставляются под заказ. Рассказываем, как пройти путь от списка позиций до получения груза без лишних кругов.",
+     "publishedAt": "2026-10-13",
+     "updatedAt": "2026-10-21",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 5,
+     "body": [
+      {
+       "type": "h2",
+       "id": "list",
+       "text": "Подготовьте список"
+      },
+      {
+       "type": "p",
+       "text": "Для каждой позиции нужны производитель, каталожный номер, название и количество упаковок; CAS помогает избежать путаницы. Удобнее всего прислать таблицу: сайт принимает до 200 строк из буфера обмена или файла и сразу показывает, что нашлось в каталоге."
+      },
+      {
+       "type": "h2",
+       "id": "quote",
+       "text": "Получите коммерческое предложение"
+      },
+      {
+       "type": "p",
+       "text": "Мы проверяем позиции у производителей и присылаем КП с ценой, сроком и условиями перевозки в течение 2 рабочих часов. Если позиция снята с производства, предложим замену — в корзине можно заранее отметить «Готовы рассмотреть аналоги»."
+      },
+      {
+       "type": "h2",
+       "id": "timing",
+       "text": "От чего зависит срок"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Наличие у производителя: часть позиций синтезируется под заказ",
+        "Температурный режим: для +2…+8 °C и −20 °C нужна подготовленная упаковка и маршрут без задержек",
+        "Таможенное оформление: классификация по ТН ВЭД и комплект документов",
+        "Разрешительные документы, если они требуются для конкретного вещества"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "cold",
+       "text": "Как едут термолабильные позиции"
+      },
+      {
+       "type": "p",
+       "text": "Стандарты с хранением в холодильнике или морозильнике перевозим в термоконтейнерах с хладоэлементами или сухим льдом и логгером температуры. Запись логгера передаём вместе с грузом — так вы видите, что режим соблюдался на всём пути."
+      },
+      {
+       "type": "h2",
+       "id": "documents",
+       "text": "Какие документы приходят с грузом"
+      },
+      {
+       "type": "table",
+       "caption": "Документы при поставке стандартов",
+       "head": [
+        "Документ",
+        "Когда"
+       ],
+       "rows": [
+        [
+         "Листок-вкладыш или сертификат анализа (CoA)",
+         "С каждой позицией, если его выпускает производитель"
+        ],
+        [
+         "Паспорт безопасности (SDS)",
+         "Для химических веществ"
+        ],
+        [
+         "Запись температурного логгера",
+         "Для перевозки в холодовой цепи"
+        ],
+        [
+         "Закрывающие документы",
+         "Счёт, товарная накладная или УПД, при необходимости — через ЭДО"
+        ]
+       ]
+      },
+      {
+       "type": "note",
+       "text": "Наркотические средства, психотропные вещества, прекурсоры и сильнодействующие вещества требуют отдельных разрешений и лицензий покупателя. Такие позиции обсуждаем индивидуально."
+      }
+     ],
+     "links": [
+      {
+       "label": "Стандартные образцы EDQM",
+       "href": "/catalog/reference-standards/edqm/"
+      },
+      {
+       "label": "Стандартные образцы LGC",
+       "href": "/catalog/reference-standards/lgc/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Подбор кода ТН ВЭД",
+       "href": "/services/tn-ved/"
+      }
+     ],
+     "cta": {
+      "title": "Пришлите список — посчитаем поставку",
+      "text": "До 200 строк за раз: кат. номера, CAS или названия. КП — в течение 2 рабочих часов.",
+      "href": "/rfq/#bulk",
+      "label": "Загрузить список"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "hplc-consumables",
+   "position": 6,
+   "content": {
+    "ru": {
+     "slug": "hplc-consumables",
+     "h1": "Расходные материалы для ВЭЖХ: что нужно лаборатории",
+     "title": "Расходные материалы для ВЭЖХ: колонки, фильтры, фитинги, растворители | ОГК-ХИМ",
+     "description": "Какие расходные материалы нужны для ВЭЖХ и как их выбрать: колонки и предколонки, шприцевые фильтры (PTFE, Nylon, PVDF, PES, RC), фитинги и капилляры, растворители для ВЭЖХ.",
+     "lead": "Хроматограф работает стабильно, когда расходники подобраны под методику и вовремя меняются. Разбираем основные группы и критерии выбора.",
+     "publishedAt": "2026-10-15",
+     "updatedAt": "2026-10-21",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 6,
+     "body": [
+      {
+       "type": "h2",
+       "id": "columns",
+       "text": "Колонки и предколонки"
+      },
+      {
+       "type": "p",
+       "text": "Колонка — главный расходник: от неё зависит разделение. Её выбирают по фазе, длине, внутреннему диаметру, размеру частиц и рабочему диапазону pH. Предколонка с той же фазой защищает аналитическую колонку от частиц и сильно удерживаемых компонентов пробы и стоит в разы дешевле."
+      },
+      {
+       "type": "h2",
+       "id": "filters",
+       "text": "Шприцевые фильтры"
+      },
+      {
+       "type": "p",
+       "text": "Фильтрация пробы убирает частицы, которые забивают фритту колонки и повышают давление. Мембрану выбирают по растворителю пробы и по тому, может ли она удерживать определяемое вещество."
+      },
+      {
+       "type": "table",
+       "caption": "Мембраны шприцевых фильтров",
+       "head": [
+        "Мембрана",
+        "Для чего подходит"
+       ],
+       "rows": [
+        [
+         "PTFE",
+         "Органические и агрессивные растворители; гидрофобная — водные пробы фильтрует плохо"
+        ],
+        [
+         "Nylon",
+         "Водные и органические растворы; может связывать белки"
+        ],
+        [
+         "PVDF",
+         "Водные и большинство органических растворов, низкое связывание белков"
+        ],
+        [
+         "PES",
+         "Водные растворы, низкое связывание"
+        ],
+        [
+         "RC (регенерированная целлюлоза)",
+         "Водные и органические растворы, низкое неспецифическое связывание"
+        ]
+       ]
+      },
+      {
+       "type": "p",
+       "text": "Размер пор 0,45 мкм подходит для колонок с частицами 3–5 мкм; для УВЭЖХ и частиц менее 2 мкм берут 0,22 мкм. Диаметр фильтра выбирают по объёму пробы: 13 мм — для небольших объёмов, 25 мм — для больших."
+      },
+      {
+       "type": "h2",
+       "id": "fittings",
+       "text": "Фитинги и капилляры"
+      },
+      {
+       "type": "p",
+       "text": "Неправильно затянутый или несовместимый фитинг создаёт мёртвый объём — пики уширяются и раздваиваются. Для колонок разных производителей глубина посадки капилляра может отличаться, поэтому удобны PEEK-фитинги, затягиваемые рукой. Стальные капилляры и обжимные кольца ставят там, где высокое давление."
+      },
+      {
+       "type": "h2",
+       "id": "solvents",
+       "text": "Растворители"
+      },
+      {
+       "type": "p",
+       "text": "Для подвижной фазы используют растворители квалификации «для ВЭЖХ» или «для ЖХ-МС»: у них нормируются УФ-поглощение, остаток после испарения и содержание частиц. Буферы фильтруют и готовят свежими, чтобы не росли микроорганизмы."
+      },
+      {
+       "type": "h2",
+       "id": "stock",
+       "text": "Что держать в запасе"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Запасная колонка и картриджи предколонок для рутинных методик",
+        "Шприцевые фильтры под растворители ваших проб",
+        "Набор фитингов и капилляр нужной длины",
+        "Растворители для ВЭЖХ с запасом на месяц работы"
+       ]
+      }
+     ],
+     "links": [
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Предколонки",
+       "href": "/catalog/chromatography/precolumns/"
+      },
+      {
+       "label": "Фильтры",
+       "href": "/catalog/chromatography/filters/"
+      },
+      {
+       "label": "Фитинги",
+       "href": "/catalog/chromatography/fittings/"
+      },
+      {
+       "label": "Реактивы и растворители",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Как выбрать колонку для ВЭЖХ",
+       "href": "/articles/how-to-choose-hplc-column/"
+      }
+     ],
+     "cta": {
+      "title": "Соберём расходники под ваш хроматограф",
+      "text": "Пришлите модель прибора и методику — подберём колонки, предколонки, фильтры и фитинги.",
+      "href": "/catalog/chromatography/",
+      "label": "Перейти в раздел"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "why-use-guard-columns",
+   "position": 7,
+   "content": {
+    "ru": {
+     "slug": "why-use-guard-columns",
+     "h1": "Зачем нужны предколонки для ВЭЖХ",
+     "title": "Зачем нужны предколонки для ВЭЖХ и как их выбрать | ОГК-ХИМ",
+     "description": "Что такое предколонка, как она продлевает срок службы аналитической колонки, как выбрать совместимую предколонку и когда менять картридж.",
+     "lead": "Предколонка стоит в разы дешевле аналитической колонки и принимает на себя то, что иначе осело бы в колонке. Разбираем, как её выбрать и когда менять.",
+     "publishedAt": "2026-10-17",
+     "updatedAt": "2026-10-21",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 4,
+     "body": [
+      {
+       "type": "h2",
+       "id": "what",
+       "text": "Что делает предколонка"
+      },
+      {
+       "type": "p",
+       "text": "Предколонка — короткая колонка или картридж с той же фазой, что и аналитическая колонка, установленный перед ней. Она задерживает частицы и компоненты пробы, которые сильно удерживаются и иначе накапливались бы в начале аналитической колонки, повышая давление и ухудшая форму пиков."
+      },
+      {
+       "type": "h2",
+       "id": "when",
+       "text": "Когда она особенно нужна"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Сложные матрицы: лекарственные формы с вспомогательными веществами, биологические пробы, экстракты",
+        "Большое число анализов на одной колонке",
+        "Дорогие колонки, например для УВЭЖХ"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "choose",
+       "text": "Как выбрать"
+      },
+      {
+       "type": "p",
+       "text": "Фаза предколонки должна совпадать с фазой аналитической колонки или быть максимально близкой, внутренний диаметр — соответствовать. У производителей колонок есть свои системы: VanGuard и Sentry у Waters, защитные картриджи ZORBAX и Fast Guard у Agilent. Держатель картриджа покупают один раз, затем меняют только картриджи."
+      },
+      {
+       "type": "table",
+       "caption": "Признаки, что пора менять картридж",
+       "head": [
+        "Признак",
+        "Что происходит"
+       ],
+       "rows": [
+        [
+         "Давление растёт",
+         "Фильтрующий слой забит частицами"
+        ],
+        [
+         "Пики уширяются или раздваиваются",
+         "В начале слоя накопились компоненты пробы"
+        ],
+        [
+         "Сдвигаются времена удерживания",
+         "Изменились свойства фазы в картридже"
+        ]
+       ]
+      },
+      {
+       "type": "note",
+       "text": "Предколонка добавляет немного объёма и может слегка изменить удерживание. Если методика валидирована без предколонки, её добавление оценивают в рамках системы качества лаборатории."
+      }
+     ],
+     "links": [
+      {
+       "label": "Предколонки",
+       "href": "/catalog/chromatography/precolumns/"
+      },
+      {
+       "label": "Колонки Waters C18",
+       "href": "/catalog/chromatography/hplc-columns/waters-c18/"
+      },
+      {
+       "label": "Колонки Agilent C18",
+       "href": "/catalog/chromatography/hplc-columns/agilent-c18/"
+      },
+      {
+       "label": "Расходные материалы для ВЭЖХ",
+       "href": "/articles/hplc-consumables/"
+      }
+     ],
+     "cta": {
+      "title": "Подберём предколонку к вашей колонке",
+      "text": "Напишите модель колонки — предложим совместимый картридж и держатель.",
+      "href": "/catalog/chromatography/precolumns/",
+      "label": "Смотреть предколонки"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "what-is-reference-drug",
+   "position": 8,
+   "content": {
+    "ru": {
+     "slug": "what-is-reference-drug",
+     "h1": "Что такое референтный лекарственный препарат",
+     "title": "Референтный лекарственный препарат: что это и где он нужен | ОГК-ХИМ",
+     "description": "Что такое референтный лекарственный препарат, зачем он нужен при разработке и регистрации воспроизведённых препаратов, как выбрать серию и как его ввозят для исследований.",
+     "lead": "Референтный препарат — точка отсчёта при разработке воспроизведённого лекарства. Объясняем, где он нужен и как организовать его поставку.",
+     "publishedAt": "2026-10-19",
+     "updatedAt": "2026-10-21",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 5,
+     "body": [
+      {
+       "type": "h2",
+       "id": "what",
+       "text": "Определение"
+      },
+      {
+       "type": "p",
+       "text": "Референтный лекарственный препарат — препарат, с которым сравнивают воспроизведённый (дженерик) или биоаналогичный препарат. Как правило, это оригинальный препарат, зарегистрированный на основании полного досье с собственными доклиническими и клиническими данными."
+      },
+      {
+       "type": "h2",
+       "id": "why",
+       "text": "Где он нужен"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Фармацевтическая разработка: сравнение состава, профиля примесей и свойств лекарственной формы",
+        "Тест сравнительной кинетики растворения",
+        "Исследования биоэквивалентности — препарат сравнения для воспроизведённого препарата",
+        "Исследования биоаналогичности для биологических препаратов"
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "choose",
+       "text": "Как выбрать препарат и серию"
+      },
+      {
+       "type": "p",
+       "text": "Какой препарат признаётся референтным и из какой страны его можно брать, определяют регуляторные требования — в ЕАЭС это правила регистрации и правила проведения исследований биоэквивалентности. Обычно закупают несколько серий: для разработки, теста растворения и клинической части. Важно, чтобы срок годности серий покрывал весь план исследований."
+      },
+      {
+       "type": "table",
+       "caption": "Что указать в запросе",
+       "head": [
+        "Параметр",
+        "Пример"
+       ],
+       "rows": [
+        [
+         "Торговое наименование и МНН",
+         "Оригинальный препарат, международное непатентованное наименование"
+        ],
+        [
+         "Лекарственная форма и дозировка",
+         "Таблетки, покрытые плёночной оболочкой, 10 мг"
+        ],
+        [
+         "Страна рынка",
+         "Страна, где препарат приобретается"
+        ],
+        [
+         "Количество и число серий",
+         "Сколько упаковок и сколько разных серий"
+        ],
+        [
+         "Минимальный остаточный срок годности",
+         "Под график исследований"
+        ]
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "import",
+       "text": "Как его ввозят"
+      },
+      {
+       "type": "p",
+       "text": "Незарегистрированный в России препарат для исследований ввозится по разрешению Минздрава России на конкретную партию. Мы помогаем подготовить документы на разрешение, организуем закупку, перевозку с нужным температурным режимом и таможенное оформление."
+      },
+      {
+       "type": "note",
+       "text": "Требования к выбору референтного препарата для конкретного исследования согласуйте с вашим регуляторным отделом — мы обеспечим поставку под эти требования."
+      }
+     ],
+     "links": [
+      {
+       "label": "Референтные препараты",
+       "href": "/catalog/reference-drugs/"
+      },
+      {
+       "label": "Поставка препаратов для исследований",
+       "href": "/services/research-drug-supply/"
+      },
+      {
+       "label": "Разрешения на ввоз",
+       "href": "/services/import-permits/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      }
+     ],
+     "cta": {
+      "title": "Нужен референтный препарат для исследования?",
+      "text": "Опишите препарат, дозировку и количество серий — рассчитаем поставку с разрешительными документами.",
+      "href": "/services/research-drug-supply/",
+      "label": "Заказать поставку"
+     }
+    }
+   }
+  },
+  {
+   "kind": "article",
+   "slug": "pharma-shipping-2-8",
+   "position": 9,
+   "content": {
+    "ru": {
+     "slug": "pharma-shipping-2-8",
+     "h1": "Перевозка фармгрузов при +2…+8 °C: как подготовить отправку",
+     "title": "Перевозка фармгрузов при +2…+8 °C: упаковка, логгеры, приёмка | ОГК-ХИМ",
+     "description": "Практика перевозки грузов в режиме +2…+8 °C: активная и пассивная упаковка, подготовка хладоэлементов, логгеры температуры, документы и приёмка груза.",
+     "lead": "Режим +2…+8 °C — самый частый для препаратов, стандартов и биоматериалов. Разбираем, что нужно сделать до отправки и при приёмке, чтобы груз не ушёл в карантин.",
+     "publishedAt": "2026-10-21",
+     "updatedAt": "2026-10-21",
+     "authorSlug": "timur-gilmutdinov",
+     "reviewed": false,
+     "readingMinutes": 5,
+     "body": [
+      {
+       "type": "h2",
+       "id": "packaging",
+       "text": "Активная или пассивная упаковка"
+      },
+      {
+       "type": "p",
+       "text": "Активные контейнеры сами поддерживают температуру за счёт холодильной установки и подходят для крупных партий и долгих маршрутов. Пассивная упаковка — термобокс с хладоэлементами — проще и дешевле; её выбирают по проверенному времени удержания режима, которое должно быть больше времени в пути с запасом на задержки."
+      },
+      {
+       "type": "h2",
+       "id": "packs",
+       "text": "Хладоэлементы: замороженные нельзя класть вплотную"
+      },
+      {
+       "type": "p",
+       "text": "Для режима +2…+8 °C хладоэлементы кондиционируют по схеме упаковки: часть из них замораживают, часть охлаждают. Замороженный элемент рядом с товаром может опустить температуру ниже нуля — для многих препаратов замерзание так же опасно, как перегрев."
+      },
+      {
+       "type": "h2",
+       "id": "loggers",
+       "text": "Контроль температуры"
+      },
+      {
+       "type": "p",
+       "text": "В каждую отправку кладут логгер температуры. Его запускают перед закрытием упаковки и останавливают при приёмке. Запись показывает весь путь: если были отклонения, видно, когда и насколько."
+      },
+      {
+       "type": "table",
+       "caption": "Что проверить при приёмке",
+       "head": [
+        "Шаг",
+        "Что делать"
+       ],
+       "rows": [
+        [
+         "Внешний вид упаковки",
+         "Нет повреждений, пломбы целы"
+        ],
+        [
+         "Логгер",
+         "Остановить и считать запись до размещения товара на хранение"
+        ],
+        [
+         "Отклонения",
+         "Если были выходы за режим — поместить груз в карантин и сообщить поставщику"
+        ],
+        [
+         "Размещение",
+         "Сразу переложить товар в холодильник с нужным режимом"
+        ]
+       ]
+      },
+      {
+       "type": "h2",
+       "id": "docs",
+       "text": "Документы"
+      },
+      {
+       "type": "ul",
+       "items": [
+        "Указание температурного режима в заявке и транспортных документах",
+        "Запись логгера, привязанная к отправке",
+        "Сертификаты и паспорта безопасности на товар"
+       ]
+      },
+      {
+       "type": "note",
+       "text": "Решение о пригодности груза после отклонения температуры принимает получатель по данным производителя о стабильности. Мы предоставляем полную запись логгера и сведения о маршруте."
+      }
+     ],
+     "links": [
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Логистика фармацевтических грузов",
+       "href": "/services/pharma-logistics/"
+      },
+      {
+       "label": "Что такое холодовая цепь",
+       "href": "/articles/what-is-cold-chain/"
+      },
+      {
+       "label": "Биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      }
+     ],
+     "cta": {
+      "title": "Перевезём груз при +2…+8 °C",
+      "text": "Укажите маршрут, вес и сроки — рассчитаем перевозку в холодовой цепи.",
+      "href": "/services/cold-chain/",
+      "label": "Рассчитать перевозку"
+     }
+    }
+   }
+  },
+  {
+   "kind": "author",
+   "slug": "timur-gilmutdinov",
+   "position": 0,
+   "content": {
+    "ru": {
+     "slug": "timur-gilmutdinov",
+     "name": "Гильмутдинов Тимур Фаритович",
+     "role": "Эксперт ОГК-ХИМ"
+    }
+   }
+  },
+  {
+   "kind": "trust",
+   "slug": "about",
+   "position": 0,
+   "content": {
+    "ru": {
+     "slug": "about",
+     "intro": "",
+     "h1": "О компании ОГК-ХИМ",
+     "title": "О компании ОГК-ХИМ — поставки для фармацевтических лабораторий",
+     "description": "ОГК-ХИМ поставляет фармацевтическим лабораториям стандартные образцы, реактивы, расходные материалы для ВЭЖХ и оборудование от 60+ производителей, организует логистику с холодовой цепью и таможню.",
+     "lead": "ОГК-ХИМ — узкопрофильная компания: обеспечиваем фармацевтические предприятия всем необходимым для точных лабораторных исследований и разработок. Помогаем оптимизировать закупки и гарантируем качество поставляемой продукции.",
+     "facts": [
+      {
+       "value": "60+",
+       "label": "мировых производителей"
+      },
+      {
+       "value": "23",
+       "label": "страны, откуда доставляем"
+      },
+      {
+       "value": "2 часа",
+       "label": "на ответ по заявке в рабочее время"
+      }
+     ],
+     "directions": [
+      {
+       "title": "Стандартные образцы",
+       "text": "Фармакопейные стандарты EDQM, USP, British Pharmacopoeia, вторичные стандарты и стандарты примесей.",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "title": "Реактивы и хроматография",
+       "text": "Растворители для ВЭЖХ и ЖХ-МС, колонки, предколонки, фильтры и фитинги.",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "title": "Логистика и холодовая цепь",
+       "text": "Доставка из 23 стран с контролем температуры: термоконтейнеры, хладоэлементы, логгеры.",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "title": "Таможня и разрешения",
+       "text": "Коды ТН ВЭД, таможенное оформление, разрешения Минздрава и ФСТЭК на ввоз.",
+       "href": "/services/customs-clearance/"
+      }
+     ],
+     "steps": [
+      {
+       "title": "Запрос",
+       "text": "Вы отправляете корзину запроса, список позиций или описание задачи."
+      },
+      {
+       "title": "Расчёт",
+       "text": "В течение 2 рабочих часов менеджер уточняет детали и запрашивает производителей."
+      },
+      {
+       "title": "Коммерческое предложение",
+       "text": "Присылаем цену, сроки и условия поставки по каждой позиции."
+      },
+      {
+       "title": "Поставка",
+       "text": "Закупаем, доставляем с соблюдением условий хранения, оформляем таможню."
+      },
+      {
+       "title": "Документы",
+       "text": "Передаём товар с документами производителя и закрывающими документами."
+      }
+     ],
+     "audience": [
+      {
+       "title": "Химикам-аналитикам и ОКК",
+       "text": "Позиция по кат. № или CAS, чистота, условия хранения и документы."
+      },
+      {
+       "title": "Руководителям лабораторий и R&D",
+       "text": "Стандарты и примеси к субстанции, колонки под методику."
+      },
+      {
+       "title": "Закупщикам",
+       "text": "Одно КП по списку, сроки, реквизиты и документы для закупок по 44-ФЗ и 223-ФЗ."
+      },
+      {
+       "title": "Специалистам ВЭД",
+       "text": "Холодовая цепь, таможня, коды ТН ВЭД и разрешения на ввоз."
+      }
+     ],
+     "hasEn": true,
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "about",
+     "intro": "",
+     "h1": "About OGK-CHEM",
+     "title": "About OGK-CHEM — supplies for pharmaceutical laboratories",
+     "description": "OGK-CHEM supplies pharmaceutical laboratories with reference standards, reagents, HPLC consumables and equipment from 60+ manufacturers, and organises cold chain logistics and customs clearance.",
+     "lead": "OGK-CHEM is a specialised company that provides pharmaceutical manufacturers with everything they need for accurate laboratory research and development. We help optimise procurement and guarantee the quality of supplied products.",
+     "facts": [
+      {
+       "value": "60+",
+       "label": "global manufacturers"
+      },
+      {
+       "value": "23",
+       "label": "countries we deliver from"
+      },
+      {
+       "value": "2 hours",
+       "label": "to reply to a request during business hours"
+      }
+     ],
+     "directions": [
+      {
+       "title": "Reference standards",
+       "text": "EDQM, USP and British Pharmacopoeia standards, secondary standards and impurity standards.",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "title": "Reagents and chromatography",
+       "text": "HPLC and LC-MS solvents, columns, guard columns, filters and fittings.",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "title": "Logistics and cold chain",
+       "text": "Delivery from 23 countries with temperature control: insulated shippers, coolant packs, data loggers.",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "title": "Customs and permits",
+       "text": "HS codes, customs clearance, Ministry of Health and FSTEC import permits.",
+       "href": "/services/customs-clearance/"
+      }
+     ],
+     "steps": [
+      {
+       "title": "Request",
+       "text": "You send a quote cart, a list of items or a description of the task."
+      },
+      {
+       "title": "Calculation",
+       "text": "Within 2 business hours a manager clarifies the details and contacts manufacturers."
+      },
+      {
+       "title": "Quotation",
+       "text": "We send the price, lead time and terms for each item."
+      },
+      {
+       "title": "Supply",
+       "text": "We purchase, deliver under the required storage conditions and clear customs."
+      },
+      {
+       "title": "Documents",
+       "text": "We hand over the goods with manufacturer documents and closing documents."
+      }
+     ],
+     "audience": [
+      {
+       "title": "Analytical chemists and QC",
+       "text": "Items by catalogue number or CAS, purity, storage conditions and documents."
+      },
+      {
+       "title": "Laboratory and R&D managers",
+       "text": "Standards and impurities for a substance, columns for a method."
+      },
+      {
+       "title": "Procurement",
+       "text": "One quotation for a list, lead times, company details and documents for public procurement."
+      },
+      {
+       "title": "Foreign trade specialists",
+       "text": "Cold chain, customs, HS codes and import permits."
+      }
+     ],
+     "hasEn": true,
+     "updatedAt": "2026-10-22"
+    }
+   }
+  },
+  {
+   "kind": "trust",
+   "slug": "delivery",
+   "position": 1,
+   "content": {
+    "ru": {
+     "slug": "delivery",
+     "intro": "",
+     "h1": "Доставка и условия поставки",
+     "title": "Доставка и условия поставки лабораторных материалов | ОГК-ХИМ",
+     "description": "Как мы поставляем стандартные образцы, реактивы и оборудование: доставка по России и из 23 стран, температурные режимы, сроки, оплата по счёту, документы для закупок по 44-ФЗ и 223-ФЗ.",
+     "lead": "Поставляем под заказ из каталогов производителей и доставляем в любой регион России с соблюдением условий хранения. Цену, срок и условия по каждой позиции указываем в коммерческом предложении.",
+     "sections": [
+      {
+       "id": "geo",
+       "title": "География",
+       "text": "Доставляем в любой регион России до склада или лаборатории. Закупаем у производителей и дистрибьюторов в 23 странах Америки, Европы, Азии и СНГ."
+      },
+      {
+       "id": "terms",
+       "title": "Сроки",
+       "text": "Срок зависит от производителя, наличия на его складе, маршрута и необходимых разрешений. Мы указываем его в коммерческом предложении по каждой позиции и предупреждаем, если что-то меняется."
+      },
+      {
+       "id": "temperature",
+       "title": "Условия хранения в пути",
+       "items": [
+        "Комнатная температура +15…+25 °C",
+        "Холодовая цепь +2…+8 °C — термоконтейнер с хладоэлементами",
+        "Заморозка −20 °C и сухой лёд для глубокозамороженных грузов",
+        "Логгер температуры и отчёт о поездке — по запросу"
+       ]
+      },
+      {
+       "id": "payment",
+       "title": "Оплата",
+       "text": "Работаем с юридическими лицами по безналичному расчёту: выставляем счёт после согласования коммерческого предложения. Условия оплаты закрепляем в договоре."
+      },
+      {
+       "id": "documents",
+       "title": "Документы в поставке",
+       "items": [
+        "Документы производителя: сертификат анализа (CoA), паспорт безопасности (SDS), листок-вкладыш",
+        "Закрывающие документы для бухгалтерии",
+        "Для закупок по 44-ФЗ и 223-ФЗ — коммерческие предложения и спецификации по вашей форме"
+       ]
+      }
+     ],
+     "faq": [
+      {
+       "q": "Можно ли узнать срок до оформления заказа?",
+       "a": "Да, срок по каждой позиции указываем в коммерческом предложении — до выставления счёта."
+      },
+      {
+       "q": "Доставляете в регионы?",
+       "a": "Да, в любой регион России, в том числе с соблюдением холодовой цепи."
+      },
+      {
+       "q": "Работаете с госзакупками?",
+       "a": "Да. Подготовим коммерческие предложения и документы для закупок по 44-ФЗ и 223-ФЗ."
+      }
+     ],
+     "links": [
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Документы",
+       "href": "/documents/"
+      },
+      {
+       "label": "Контакты",
+       "href": "/contacts/"
+      }
+     ],
+     "hasEn": true,
+     "updatedAt": "2026-10-20",
+     "countries": [
+      "США",
+      "Канада",
+      "Великобритания",
+      "Франция",
+      "Швеция",
+      "Германия",
+      "Норвегия",
+      "Китай",
+      "Армения",
+      "Грузия",
+      "Нидерланды",
+      "Швейцария",
+      "Россия",
+      "Казахстан",
+      "Узбекистан",
+      "Азербайджан",
+      "Австрия",
+      "Бельгия",
+      "Австралия",
+      "Япония",
+      "Южная Корея",
+      "Италия",
+      "Испания"
+     ]
+    },
+    "en": {
+     "slug": "delivery",
+     "intro": "",
+     "h1": "Delivery and supply terms",
+     "title": "Delivery and supply terms for laboratory materials | OGK-CHEM",
+     "description": "How we supply reference standards, reagents and equipment: delivery across Russia and from 23 countries, temperature ranges, lead times, payment by invoice and documents for public procurement.",
+     "lead": "We supply to order from manufacturer catalogues and deliver to any region of Russia under the required storage conditions. The price, lead time and terms for each item are stated in the quotation.",
+     "sections": [
+      {
+       "id": "geo",
+       "title": "Geography",
+       "text": "We deliver to any region of Russia, to your warehouse or laboratory. We purchase from manufacturers and distributors in 23 countries in the Americas, Europe, Asia and the CIS."
+      },
+      {
+       "id": "terms",
+       "title": "Lead times",
+       "text": "The lead time depends on the manufacturer, its stock, the route and any permits required. We state it for each item in the quotation and let you know if anything changes."
+      },
+      {
+       "id": "temperature",
+       "title": "Storage conditions in transit",
+       "items": [
+        "Room temperature +15…+25 °C",
+        "Cold chain +2…+8 °C — insulated shipper with coolant packs",
+        "Frozen −20 °C and dry ice for deep-frozen cargo",
+        "Temperature logger and trip report on request"
+       ]
+      },
+      {
+       "id": "payment",
+       "title": "Payment",
+       "text": "We work with legal entities by bank transfer: we issue an invoice once the quotation is agreed. Payment terms are set out in the contract."
+      },
+      {
+       "id": "documents",
+       "title": "Documents with the delivery",
+       "items": [
+        "Manufacturer documents: certificate of analysis (CoA), safety data sheet (SDS), leaflet",
+        "Closing documents for accounting",
+        "For public procurement under 44-FZ and 223-FZ — quotations and specifications in your format"
+       ]
+      }
+     ],
+     "faq": [
+      {
+       "q": "Can I find out the lead time before ordering?",
+       "a": "Yes, we state the lead time for each item in the quotation — before the invoice is issued."
+      },
+      {
+       "q": "Do you deliver to the regions?",
+       "a": "Yes, to any region of Russia, including under cold chain conditions."
+      },
+      {
+       "q": "Do you work with public procurement?",
+       "a": "Yes. We will prepare quotations and documents for procurement under 44-FZ and 223-FZ."
+      }
+     ],
+     "links": [
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      },
+      {
+       "label": "Documents",
+       "href": "/documents/"
+      },
+      {
+       "label": "Contacts",
+       "href": "/contacts/"
+      }
+     ],
+     "hasEn": true,
+     "updatedAt": "2026-10-22",
+     "countries": [
+      "USA",
+      "Canada",
+      "United Kingdom",
+      "France",
+      "Sweden",
+      "Germany",
+      "Norway",
+      "China",
+      "Armenia",
+      "Georgia",
+      "Netherlands",
+      "Switzerland",
+      "Russia",
+      "Kazakhstan",
+      "Uzbekistan",
+      "Azerbaijan",
+      "Austria",
+      "Belgium",
+      "Australia",
+      "Japan",
+      "South Korea",
+      "Italy",
+      "Spain"
+     ]
+    }
+   }
+  },
+  {
+   "kind": "trust",
+   "slug": "documents",
+   "position": 2,
+   "content": {
+    "ru": {
+     "slug": "documents",
+     "intro": "",
+     "h1": "Документы",
+     "title": "Документы и реквизиты ООО «ОГК-ХИМ»",
+     "description": "Реквизиты ООО «ОГК-ХИМ», карточка организации, политика конфиденциальности, согласие на обработку персональных данных и сопроводительные документы к поставкам.",
+     "lead": "Реквизиты и юридические документы ООО «ОГК-ХИМ», а также документы, которые сопровождают поставку. Образцы сопроводительных документов пришлём по запросу.",
+     "supplyDocs": [
+      {
+       "title": "Сертификат анализа (CoA)",
+       "text": "Подтверждает подлинность и показатели качества партии. CoA конкретной партии — по запросу."
+      },
+      {
+       "title": "Паспорт безопасности (SDS)",
+       "text": "Свойства вещества, меры безопасности, условия хранения и транспортировки."
+      },
+      {
+       "title": "Листок-вкладыш производителя",
+       "text": "Для фармакопейных стандартов: условия применения и хранения."
+      },
+      {
+       "title": "Паспорт штамма",
+       "text": "Для микроорганизмов: условия регидратации и культивирования."
+      },
+      {
+       "title": "Сертификаты и руководства",
+       "text": "Для колонок и оборудования: сертификат производителя и руководство по эксплуатации."
+      },
+      {
+       "title": "Разрешительные документы",
+       "text": "Разрешения на ввоз, если они требовались для поставки."
+      }
+     ],
+     "edo": "Работаем с электронным документооборотом. Оператора и идентификатор участника ЭДО сообщит менеджер.",
+     "licenses": "Копии лицензий, сертификатов и дистрибьюторских писем производителей пришлём по запросу.",
+     "hasEn": true,
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "documents",
+     "intro": "",
+     "h1": "Documents",
+     "title": "Documents and company details of OGK-CHEM LLC",
+     "description": "Company details of OGK-CHEM LLC, company profile, privacy policy, consent to personal data processing and documents accompanying supplies.",
+     "lead": "Company details and legal documents of OGK-CHEM LLC, as well as the documents that accompany a supply. We will send samples of accompanying documents on request.",
+     "supplyDocs": [
+      {
+       "title": "Certificate of analysis (CoA)",
+       "text": "Confirms the identity and quality parameters of the batch. A CoA for a specific batch is available on request."
+      },
+      {
+       "title": "Safety data sheet (SDS)",
+       "text": "Properties of the substance, safety measures, storage and transport conditions."
+      },
+      {
+       "title": "Manufacturer leaflet",
+       "text": "For pharmacopoeial standards: conditions of use and storage."
+      },
+      {
+       "title": "Strain product sheet",
+       "text": "For microorganisms: rehydration and cultivation conditions."
+      },
+      {
+       "title": "Certificates and manuals",
+       "text": "For columns and equipment: manufacturer certificate and user manual."
+      },
+      {
+       "title": "Permits",
+       "text": "Import permits, if they were required for the supply."
+      }
+     ],
+     "edo": "We work with electronic document interchange (EDI). Your manager will provide the operator and participant ID.",
+     "licenses": "Copies of licences, certificates and manufacturer distribution letters are available on request.",
+     "hasEn": true,
+     "updatedAt": "2026-10-22"
+    }
+   }
+  },
+  {
+   "kind": "trust",
+   "slug": "contacts",
+   "position": 3,
+   "content": {
+    "ru": {
+     "slug": "contacts",
+     "intro": "",
+     "h1": "Контакты",
+     "title": "Контакты ОГК-ХИМ — телефон, адрес, реквизиты",
+     "description": "Контакты ОГК-ХИМ: +7 495 234 28 63, info@ogk-chem.ru, order@ogk-chem.ru. Москва, ул. Касаткина, д. 8. Пн–пт 9:00–18:00. Реквизиты ООО «ОГК-ХИМ».",
+     "lead": "Позвоните, напишите или отправьте запрос через форму — ответим в течение 2 рабочих часов.",
+     "hasEn": true,
+     "updatedAt": "2026-10-20"
+    },
+    "en": {
+     "slug": "contacts",
+     "intro": "",
+     "h1": "Contacts",
+     "title": "Contact OGK-CHEM — phone, address, company details",
+     "description": "OGK-CHEM contacts: +7 495 234 28 63, info@ogk-chem.ru, order@ogk-chem.ru. 8 Kasatkina St., Moscow. Mon–Fri 9:00–18:00 Moscow time. Company details of OGK-CHEM LLC.",
+     "lead": "Call, write or send a request through the form — we reply within 2 business hours.",
+     "hasEn": true,
+     "updatedAt": "2026-10-22"
+    }
+   }
+  }
+ ],
+ "landings": [
+  {
+   "categoryPath": "chromatography/hplc-columns",
+   "slug": "waters-c18",
+   "position": 0,
+   "filters": {
+    "brand": [
+     "waters"
+    ],
+    "phase": [
+     "C18"
+    ]
+   },
+   "content": {
+    "ru": {
+     "name": "Waters C18",
+     "h1": "Колонки Waters C18 для ВЭЖХ",
+     "title": "Колонки Waters C18: XBridge, SunFire, Symmetry, ACQUITY | ОГК-ХИМ",
+     "description": "Колонки Waters C18 для ВЭЖХ и УВЭЖХ: XBridge, SunFire, Symmetry, ACQUITY UPLC BEH. Подбор по длине, диаметру и размеру частиц, поставка под заказ.",
+     "intro": "Обращённо-фазовые колонки Waters с фазой C18 для ВЭЖХ и УВЭЖХ. Выберите длину, внутренний диаметр и размер частиц — или пришлите методику, подберём колонку и предколонку.",
+     "seoText": [
+      "C18 — самая распространённая фаза для обращённо-фазовой хроматографии: на ней выполняется большинство фармакопейных методик количественного определения и контроля примесей. У Waters несколько семейств C18, они различаются материалом частиц и рабочим диапазоном pH.",
+      "XBridge C18 на гибридных частицах BEH работает в широком диапазоне pH 1–12 и подходит для методик с щелочной подвижной фазой. SunFire C18 и Symmetry C18 — колонки на силикагеле для кислых и нейтральных условий. ACQUITY UPLC BEH C18 с частицами 1,7 мкм рассчитана на системы УВЭЖХ с высоким давлением.",
+      "Если в методике указана колонка другого производителя, менеджер предложит эквивалент по фазе, геометрии и селективности. Перед заменой колонки в валидированной методике проверьте пригодность хроматографической системы."
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Чем XBridge C18 отличается от SunFire C18?",
+       "a": "XBridge построена на гибридных частицах и выдерживает pH 1–12, SunFire — на силикагеле и рассчитана на кислые и нейтральные условия. Для щелочных подвижных фаз выбирают XBridge."
+      },
+      {
+       "q": "Можно ли заказать предколонку к колонке?",
+       "a": "Да. Добавьте колонку в корзину и укажите в комментарии, что нужна совместимая предколонка VanGuard или Sentry, — включим её в коммерческое предложение."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Продукция Waters",
+       "href": "/brands/waters/"
+      },
+      {
+       "label": "Предколонки",
+       "href": "/catalog/chromatography/precolumns/"
+      },
+      {
+       "label": "Как выбрать колонку для ВЭЖХ",
+       "href": "/articles/how-to-choose-hplc-column/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22"
+    },
+    "en": {
+     "name": "Waters C18",
+     "h1": "Waters C18 HPLC columns",
+     "title": "Waters C18 columns: XBridge, SunFire, Symmetry, ACQUITY | OGK-CHEM",
+     "description": "Waters C18 columns for HPLC and UHPLC: XBridge, SunFire, Symmetry, ACQUITY UPLC BEH. Filter by length, diameter and particle size; supplied to order.",
+     "intro": "Waters reversed-phase columns with C18 phase for HPLC and UHPLC. Choose length, inner diameter and particle size — or send us your method and we will select a column and guard column.",
+     "seoText": [
+      "C18 is the most widely used phase for reversed-phase chromatography: most pharmacopoeial assay and impurity methods run on it. Waters offers several C18 families that differ in particle material and working pH range.",
+      "XBridge C18 on hybrid BEH particles works across pH 1–12 and suits methods with alkaline mobile phases. SunFire C18 and Symmetry C18 are silica-based columns for acidic and neutral conditions. ACQUITY UPLC BEH C18 with 1.7 µm particles is designed for high-pressure UHPLC systems.",
+      "If your method specifies a column from another manufacturer, our manager will suggest an equivalent by phase, geometry and selectivity. Check system suitability before replacing a column in a validated method."
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "How does XBridge C18 differ from SunFire C18?",
+       "a": "XBridge uses hybrid particles and tolerates pH 1–12; SunFire is silica-based and designed for acidic and neutral conditions. For alkaline mobile phases choose XBridge."
+      },
+      {
+       "q": "Can I order a guard column with the column?",
+       "a": "Yes. Add the column to the cart and note in the comment that you need a compatible VanGuard or Sentry guard column — we will include it in the quotation."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Waters products",
+       "href": "/brands/waters/"
+      },
+      {
+       "label": "Guard columns",
+       "href": "/catalog/chromatography/precolumns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "categoryPath": "chromatography/hplc-columns",
+   "slug": "agilent-c18",
+   "position": 1,
+   "filters": {
+    "brand": [
+     "agilent"
+    ],
+    "phase": [
+     "C18"
+    ]
+   },
+   "content": {
+    "ru": {
+     "name": "Agilent C18",
+     "h1": "Колонки Agilent C18 для ВЭЖХ",
+     "title": "Колонки Agilent C18: ZORBAX Eclipse Plus, Poroshell 120 | ОГК-ХИМ",
+     "description": "Колонки Agilent C18 для ВЭЖХ: ZORBAX Eclipse Plus C18 и Poroshell 120 EC-C18. Подбор по длине, диаметру и размеру частиц, поставка под заказ.",
+     "intro": "Колонки Agilent с фазой C18: полностью пористые ZORBAX Eclipse Plus и Poroshell 120 с частицами «твёрдое ядро — пористая оболочка».",
+     "seoText": [
+      "ZORBAX Eclipse Plus C18 — универсальная колонка на силикагеле высокой чистоты, её часто указывают в фармакопейных и валидированных методиках. Poroshell 120 EC-C18 использует частицы 2,7 мкм с непористым ядром: эффективность близка к колонкам с частицами менее 2 мкм, а давление ниже, поэтому колонку можно ставить и на обычный ВЭЖХ.",
+      "При переносе методики на Poroshell пересчитайте поток и градиент под новую геометрию колонки и проверьте пригодность системы."
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Подойдёт ли Poroshell 120 для обычного ВЭЖХ, не УВЭЖХ?",
+       "a": "Да, колонки с частицами 2,7 мкм работают при давлении, допустимом для большинства систем ВЭЖХ. Уточните предельное давление вашего прибора — подберём длину колонки."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Продукция Agilent",
+       "href": "/brands/agilent/"
+      },
+      {
+       "label": "Предколонки",
+       "href": "/catalog/chromatography/precolumns/"
+      },
+      {
+       "label": "Как выбрать колонку для ВЭЖХ",
+       "href": "/articles/how-to-choose-hplc-column/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22"
+    },
+    "en": {
+     "name": "Agilent C18",
+     "h1": "Agilent C18 HPLC columns",
+     "title": "Agilent C18 columns: ZORBAX Eclipse Plus, Poroshell 120 | OGK-CHEM",
+     "description": "Agilent C18 HPLC columns: ZORBAX Eclipse Plus C18 and Poroshell 120 EC-C18. Filter by length, diameter and particle size; supplied to order.",
+     "intro": "Agilent columns with C18 phase: fully porous ZORBAX Eclipse Plus and superficially porous Poroshell 120.",
+     "seoText": [
+      "ZORBAX Eclipse Plus C18 is a versatile column on high-purity silica that is often specified in pharmacopoeial and validated methods. Poroshell 120 EC-C18 uses 2.7 µm solid-core particles: its efficiency approaches that of sub-2 µm columns at lower back pressure, so it can run on a standard HPLC system.",
+      "When transferring a method to Poroshell, recalculate flow and gradient for the new column geometry and check system suitability."
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Is Poroshell 120 suitable for standard HPLC, not UHPLC?",
+       "a": "Yes, 2.7 µm columns operate at pressures acceptable for most HPLC systems. Tell us the pressure limit of your instrument and we will select the column length."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Agilent products",
+       "href": "/brands/agilent/"
+      },
+      {
+       "label": "Guard columns",
+       "href": "/catalog/chromatography/precolumns/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "categoryPath": "chromatography/hplc-columns",
+   "slug": "c18-4-6x150",
+   "position": 2,
+   "filters": {
+    "phase": [
+     "C18"
+    ],
+    "diameter": [
+     "4.6"
+    ],
+    "length": [
+     "150"
+    ]
+   },
+   "content": {
+    "ru": {
+     "name": "C18 4,6 × 150 мм",
+     "h1": "Колонки C18 4,6 × 150 мм",
+     "title": "Колонки C18 4,6 × 150 мм для ВЭЖХ — Waters, Agilent, Shimadzu | ОГК-ХИМ",
+     "description": "Колонки ВЭЖХ C18 с внутренним диаметром 4,6 мм и длиной 150 мм от Waters, Agilent, Shimadzu и Welch. Сравнение по размеру частиц и pH, запрос КП.",
+     "intro": "Классический формат аналитической колонки для фармацевтического анализа. Сравните колонки разных производителей по размеру частиц и рабочему диапазону pH.",
+     "seoText": [
+      "Колонка 4,6 × 150 мм — один из самых частых форматов в фармакопейных методиках и методиках производителей лекарственных средств. Она работает на любом аналитическом ВЭЖХ при потоке около 1 мл/мин.",
+      "Размер частиц определяет эффективность и давление: 5 мкм — стандарт для старых методик, 3–3,5 мкм дают более узкие пики при большем давлении. Если методика требует конкретную марку колонки, укажите её в запросе."
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Колонки Waters C18",
+       "href": "/catalog/chromatography/hplc-columns/waters-c18/"
+      },
+      {
+       "label": "Колонки Agilent C18",
+       "href": "/catalog/chromatography/hplc-columns/agilent-c18/"
+      },
+      {
+       "label": "Предколонки",
+       "href": "/catalog/chromatography/precolumns/"
+      },
+      {
+       "label": "Как выбрать колонку для ВЭЖХ",
+       "href": "/articles/how-to-choose-hplc-column/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22"
+    },
+    "en": {
+     "name": "C18 4.6 × 150 mm",
+     "h1": "C18 columns 4.6 × 150 mm",
+     "title": "C18 HPLC columns 4.6 × 150 mm — Waters, Agilent, Shimadzu | OGK-CHEM",
+     "description": "C18 HPLC columns with 4.6 mm inner diameter and 150 mm length from Waters, Agilent, Shimadzu and Welch. Compare particle size and pH range, request a quotation.",
+     "intro": "The classic analytical column format for pharmaceutical analysis. Compare columns from different manufacturers by particle size and working pH range.",
+     "seoText": [
+      "The 4.6 × 150 mm column is one of the most common formats in pharmacopoeial methods and manufacturers’ methods. It runs on any analytical HPLC at about 1 mL/min.",
+      "Particle size determines efficiency and pressure: 5 µm is standard for older methods, while 3–3.5 µm gives narrower peaks at higher pressure. If your method requires a specific column brand, mention it in your request."
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Waters C18 columns",
+       "href": "/catalog/chromatography/hplc-columns/waters-c18/"
+      },
+      {
+       "label": "Agilent C18 columns",
+       "href": "/catalog/chromatography/hplc-columns/agilent-c18/"
+      },
+      {
+       "label": "Guard columns",
+       "href": "/catalog/chromatography/precolumns/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "categoryPath": "chromatography/hplc-columns",
+   "slug": "phenyl",
+   "position": 3,
+   "filters": {
+    "phase": [
+     "Phenyl"
+    ]
+   },
+   "content": {
+    "ru": {
+     "name": "Фенильные",
+     "h1": "Фенильные колонки для ВЭЖХ",
+     "title": "Фенильные колонки для ВЭЖХ (Phenyl) — Agilent, Shimadzu | ОГК-ХИМ",
+     "description": "Колонки ВЭЖХ с фенильной фазой: альтернативная селективность для ароматических соединений. ZORBAX Eclipse XDB-Phenyl, Shim-pack GIST Phenyl. Запрос КП.",
+     "intro": "Колонки с фенильной фазой дают другую селективность, чем C18, — пригодятся, когда на C18 не разделяются близкие по структуре ароматические соединения.",
+     "seoText": [
+      "Фенильная фаза удерживает вещества не только за счёт гидрофобных взаимодействий, но и за счёт π–π-взаимодействий с ароматическими кольцами. Поэтому порядок выхода пиков на ней может отличаться от C18, а это помогает разделить изомеры и родственные примеси.",
+      "Фенильные колонки часто используют как вторую, ортогональную колонку при разработке методики и при подтверждении чистоты пиков."
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Все колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Колонки HILIC",
+       "href": "/catalog/chromatography/hplc-columns/hilic/"
+      },
+      {
+       "label": "Как выбрать колонку для ВЭЖХ",
+       "href": "/articles/how-to-choose-hplc-column/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22"
+    },
+    "en": {
+     "name": "Phenyl",
+     "h1": "Phenyl HPLC columns",
+     "title": "Phenyl HPLC columns — Agilent, Shimadzu | OGK-CHEM",
+     "description": "HPLC columns with phenyl phase: alternative selectivity for aromatic compounds. ZORBAX Eclipse XDB-Phenyl, Shim-pack GIST Phenyl. Request a quotation.",
+     "intro": "Phenyl-phase columns offer selectivity different from C18 — useful when closely related aromatic compounds do not separate on C18.",
+     "seoText": [
+      "The phenyl phase retains analytes not only through hydrophobic interactions but also through π–π interactions with aromatic rings. The elution order can therefore differ from C18, which helps separate isomers and related impurities.",
+      "Phenyl columns are often used as a second, orthogonal column during method development and peak purity confirmation."
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "All HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "HILIC columns",
+       "href": "/catalog/chromatography/hplc-columns/hilic/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "categoryPath": "chromatography/hplc-columns",
+   "slug": "hilic",
+   "position": 4,
+   "filters": {
+    "phase": [
+     "HILIC"
+    ]
+   },
+   "content": {
+    "ru": {
+     "name": "HILIC",
+     "h1": "Колонки HILIC для ВЭЖХ",
+     "title": "Колонки HILIC для хроматографии полярных соединений | ОГК-ХИМ",
+     "description": "Колонки для гидрофильной хроматографии (HILIC) — удерживание полярных соединений, которые плохо удерживаются на C18. Подбор и поставка под заказ.",
+     "intro": "Колонки для гидрофильной хроматографии (HILIC) удерживают полярные вещества, которые на обращённой фазе выходят с фронтом растворителя.",
+     "seoText": [
+      "В режиме HILIC используют полярную неподвижную фазу и подвижную фазу с высоким содержанием ацетонитрила. Полярные соединения — аминокислоты, сахара, полярные метаболиты и противоионы — удерживаются тем сильнее, чем выше их полярность.",
+      "Подвижная фаза с большой долей органического растворителя хорошо подходит для масс-спектрометрического детектирования. Перед первым использованием колонку HILIC уравновешивают дольше, чем обращённо-фазовую."
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Все колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Растворители для ВЭЖХ",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Как выбрать колонку для ВЭЖХ",
+       "href": "/articles/how-to-choose-hplc-column/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22"
+    },
+    "en": {
+     "name": "HILIC",
+     "h1": "HILIC HPLC columns",
+     "title": "HILIC columns for chromatography of polar compounds | OGK-CHEM",
+     "description": "Hydrophilic interaction chromatography (HILIC) columns retain polar compounds that are poorly retained on C18. Selection and supply to order.",
+     "intro": "Hydrophilic interaction (HILIC) columns retain polar analytes that elute with the solvent front in reversed phase.",
+     "seoText": [
+      "HILIC uses a polar stationary phase and a mobile phase rich in acetonitrile. Polar compounds — amino acids, sugars, polar metabolites and counter-ions — are retained more strongly the more polar they are.",
+      "A mobile phase with a high organic content suits mass spectrometric detection. HILIC columns need longer equilibration than reversed-phase columns before first use."
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "All HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "HPLC solvents",
+       "href": "/catalog/reagents/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "phase",
+      "length",
+      "diameter",
+      "particle",
+      "ph"
+     ],
+     "updatedAt": "2026-10-22",
+     "hasEn": true
+    }
+   }
+  },
+  {
+   "categoryPath": "reference-standards/impurity-standards",
+   "slug": "labeled-compounds",
+   "position": 5,
+   "filters": {
+    "type": [
+     "labeled"
+    ]
+   },
+   "content": {
+    "ru": {
+     "name": "Изотопно-меченые",
+     "h1": "Изотопно-меченые стандартные образцы",
+     "title": "Изотопно-меченые стандарты (дейтерированные) для ЖХ-МС | ОГК-ХИМ",
+     "description": "Дейтерированные и другие изотопно-меченые соединения — внутренние стандарты для количественного анализа методом ЖХ-МС/МС. Любая фасовка под запрос.",
+     "intro": "Изотопно-меченые соединения — внутренние стандарты для количественного ЖХ-МС/МС анализа в биоаналитике и при контроле примесей.",
+     "seoText": [
+      "Изотопно-меченый внутренний стандарт химически почти не отличается от определяемого вещества, но отличается массой. Поэтому он проходит пробоподготовку и хроматографию так же, как аналит, и компенсирует потери и матричные эффекты при масс-спектрометрическом детектировании.",
+      "Синтезаторы, с которыми работает ОГК-ХИМ, выпускают меченые соединения в любой фасовке под запрос: укажите количество и единицу в корзине."
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Стандарты примесей",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "Субстанции A–Я",
+       "href": "/substances/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "updatedAt": "2026-10-22"
+    },
+    "en": {
+     "name": "Isotope-labelled",
+     "h1": "Isotope-labelled reference standards",
+     "title": "Isotope-labelled (deuterated) standards for LC-MS | OGK-CHEM",
+     "description": "Deuterated and other isotope-labelled compounds — internal standards for quantitative LC-MS/MS. Any pack size on request.",
+     "intro": "Isotope-labelled compounds are internal standards for quantitative LC-MS/MS in bioanalysis and impurity control.",
+     "seoText": [
+      "An isotope-labelled internal standard is chemically almost identical to the analyte but differs in mass. It therefore goes through sample preparation and chromatography like the analyte and compensates for losses and matrix effects in mass spectrometric detection.",
+      "The custom synthesis manufacturers OGK-CHEM works with supply labelled compounds in any pack size on request: enter the amount and unit in the cart."
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Impurity standards",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "Substances A–Z",
+       "href": "/substances/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      }
+     ],
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "updatedAt": "2026-10-22",
+     "hasEn": true
+    }
+   }
+  }
+ ]
+}

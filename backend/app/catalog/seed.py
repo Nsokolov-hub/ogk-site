@@ -29,8 +29,10 @@ from app.catalog.models import (
 from app.catalog.normalize import brand_key, cas_or_none, compact, hill_key, parse_pack
 from app.catalog.service import refresh_card
 from app.catalog.settings import get_setting, set_setting
+from app.core.db import utcnow
 
 SEED_FILE = Path(__file__).resolve().parents[2] / 'seed' / 'catalog.json'
+CONTENT_FILE = Path(__file__).resolve().parents[2] / 'seed' / 'content.json'
 
 
 def _brands(db: Session, rows: list[dict[str, Any]]) -> dict[str, Brand]:
@@ -144,8 +146,10 @@ def load(db: Session, path: Path = SEED_FILE, *, products_too: bool = True) -> d
     brands = _brands(db, data['brands'])
     categories = _categories(db, data['categories'], data.get('root') or {})
     substances = _substances(db, data['substances'])
+    pages, landings = load_content(db)
     if not products_too:
-        return {'brands': len(brands), 'categories': len(categories), 'substances': len(substances)}
+        return {'brands': len(brands), 'categories': len(categories), 'substances': len(substances),
+                'pages': pages, 'landings': landings}
     controlled.load_register(db, data.get('controlled') or [])
     register = controlled.Register.load(db)
     weights, threshold = get_setting(db, 'completeness_weights'), get_setting(db, 'index_threshold')
@@ -157,4 +161,30 @@ def load(db: Session, path: Path = SEED_FILE, *, products_too: bool = True) -> d
     set_setting(db, 'home_products', data.get('homeProducts') or [])
     db.flush()
     return {'brands': len(brands), 'categories': len(categories), 'substances': len(substances),
-            'products': len(products), 'controlled': sum(1 for p in products if p.controlled)}
+            'pages': pages, 'landings': landings, 'products': len(products),
+            'controlled': sum(1 for p in products if p.controlled)}
+
+
+def load_content(db: Session, path: Path = CONTENT_FILE) -> tuple[int, int]:
+    """Pages and SEO landings of the site (ADM-02, ADM-07) that are not in the database yet: what was edited in
+    the admin panel stays as it is."""
+    from app.admin.models import ContentPage, SeoLanding
+
+    if not path.exists():
+        return 0, 0
+    data = json.loads(path.read_text())
+    pages = landings = 0
+    existing = {(k, s) for k, s in db.execute(select(ContentPage.kind, ContentPage.slug))}
+    for raw in data.get('pages') or []:
+        if (raw['kind'], raw['slug']) not in existing:
+            db.add(ContentPage(kind=raw['kind'], slug=raw['slug'], position=raw.get('position') or 0,
+                               content=raw['content'], status='published', published_at=utcnow()))
+            pages += 1
+    known = {(p, s) for p, s in db.execute(select(SeoLanding.category_path, SeoLanding.slug))}
+    for raw in data.get('landings') or []:
+        if (raw['categoryPath'], raw['slug']) not in known:
+            db.add(SeoLanding(category_path=raw['categoryPath'], slug=raw['slug'], filters=raw['filters'],
+                              content=raw['content'], position=raw.get('position') or 0, status='published'))
+            landings += 1
+    db.flush()
+    return pages, landings
