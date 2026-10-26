@@ -16,6 +16,7 @@ from sqlalchemy.exc import OperationalError
 from app.admin.routes import router as admin_router
 from app.catalog.routes import router as catalog_router
 from app.catalog.search.engine import EngineUnavailable
+from app.content.media import router as media_router
 from app.content.routes import router as content_router
 from app.core.config import settings
 from app.core.db import SessionLocal
@@ -133,3 +134,4 @@ app.include_router(subscriptions_router, prefix='/api/v1')
 app.include_router(content_router, prefix='/api/v1')
 app.include_router(admin_router, prefix='/api/v1')
 app.include_router(crm_events_router, prefix='/api/v1')
+app.include_router(media_router, prefix='/api/v1')

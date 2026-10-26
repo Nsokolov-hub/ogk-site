@@ -236,9 +236,13 @@ def apply(db: Session, product: Product, data: dict[str, Any]) -> None:
         raise DomainError('CAS_INVALID', 'CAS не прошёл проверку контрольной цифры', 422, 'cas')
     if data.get('status', product.status) not in PRODUCT_STATUSES:
         raise DomainError('STATUS_INVALID', 'Нет такого статуса', 422, 'status')
+    images_before = list(product.images or [])
     for key, column in SIMPLE.items():
         if key in data:
             setattr(product, column, data[key])
+    if list(product.images or []) != images_before:
+        # The worker looks at the card again: without a photo it draws the structure (app.catalog.structures).
+        product.structure_smiles = None
     product.cas = cas_or_none(cas) if cas else None
     product.formula_hill = hill_key(product.formula) if product.formula else None
     product.status = data.get('status', product.status)

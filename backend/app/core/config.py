@@ -12,6 +12,15 @@ class Settings(BaseSettings):
     # Private storage of customer attachments until they are delivered to the CRM.
     storage_dir: Path = Path('.runtime/files')
     max_attachment_bytes: int = 10 * 1024 * 1024
+    # S3-compatible storage of attachments and media (TZ 12.1); empty S3_BUCKET — the local STORAGE_DIR.
+    s3_bucket: str = ''
+    s3_endpoint_url: str = ''
+    s3_region: str = ''
+    s3_access_key: str = ''
+    s3_secret_key: str = ''
+    # Folder inside the bucket, so staging and production can share one.
+    s3_prefix: str = ''
+    max_media_bytes: int = 20 * 1024 * 1024
     company_timezone: str = 'Europe/Moscow'
 
     # ── CRM, flow F1 (my-crm-project docs/site-integration.md) ──

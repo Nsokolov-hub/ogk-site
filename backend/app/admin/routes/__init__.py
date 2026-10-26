@@ -12,6 +12,7 @@ from app.admin.routes import (
     dictionaries,
     imports,
     journal,
+    media,
     products,
     queues,
     requests,
@@ -20,5 +21,6 @@ from app.admin.routes import (
 )
 
 router = APIRouter(prefix='/admin', include_in_schema=False)
-for module in (access, content, catalog, products, seo, requests, imports, queues, dictionaries, site, journal):
+for module in (access, content, catalog, products, media, seo, requests, imports, queues, dictionaries, site,
+               journal):
     router.include_router(module.router)

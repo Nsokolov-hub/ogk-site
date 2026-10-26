@@ -35,6 +35,7 @@ python3 scripts/init-env.py staging --domain staging.ogk-chem.ru --admin-domain 
 | `CRM_URL`, `CRM_TOKEN`, `CRM_SIGNING_SECRET`, `CRM_DELIVERY_ENABLED=true` | В CRM: `docker compose exec api python -m app.integrations.site_tokens create --name staging`; адрес сервера сайта — в `SITE_INTEGRATION_ALLOWED_IPS` CRM |
 | `CRM_EVENTS_SECRET` (скрипт создаёт), `CRM_EVENTS_ALLOWED_IPS` | События из CRM (F2): в `.env` CRM `SITE_EVENTS_URL=https://<SITE_DOMAIN>/api/v1/crm/events` и `SITE_EVENTS_SECRET` = это значение. Адрес сервера CRM — в `CRM_EVENTS_ALLOWED_IPS`; пароль стейджа этот путь не закрывает, его защищает подпись |
 | `METRIKA_OAUTH_TOKEN`, `GA_API_SECRET` | Офлайн-конверсии (F3), см. ниже; пусто — счётчик их не получает |
+| `S3_*` | Необязательно. Пусто — файлы (вложения заявок, фото, PDF и 2D-структуры карточек) лежат в томе `files` и входят в бэкап. С S3: приватный бакет, сервисный аккаунт с правами на него, в бакете включите версионирование — `backup.sh` его не копирует. Сайт отдаёт файлы сам по `/api/v1/media/…` |
 | `SMTP_*`, `MAIL_FROM` | Продакшен — почтовый провайдер с серверами в РФ. На стейдже письма остаются в Mailpit: `https://<SITE_DOMAIN>/mailpit/` |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Чат оповещений: недоставленные заявки, сбои поиска и очереди, ошибки бэкапа |
 | `SENTRY_DSN`, `WEB_SENTRY_DSN` | Проект в Sentry или GlitchTip; пусто — ошибки только в журналах |

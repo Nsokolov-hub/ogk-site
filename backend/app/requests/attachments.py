@@ -1,17 +1,17 @@
 """Customer attachments: XLSX, CSV, PDF, DOCX up to 10 MB (RFQ-03).
 
 The type is checked by content, not only by name, as in the CRM; the CRM also scans every file with ClamAV
-when it arrives. Files stay in private storage until the request is delivered.
+when it arrives. Files stay in private storage (local disk or S3, app.core.files) until the request is delivered.
 """
 
 import hashlib
 import io
-import os
 import re
 import zipfile
 from pathlib import Path
 from uuid import uuid4
 
+from app.core import files
 from app.core.config import settings
 from app.core.errors import DomainError
 
@@ -67,32 +67,21 @@ def validate(name: str, content: bytes) -> tuple[str, str]:
     return filename, TYPES[extension]
 
 
-def safe_path(key: str) -> Path:
-    root = settings.storage_dir.resolve()
-    target = (root / key).resolve()
-    if not target.is_relative_to(root) or target == root:
-        raise DomainError('FILE_NOT_FOUND', 'Файл не найден', 404)
-    return target
-
-
 def store(content: bytes) -> tuple[str, str]:
-    """Write the file once, readable by the service only; returns (storage key, SHA-256)."""
+    """Write the file once to private storage (app.core.files); returns (storage key, SHA-256)."""
     file_id = uuid4().hex
     key = f'attachments/{file_id[:2]}/{file_id}'
-    target = safe_path(key)
-    target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with target.open('xb') as stream:
-        os.chmod(target, 0o600)
-        stream.write(content)
-        stream.flush()
-        os.fsync(stream.fileno())
+    try:
+        files.storage().put(key, content, 'application/octet-stream')
+    except files.StorageUnavailable:
+        raise DomainError('FILE_UNAVAILABLE', 'Не удалось сохранить вложение. Повторите отправку', 503) from None
     return key, hashlib.sha256(content).hexdigest()
 
 
 def read(key: str, checksum: str) -> bytes:
     try:
-        data = safe_path(key).read_bytes()
-    except OSError:
+        data = files.storage().get(key)
+    except (files.FileMissing, files.StorageUnavailable):
         raise DomainError('FILE_UNAVAILABLE', 'Файл вложения недоступен', 503) from None
     if hashlib.sha256(data).hexdigest() != checksum:
         raise DomainError('FILE_INTEGRITY', 'Нарушена целостность файла вложения', 503)

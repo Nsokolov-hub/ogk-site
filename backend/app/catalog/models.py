@@ -119,6 +119,9 @@ class Product(Entity):
         # The indexing queue: only rows waiting for the index are in this index.
         Index('ix_products_needs_index', 'needs_index', postgresql_where=text('needs_index'),
               sqlite_where=text('needs_index')),
+        # The queue of 2D structures to draw: only cards whose SMILES changed since the last drawing.
+        Index('ix_products_structure_pending', 'id', postgresql_where=text('structure_smiles IS DISTINCT FROM smiles'),
+              sqlite_where=text('structure_smiles IS NOT smiles')),
         # «Название содержит…» of the admin list (pg_trgm in schema public, migration 0004); a plain index in SQLite.
         Index('ix_products_name_en_trgm', 'name_en', postgresql_using='gin',
               postgresql_ops={'name_en': 'public.gin_trgm_ops'}),
@@ -143,6 +146,8 @@ class Product(Entity):
     formula_hill: Mapped[str | None] = mapped_column(String(200), index=True)
     molecular_weight: Mapped[str | None] = mapped_column(String(40))
     smiles: Mapped[str | None] = mapped_column(Text)
+    # The SMILES the 2D structure was last drawn from (or found unreadable); differs from smiles — draw again.
+    structure_smiles: Mapped[str | None] = mapped_column(Text)
     iupac_name: Mapped[str | None] = mapped_column(Text)
     purity: Mapped[str | None] = mapped_column(String(200))
     storage: Mapped[str | None] = mapped_column(String(20))

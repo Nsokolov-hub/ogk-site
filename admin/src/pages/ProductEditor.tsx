@@ -5,7 +5,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { ExternalLink, Plus, Trash2, Upload } from 'lucide-react';
 import { api, errorText } from '../api';
 import { useAuth } from '../auth';
 import { ShapeForm } from '../shape';
@@ -52,6 +52,57 @@ interface EditorData {
   url: string;
   demand: { views: number; requests: number };
   history: HistoryEntry[];
+}
+
+interface Picture {
+  src: string;
+  alt: string;
+  kind: 'photo' | 'structure';
+}
+
+/** Фото или PDF в хранилище сайта (S3 или диск); в карточку попадает адрес /api/v1/media/… */
+function UploadButton({ accept, label, onDone, disabled }: { accept: string; label: string; onDone: (url: string) => void; disabled?: boolean }) {
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const [input, setInput] = useState<HTMLInputElement | null>(null);
+  return (
+    <>
+      <input
+        ref={setInput}
+        type="file"
+        accept={accept}
+        hidden
+        onChange={(ev) => {
+          const file = ev.target.files?.[0];
+          ev.target.value = '';
+          if (!file) return;
+          setBusy(true);
+          api.upload<{ url: string }>('/media', file)
+            .then((r) => onDone(r.url))
+            .catch((err: unknown) => toast(errorText(err), 'bad'))
+            .finally(() => setBusy(false));
+        }}
+      />
+      <Button size="sm" busy={busy} disabled={disabled} onClick={() => input?.click()}>
+        <Upload size={14} /> {label}
+      </Button>
+    </>
+  );
+}
+
+function PictureField({ images, name, writable, onChange }: { images: Picture[]; name: string; writable: boolean; onChange: (images: Picture[]) => void }) {
+  const [broken, setBroken] = useState(false);
+  const current = images[0];
+  return (
+    <Field label="Изображение" wide hint="Фото производителя → 2D-структура (сайт рисует сам по SMILES) → заглушка-флакон. Фото — только с правом на публикацию (NFR-09).">
+      <div className="row">
+        {current && !broken ? <img src={current.src} alt={current.alt} onError={() => setBroken(true)} style={{ width: 96, height: 96, objectFit: 'contain', background: '#141714', borderRadius: 12 }} /> : null}
+        <span className="muted small">{current ? (current.kind === 'structure' ? '2D-структура по SMILES' : 'Фото') : 'Нет — после сохранения сайт нарисует 2D-структуру, если заполнен SMILES'}</span>
+        {writable ? <UploadButton accept="image/png,image/jpeg,image/webp" label={current?.kind === 'photo' ? 'Заменить фото' : 'Загрузить фото'} onDone={(url) => { setBroken(false); onChange([{ src: url, alt: name, kind: 'photo' }]); }} /> : null}
+        {writable && current?.kind === 'photo' ? <Button size="sm" variant="danger" onClick={() => onChange([])}>Убрать фото</Button> : null}
+      </div>
+    </Field>
+  );
 }
 
 const TEXT_SHAPE: JsonObject = { description: [''], specs: [{ label: '', value: '' }], faq: [{ q: '', a: '' }], monograph: '' };
@@ -171,6 +222,7 @@ export function ProductEditor() {
                 <Select value={str('controlledState')} disabled={!writable} options={[{ value: str('controlledState'), label: str('controlledState') || '—' }, { value: 'confirmed', label: 'Подконтрольное — скрыть' }, { value: 'cleared', label: 'Не подконтрольное' }]} onChange={(ev) => set('controlledState', ev.target.value)} />
               </Field>
             ) : null}
+            <PictureField images={(data.images as unknown as Picture[]) ?? []} name={str('nameRu') || str('nameEn')} writable={writable} onChange={(images) => set('images', images)} />
             <Field label="Синонимы (по строке)" wide>
               <TextArea value={((data.synonyms as string[]) ?? []).join('\n')} disabled={!writable} onChange={(ev) => set('synonyms', ev.target.value.split('\n').filter(Boolean))} />
             </Field>
@@ -340,6 +392,7 @@ function Documents({ rows, writable, onChange }: { rows: Doc[]; writable: boolea
             <Field label="Название RU"><TextInput value={r.titleRu ?? ''} disabled={!writable} onChange={(e) => update(i, { titleRu: e.target.value || null })} /></Field>
             <Field label="Название EN"><TextInput value={r.titleEn ?? ''} disabled={!writable} onChange={(e) => update(i, { titleEn: e.target.value || null })} /></Field>
             <Field label="Файл (адрес)"><TextInput value={r.href ?? ''} disabled={!writable} onChange={(e) => update(i, { href: e.target.value || null })} /></Field>
+            {writable ? <Field label="или PDF в хранилище сайта"><UploadButton accept="application/pdf" label="Загрузить PDF" onDone={(url) => update(i, { href: url })} /></Field> : null}
             <Field label="Основание права на публикацию" wide>
               <TextInput value={r.rightsBasis ?? ''} disabled={!writable} placeholder="Например: медиакит производителя, письмо от 01.10.2026" onChange={(e) => update(i, { rightsBasis: e.target.value || null })} />
             </Field>

@@ -408,8 +408,22 @@ def run_once(*, housekeeping: bool = True) -> dict[str, int]:
         admin_housekeeping()
     with SessionLocal.begin() as db:
         counts = process_events(db)
+    counts['structures'] = draw_structures()
     counts['indexed'] = index_catalog()
     return counts
+
+
+def draw_structures(limit: int = 200) -> int:
+    """2D structures of cards whose SMILES changed (app.catalog.structures); drawn before indexing, so the new
+    pictures reach the search in the same iteration."""
+    from app.catalog import structures
+
+    try:
+        with SessionLocal.begin() as db:
+            return structures.draw_pending(db, limit)
+    except Exception:
+        logger.exception('{"event": "structures_failed"}')
+        return 0
 
 
 def prune_carts(db: Session, now: datetime | None = None) -> int:
