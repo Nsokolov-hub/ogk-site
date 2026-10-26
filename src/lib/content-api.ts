@@ -1,17 +1,14 @@
 /**
  * Контент страниц: бренды — из API каталога (тексты страниц брендов хранятся у бренда), услуги, статьи, авторы
- * и решения — пока в коде, до админки (ADM-02). Только сервер.
+ * и решения — из API текстов сайта (их ведут в админке, ADM-02). Только сервер.
  */
 import type { Locale } from '@/i18n/routing';
 import type { ProductPreview } from '@/types/catalog';
 import type { Article, Author, BrandContent, ServiceContent, SolutionContent } from '@/types/content';
-import { articles, authors } from '@/data/mock/articles';
-import { servicesEn } from '@/data/mock/en/services';
-import { services } from '@/data/mock/services';
-import { solutions } from '@/data/mock/solutions';
 import type { Schemas } from './api-types';
 import { api, apiOrNull } from './backend';
 import { getCatalogListing, countInScope } from './catalog-api';
+import { pageContent, pageList, type PageResult } from './content';
 
 // ── бренды ──
 
@@ -53,11 +50,12 @@ export interface BrandPageData {
   categories: { slug: string; count: number }[];
 }
 
-export async function getBrandPage(slug: string, locale: Locale): Promise<BrandPageData | null> {
+/** preview — черновик страницы бренда из админки по подписанной ссылке (без кэша) */
+export async function getBrandPage(slug: string, locale: Locale, preview?: string): Promise<BrandPageData | null> {
   const data = await apiOrNull<Omit<Schemas['BrandPage'], 'brand' | 'products'> & { brand?: ApiBrand | null; products: ProductPreview[] }>(
     `/public/brands/${encodeURIComponent(slug)}`,
-    { lang: locale },
-    { tags: ['catalog', `brand:${slug}`] },
+    { lang: locale, preview },
+    preview ? { revalidate: false } : { tags: ['catalog', `brand:${slug}`] },
   );
   if (!data?.brand) return null;
   const brand = brandContentFor(data.brand, locale);
@@ -67,46 +65,43 @@ export async function getBrandPage(slug: string, locale: Locale): Promise<BrandP
 
 // ── услуги ──
 
-const servicesWithEn = new Set(servicesEn.filter((s) => s.hasEn).map((s) => s.slug));
-
 /** Услуги на языке страницы; у русских отмечено, есть ли перевод (для hreflang и Sitemap) */
-export function servicesFor(locale: string): ServiceContent[] {
-  return locale === 'en' ? servicesEn : services.map((s) => ({ ...s, hasEn: servicesWithEn.has(s.slug) }));
+export async function getServices(locale: Locale | string): Promise<ServiceContent[]> {
+  return pageList<ServiceContent>('service', locale);
 }
 
-export async function getServices(locale: Locale): Promise<ServiceContent[]> {
-  return servicesFor(locale);
-}
-
-export async function getService(slug: string, locale: Locale): Promise<ServiceContent | null> {
-  return servicesFor(locale).find((s) => s.slug === slug) ?? null;
+export async function getService(slug: string, locale: Locale, preview?: string): Promise<PageResult<ServiceContent>> {
+  return pageContent<ServiceContent>('service', slug, locale, preview);
 }
 
 // ── статьи ──
 
-export async function getArticles(locale: Locale): Promise<Article[]> {
-  void locale;
-  return [...articles].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+export async function getArticles(locale: Locale | string): Promise<Article[]> {
+  return (await pageList<Article>('article', locale)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
 }
 
-export async function getArticle(slug: string, locale: Locale): Promise<Article | null> {
-  void locale;
-  return articles.find((a) => a.slug === slug) ?? null;
+export async function getArticle(slug: string, locale: Locale, preview?: string): Promise<PageResult<Article>> {
+  return pageContent<Article>('article', slug, locale, preview);
 }
 
-export async function getAuthor(slug: string): Promise<Author | null> {
-  return authors.find((a) => a.slug === slug) ?? null;
+export async function getAuthor(slug: string, preview?: string): Promise<PageResult<Author>> {
+  return pageContent<Author>('author', slug, 'ru', preview);
 }
 
-export function getAuthors(): Author[] {
-  return authors;
+export async function getAuthors(): Promise<Author[]> {
+  return pageList<Author>('author', 'ru');
+}
+
+// ── страницы доверия: /about/, /delivery/, /documents/, /contacts/ ──
+
+export async function getTrustPage<T extends object>(slug: string, locale: Locale, preview?: string): Promise<PageResult<T>> {
+  return pageContent<T>('trust', slug, locale, preview);
 }
 
 // ── отраслевые решения ──
 
-export async function getSolutions(locale: Locale): Promise<SolutionContent[]> {
-  void locale;
-  return solutions;
+export async function getSolutions(locale: Locale | string): Promise<SolutionContent[]> {
+  return pageList<SolutionContent>('solution', locale);
 }
 
 export interface SolutionPageData {
@@ -119,9 +114,16 @@ export interface SolutionPageData {
   articles: Article[];
 }
 
-export async function getSolutionPage(slug: string, locale: Locale): Promise<SolutionPageData | null> {
-  const solution = solutions.find((s) => s.slug === slug);
+export async function getSolutionPage(
+  slug: string,
+  locale: Locale,
+  preview?: string,
+): Promise<(SolutionPageData & { preview: boolean }) | { moved: string } | null> {
+  const found = await pageContent<SolutionContent>('solution', slug, locale, preview);
+  if (found.moved) return { moved: found.moved };
+  const solution = found.page;
   if (!solution) return null;
+  const [services, articles] = await Promise.all([getServices(locale), getArticles(locale)]);
   const counts = await Promise.all(
     solution.groups.map(async (g) => (await Promise.all(g.scope.map((path) => countInScope(path.split('/'))))).reduce((a, b) => a + b, 0)),
   );
@@ -138,7 +140,8 @@ export async function getSolutionPage(slug: string, locale: Locale): Promise<Sol
     solution,
     counts,
     products,
-    services: solution.services.map((x) => servicesFor(locale).find((s) => s.slug === x)).filter((x): x is ServiceContent => !!x),
+    services: solution.services.map((x) => services.find((s) => s.slug === x)).filter((x): x is ServiceContent => !!x),
     articles: solution.articles.map((x) => articles.find((a) => a.slug === x)).filter((x): x is Article => !!x),
+    preview: found.preview,
   };
 }

@@ -15,6 +15,7 @@ import { Providers } from '@/components/layout/Providers';
 import { SkipLink } from '@/components/layout/SkipLink';
 import { OneClickOrderDialog } from '@/components/product/OneClickOrderDialog';
 import { getCatalogTree, getSiteSettings } from '@/lib/api';
+import { getSite } from '@/lib/content';
 import '../globals.css';
 
 // Временный шрифт до подключения LT Superior (ТЗ 11.1)
@@ -48,10 +49,18 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const [settings, tree, requestHeaders] = await Promise.all([getSiteSettings(locale), getCatalogTree(locale), headers()]);
-  // Номера счётчиков — из окружения при запросе: у стейджа и продакшена свои (ТЗ 15.1)
+  const [settings, tree, requestHeaders, site] = await Promise.all([
+    getSiteSettings(locale),
+    getCatalogTree(locale),
+    headers(),
+    getSite(),
+  ]);
+  // Номера счётчиков (ТЗ 15.1): из настроек админки, иначе из окружения сервера — у стейджа и продакшена свои
   const ymId = Number.parseInt(process.env.YM_COUNTER_ID ?? '', 10);
-  const counterIds = { ym: Number.isFinite(ymId) ? ymId : null, ga: process.env.GA_MEASUREMENT_ID || null };
+  const counterIds = {
+    ym: site.counters.ym ?? (Number.isFinite(ymId) ? ymId : null),
+    ga: site.counters.ga ?? (process.env.GA_MEASUREMENT_ID || null),
+  };
 
   return (
     <html lang={locale} className={manrope.variable}>

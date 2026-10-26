@@ -221,6 +221,8 @@ class ProductDetailOut(ProductPreview):
     completeness: int
     indexable: bool
     availability: str
+    # Title and Description written by hand in the admin panel (SEO-02): {"ru": {"title", "description"}, "en": …}.
+    seo: dict[str, Any] = Field(default_factory=dict)
     updatedAt: str
 
 

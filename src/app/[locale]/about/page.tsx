@@ -10,22 +10,24 @@ import { breadcrumbsLd, JsonLd, organizationLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
-import { aboutPageEn } from '@/data/mock/en/pages';
-import { aboutPage } from '@/data/mock/pages';
+import type { AboutPageContent } from '@/types/content';
+import { previewParam } from '@/lib/content';
+import { getTrustPage } from '@/lib/content-api';
+import { ensurePage } from '@/lib/page-guard';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale }> };
+type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const page = locale === 'en' ? aboutPageEn : aboutPage;
+  const page = ensurePage(await getTrustPage<AboutPageContent>('about', locale, previewParam((await searchParams).preview)), locale);
   return pageMetadata({ locale, path: '/about/', title: page.title, description: page.description, hasEn: page.hasEn });
 }
 
 /** О компании (ТЗ 10.4): чем занимаемся, как работаем, для кого, реквизиты */
-export default async function AboutPage({ params }: Props) {
+export default async function AboutPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const page = locale === 'en' ? aboutPageEn : aboutPage;
+  const page = ensurePage(await getTrustPage<AboutPageContent>('about', locale, previewParam((await searchParams).preview)), locale);
   setRequestLocale(locale);
   const t = await getTranslations('trust');
   const tc = await getTranslations('catalog');

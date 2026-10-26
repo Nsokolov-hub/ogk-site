@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
 import type { BreadcrumbItem } from '@/types/content';
@@ -7,31 +6,33 @@ import { PageHeader } from '@/components/content/PageHeader';
 import { breadcrumbsLd, JsonLd, personLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
+import { previewParam } from '@/lib/content';
 import { getArticles, getAuthor } from '@/lib/content-api';
+import { ensurePage, previewMetadata } from '@/lib/page-guard';
 import { absoluteUrl, pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type Props = { params: Promise<{ locale: Locale; slug: string }>; searchParams: Promise<{ preview?: string }> };
 
 /** Страница автора (ТЗ 10.4). Пока нет квалификации и фото — noindex, follow: пустой профиль не помогает E-E-A-T */
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const a = await getAuthor(slug);
+  const found = await getAuthor(slug, previewParam((await searchParams).preview));
+  const a = found.page;
   if (!a) return {};
   const t = await getTranslations({ locale, namespace: 'articles.authorPage' });
-  return pageMetadata({
+  return previewMetadata(pageMetadata({
     locale,
     path: `/authors/${a.slug}/`,
     title: t('title', { name: a.name }),
     description: t('description', { name: a.name }),
     index: !!a.bio?.length,
-  });
+  }), found.preview);
 }
 
-export default async function AuthorPage({ params }: Props) {
+export default async function AuthorPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const author = await getAuthor(slug);
-  if (!author) notFound();
+  const author = ensurePage(await getAuthor(slug, previewParam((await searchParams).preview)), locale);
   const t = await getTranslations('articles');
   const tc = await getTranslations('catalog');
   const list = (await getArticles(locale)).filter((a) => a.authorSlug === author.slug);

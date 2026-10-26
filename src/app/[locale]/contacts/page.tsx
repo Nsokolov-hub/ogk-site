@@ -10,15 +10,17 @@ import { TrackedLink } from '@/components/layout/TrackedLink';
 import { breadcrumbsLd, JsonLd, organizationLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
 import { getSiteSettings } from '@/lib/api';
-import { contactsPageEn } from '@/data/mock/en/pages';
-import { contactsPage } from '@/data/mock/pages';
+import type { ContactsPageContent } from '@/types/content';
+import { previewParam } from '@/lib/content';
+import { getTrustPage } from '@/lib/content-api';
+import { ensurePage } from '@/lib/page-guard';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale }> };
+type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const page = locale === 'en' ? contactsPageEn : contactsPage;
+  const page = ensurePage(await getTrustPage<ContactsPageContent>('contacts', locale, previewParam((await searchParams).preview)), locale);
   return pageMetadata({ locale, path: '/contacts/', title: page.title, description: page.description, hasEn: page.hasEn });
 }
 
@@ -26,9 +28,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * Контакты (ТЗ 2.1, SEO-14): телефон, e-mail, адрес и часы работы — те же, что в подвале,
  * в разметке Organization и в карточке Яндекс Бизнеса.
  */
-export default async function ContactsPage({ params }: Props) {
+export default async function ContactsPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const page = locale === 'en' ? contactsPageEn : contactsPage;
+  const page = ensurePage(await getTrustPage<ContactsPageContent>('contacts', locale, previewParam((await searchParams).preview)), locale);
   setRequestLocale(locale);
   const t = await getTranslations('trust');
   const tc = await getTranslations('catalog');

@@ -35,9 +35,9 @@ NEXT_DIST_DIR=.next-prod npm run build  # проверочная сборка, �
 - `src/components/search/SearchBox.tsx` — строка поиска с подсказками (шапка, главная, 404): товары и группы «Субстанции», «Разделы каталога», «Бренды» (SRCH-01); данные — `GET /api/search/suggest/?q=&lang=`: маршрут Next берёт подсказки из API (Meilisearch) и добавляет SEO-посадочные. Поиск понимает брутто-формулу в порядке Хилла (SRCH-10), русские названия субстанций и неверную раскладку (SRCH-05) — всё это делает бэкенд.
 - `src/components/rfq/CartDrawer.tsx` — выдвижная панель корзины (RFQ-01): открывается иконкой в шапке и кнопками «В корзине», без JS ссылка ведёт на `/rfq/`.
 - `src/components/catalog` — каталог: фильтры, сортировка, сетка/таблица, пагинация, блоки под сеткой.
-- `src/app/[locale]/catalog/[[...slug]]` — `/catalog/`, `/catalog/{раздел}/`, `/catalog/{раздел}/{подраздел}/` и SEO-посадочные из срезов фильтров `/catalog/{раздел}/{подраздел}/{срез}/` (URL-07, `src/data/seo-landings.ts` — до админки, ADM-07): свои H1, Title и текст, фиксированные фильтры, чипы «Подборки» на родительской категории; индексируются при ≥ 3 позициях.
+- `src/app/[locale]/catalog/[[...slug]]` — `/catalog/`, `/catalog/{раздел}/`, `/catalog/{раздел}/{подраздел}/` и SEO-посадочные из срезов фильтров `/catalog/{раздел}/{подраздел}/{срез}/` (URL-07, создаются в админке, ADM-07; `src/lib/landings.ts`): свои H1, Title и текст, фиксированные фильтры, чипы «Подборки» на родительской категории; индексируются при ≥ 3 позициях.
 - `src/lib/backend.ts` — клиент API сайта (на сервере `API_ORIGIN`, в браузере `/api/v1` через прокси); `src/lib/api-types.ts` — схемы из `backend/openapi.json`.
-- `src/lib/catalog-api.ts`, `category-page.ts`, `product-api.ts`, `content-api.ts` (бренды), `search.ts`, `sitemap.ts`, `feed.ts` — данные каталога из `/api/v1/public/*`. Тексты главной, услуг, статей, решений и страниц доверия пока в `src/data/mock` — до админки (ADM-02).
+- `src/lib/catalog-api.ts`, `category-page.ts`, `product-api.ts`, `content-api.ts` (бренды), `search.ts`, `sitemap.ts`, `feed.ts` — данные каталога из `/api/v1/public/*`. `src/lib/content.ts` — тексты главной, услуг, статей, решений, авторов и страниц доверия, контакты и реквизиты из `/api/v1/public/pages/*` и `/public/site`: их ведут в админке (ADM-02, ADM-10). `?preview=` — черновик из админки по подписанной ссылке, без кэша и в noindex. `src/lib/redirects.ts` — редиректы из админки в middleware (ADM-07).
 - `src/lib/api.ts` → `submitSiteRequest` — отправка всех форм в `POST /api/v1/public/requests/`: ключ повторяемости по содержимому (повтор той же формы не создаёт вторую заявку), SmartCaptcha по ответу 428 (`src/components/forms/CaptchaHost.tsx`), коды ошибок → тексты на языке страницы (`src/lib/submit-error.ts`).
 - `src/middleware.ts` + `src/lib/attribution-cookie.ts` — источник визита (ТЗ 15.3): первое и последнее касание, UTM, yclid, gclid в cookie `ogk_attr` на 90 дней; её читает API при отправке заявки.
 - `src/lib/catalog.ts` — формат URL фильтров (`?brand=edqm&pack=100-mg&sort=name&page=2`) и порядок значений в фильтрах; фильтрует и считает фасеты API.
@@ -57,7 +57,7 @@ NEXT_DIST_DIR=.next-prod npm run build  # проверочная сборка, �
 - `src/app/robots.txt`, `src/app/sitemap.xml`, `src/app/sitemaps/[file]` — robots.txt (SEO-03, Clean-param, staging закрыт через `SITE_ENV=staging`) и индекс Sitemap по типам страниц (SEO-04), включая `en-*` для переведённых страниц.
 - `src/app/feeds/yandex-direct.yml` — YML-фид для Директа (ТЗ 15.4), обновление раз в 6 часов; позиции и разделы — `GET /api/v1/public/catalog/feed`, состав фида — настройка каталога `feed` в API. Цен в фиде нет — открытый вопрос ТЗ 15.4.
 - Подконтрольные вещества (ТЗ 5.2.1) — перечни и автопроверка в API (`backend/app/catalog/controlled.py`): совпавшие позиции скрыты с витрины, из поиска, Sitemap и фида настройкой `hide_controlled`.
-- `src/data/mock/en/*` — английский контент главной, услуг и страниц доверия (EN-04). Английские тексты разделов, брендов, карточек и субстанций хранятся в API вместе с русскими; подписи фасовок на английском отдаёт API.
+- Английские тексты (EN-04) хранятся в API вместе с русскими: у страницы есть версия `en`, только когда она переведена (EN-05); подписи фасовок на английском отдаёт API.
 
 ## SEO-слой
 
@@ -69,7 +69,7 @@ NEXT_DIST_DIR=.next-prod npm run build  # проверочная сборка, �
 ## Временно
 
 - Шрифт Manrope вместо LT Superior (нужны файлы и веб-лицензия).
-- Тексты главной, услуг, статей, решений и страниц доверия — в `src/data/mock` до админки. Статьи и «Решения» пока только на русском (P2), их `/en/`-версии в noindex с canonical на русские.
+- Статьи и «Решения» пока только на русском (P2), их `/en/`-версии в noindex с canonical на русские. Начальные тексты сайта — `backend/seed/content.json` (`seed --content-only`).
 - Тестовый каталог для разработки — `backend/seed/catalog.json` (413 позиций, 9 обогащённых карточек; выгружен из прежних моков скриптом `scripts/export-catalog-seed.mjs`). Настоящий ассортимент загружается импортом (backend/README.md); карточки без описания — шаблонный текст и noindex до обогащения.
 - Статьи — 10 первых тем ТЗ 10.4; ещё 5 тем публикуются по мере написания, без страниц-заглушек. Отметка «Проверено экспертом» появится после проверки химиком (`reviewed`).
 - Страница автора в noindex, пока нет квалификации и фото.

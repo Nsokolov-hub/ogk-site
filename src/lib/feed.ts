@@ -6,7 +6,7 @@
  * это открытый вопрос ТЗ 15.4, до запуска сверяем требования и выбираем типы кампаний.
  * Когда появятся публичные цены (P2), добавим <price> только позициям с флагом показа.
  */
-import { siteSettings } from '@/data/mock/settings';
+import { getSiteSettings } from './api';
 import type { Schemas } from './api-types';
 import { api } from './backend';
 import { absoluteUrl, SITE_NAME } from './seo';
@@ -32,9 +32,10 @@ function feedCategories(tree: FeedNode[]) {
 }
 
 /** Яндекс принимает изображения JPEG, PNG, WebP; SVG-структуры в фид не отдаём */
-const feedPicture = (src?: string | null) => (src && !src.endsWith('.svg') ? `${siteSettings.siteUrl}${src}` : undefined);
+const feedPicture = (siteUrl: string, src?: string | null) => (src && !src.endsWith('.svg') ? `${siteUrl}${src}` : undefined);
 
 export async function yandexDirectYml(now = new Date()): Promise<string> {
+  const siteSettings = await getSiteSettings('ru');
   // Состав фида (разделы и бренды) задаётся настройкой каталога; подконтрольные и снятые позиции API не отдаёт
   const feed = await api<Schemas['FeedOut']>('/public/catalog/feed', undefined, { revalidate: 21600, tags: ['catalog'] });
   const cats = feedCategories(feed.categories);
@@ -58,7 +59,7 @@ export async function yandexDirectYml(now = new Date()): Promise<string> {
   const offersXml = products
     .map((p) => {
       const description = (p.description ?? '').slice(0, 3000);
-      const picture = feedPicture(p.image);
+      const picture = feedPicture(siteSettings.siteUrl, p.image);
       const params = [
         p.cas ? `        <param name="CAS">${esc(p.cas)}</param>` : '',
         p.packagings?.length ? `        <param name="Фасовка">${esc(p.packagings.join(', '))}</param>` : '',

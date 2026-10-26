@@ -1,5 +1,5 @@
 {
- "note": "Тексты сайта из src/data/mock на момент переноса в базу; дальше их ведут в админке. Загрузка: python -m app.catalog.cli seed --content-only",
+ "note": "Тексты сайта на момент переноса из кода витрины в базу (26.10.2026); дальше их ведут в админке. Загрузка: python -m app.catalog.cli seed --content-only — страницы, которые уже есть в базе, не перезаписываются.",
  "site": {
   "ru": {
    "siteUrl": "https://www.ogk-chem.ru",

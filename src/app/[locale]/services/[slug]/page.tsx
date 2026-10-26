@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { notFound } from 'next/navigation';
 import { CircleCheck, Phone } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
@@ -17,23 +16,33 @@ import { Chip } from '@/components/ui/Chip';
 import { Container } from '@/components/ui/Container';
 import { Icon } from '@/components/ui/Icon';
 import { getSiteSettings } from '@/lib/api';
+import { previewParam } from '@/lib/content';
 import { getService, getServices } from '@/lib/content-api';
+import { ensurePage, previewMetadata } from '@/lib/page-guard';
 import { absoluteUrl, pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type Props = { params: Promise<{ locale: Locale; slug: string }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const s = await getService(slug, locale);
+  const found = await getService(slug, locale, previewParam((await searchParams).preview));
+  const s = found.page;
   if (!s) return {};
-  return pageMetadata({ locale, path: `/services/${s.slug}/`, title: s.title, description: s.description, hasEn: s.hasEn });
+  return previewMetadata(
+    pageMetadata({ locale, path: `/services/${s.slug}/`, title: s.title, description: s.description, hasEn: s.hasEn }),
+    found.preview,
+  );
 }
 
-export default async function ServicePage({ params }: Props) {
+export default async function ServicePage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [s, all, settings] = await Promise.all([getService(slug, locale), getServices(locale), getSiteSettings(locale)]);
-  if (!s) notFound();
+  const [found, all, settings] = await Promise.all([
+    getService(slug, locale, previewParam((await searchParams).preview)),
+    getServices(locale),
+    getSiteSettings(locale),
+  ]);
+  const s = ensurePage(found, locale);
   const t = await getTranslations('services');
   const tc = await getTranslations('catalog');
   const path = `/services/${s.slug}/`;

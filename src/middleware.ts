@@ -1,12 +1,17 @@
 import createMiddleware from 'next-intl/middleware';
-import type { NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { routing } from './i18n/routing';
 import { trackAttribution } from './lib/attribution-cookie';
 import { contentSecurityPolicy } from './lib/csp';
+import { findRedirect } from './lib/redirects';
 
 const intl = createMiddleware(routing);
 
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
+  // Редиректы из админки — до рендера страницы (URL-03, URL-11)
+  const rule = await findRedirect(request.nextUrl.pathname);
+  if (rule) return NextResponse.redirect(new URL(rule.target, request.url), rule.code);
+
   // CSP с одноразовым nonce (NFR-04): Next ставит его своим скриптам, счётчики берут его из заголовка x-nonce.
   // next-intl переносит заголовки запроса в ответ рендера, поэтому их достаточно поставить здесь
   const nonce = btoa(crypto.randomUUID());
@@ -18,6 +23,8 @@ export default function middleware(request: NextRequest) {
   request.headers.set('Content-Security-Policy', policy);
   const response = intl(request);
   response.headers.set('Content-Security-Policy', policy);
+  // Предпросмотр черновика из админки никогда не индексируется
+  if (request.nextUrl.searchParams.has('preview')) response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   // Источник визита для заявок (ТЗ 15.3): cookie ogk_attr читает API сайта
   trackAttribution(request, response);
   return response;

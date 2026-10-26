@@ -113,6 +113,22 @@
               "default": "",
               "title": "Path"
             }
+          },
+          {
+            "name": "preview",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Preview"
+            }
           }
         ],
         "responses": {
@@ -605,6 +621,22 @@
               "default": "ru",
               "title": "Lang"
             }
+          },
+          {
+            "name": "preview",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Preview"
+            }
           }
         ],
         "responses": {
@@ -685,6 +717,22 @@
               "type": "string",
               "default": "ru",
               "title": "Lang"
+            }
+          },
+          {
+            "name": "preview",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Preview"
             }
           }
         ],
@@ -1118,6 +1166,314 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/site": {
+      "get": {
+        "tags": [
+          "Контент"
+        ],
+        "summary": "Site",
+        "description": "Контакты и реквизиты (RU и EN), счётчики, шаблоны метатегов, дополнение robots.txt.",
+        "operationId": "site_api_v1_public_site_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Site Api V1 Public Site Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/pages": {
+      "get": {
+        "tags": [
+          "Контент"
+        ],
+        "summary": "Page List",
+        "description": "Опубликованные страницы одного вида — для списков /services/, /articles/, /solutions/ и Sitemap.",
+        "operationId": "page_list_api_v1_public_pages_get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "enum": [
+                "home",
+                "service",
+                "solution",
+                "article",
+                "author",
+                "trust"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Page List Api V1 Public Pages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/pages/{kind}/{slug}": {
+      "get": {
+        "tags": [
+          "Контент"
+        ],
+        "summary": "Page",
+        "operationId": "page_api_v1_public_pages__kind___slug__get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "home",
+                "service",
+                "solution",
+                "article",
+                "author",
+                "trust"
+              ],
+              "type": "string",
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "preview",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Preview"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Page Api V1 Public Pages  Kind   Slug  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/landings": {
+      "get": {
+        "tags": [
+          "Контент"
+        ],
+        "summary": "Landings",
+        "description": "SEO-посадочные (URL-07): все опубликованные или посадочные одного раздела.",
+        "operationId": "landings_api_v1_public_landings_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Path"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Landings Api V1 Public Landings Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/landing": {
+      "get": {
+        "tags": [
+          "Контент"
+        ],
+        "summary": "Landing",
+        "operationId": "landing_api_v1_public_landing_get",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Path"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          },
+          {
+            "name": "preview",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Preview"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Landing Api V1 Public Landing Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/redirects": {
+      "get": {
+        "tags": [
+          "Контент"
+        ],
+        "summary": "Redirects",
+        "description": "Редиректы из админки (ADM-07): витрина применяет их до рендера страницы.",
+        "operationId": "redirects_api_v1_public_redirects_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": true,
+                    "type": "object"
+                  },
+                  "type": "array",
+                  "title": "Response Redirects Api V1 Public Redirects Get"
                 }
               }
             }
@@ -2276,6 +2632,11 @@
           "availability": {
             "type": "string",
             "title": "Availability"
+          },
+          "seo": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Seo"
           },
           "updatedAt": {
             "type": "string",

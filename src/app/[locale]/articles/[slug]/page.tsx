@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { BadgeCheck } from 'lucide-react';
 import { getFormatter, getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
@@ -11,17 +10,20 @@ import { articleLd, breadcrumbsLd, JsonLd } from '@/components/seo/JsonLd';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
+import { previewParam } from '@/lib/content';
 import { getArticle, getArticles, getAuthor } from '@/lib/content-api';
+import { ensurePage, previewMetadata } from '@/lib/page-guard';
 import { absoluteUrl, pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type Props = { params: Promise<{ locale: Locale; slug: string }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const a = await getArticle(slug, locale);
+  const found = await getArticle(slug, locale, previewParam((await searchParams).preview));
+  const a = found.page;
   if (!a) return {};
-  const author = await getAuthor(a.authorSlug);
-  return pageMetadata({
+  const author = (await getAuthor(a.authorSlug)).page;
+  return previewMetadata(pageMetadata({
     locale,
     path: `/articles/${a.slug}/`,
     title: a.title,
@@ -29,16 +31,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     hasEn: a.hasEn,
     ogType: 'article',
     article: { publishedTime: a.publishedAt, modifiedTime: a.updatedAt, authors: author ? [author.name] : [] },
-  });
+  }), found.preview);
 }
 
 /** Статья (ТЗ 10.4): автор, даты публикации и обновления, оглавление, ссылки на каталог и услуги, спокойный CTA */
-export default async function ArticlePage({ params }: Props) {
+export default async function ArticlePage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const a = await getArticle(slug, locale);
-  if (!a) notFound();
-  const [author, all] = await Promise.all([getAuthor(a.authorSlug), getArticles(locale)]);
+  const a = ensurePage(await getArticle(slug, locale, previewParam((await searchParams).preview)), locale);
+  const [authorResult, all] = await Promise.all([getAuthor(a.authorSlug), getArticles(locale)]);
+  const author = authorResult.page;
   const t = await getTranslations('articles');
   const tc = await getTranslations('catalog');
   const format = await getFormatter();

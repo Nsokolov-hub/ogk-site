@@ -215,11 +215,12 @@ export interface SubstancePageData {
 
 const ROLE_ORDER: SubstanceRole[] = ['api', 'impurity', 'metabolite', 'labeled'];
 
-export async function getSubstancePage(slug: string, locale: string = 'ru'): Promise<SubstancePageData | { moved: string } | null> {
+/** preview — черновик субстанции из админки по подписанной ссылке (без кэша) */
+export async function getSubstancePage(slug: string, locale: string = 'ru', preview?: string): Promise<SubstancePageData | { moved: string } | null> {
   const data = await apiOrNull<{ moved?: string | null; substance?: ApiSubstance | null; items: ProductPreview[] }>(
     `/public/substances/${encodeURIComponent(slug)}`,
-    { lang: locale },
-    { tags: [`substance:${slug}`] },
+    { lang: locale, preview },
+    preview ? { revalidate: false } : { tags: ['catalog', `substance:${slug}`] },
   );
   if (!data) return null;
   if (data.moved) return { moved: data.moved };

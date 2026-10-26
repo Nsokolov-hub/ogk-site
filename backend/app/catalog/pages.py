@@ -197,7 +197,7 @@ def product_page(db: Session, slug: str, lang: str) -> dict[str, Any]:
         'documents': [{'type': d.type, 'lang': d.lang, 'titleRu': d.title_ru, 'titleEn': d.title_en, 'href': d.href}
                       for d in docs_rows],
         'completeness': product.completeness, 'indexable': product.indexable, 'availability': product.availability,
-        'updatedAt': iso(product.updated_at),
+        'seo': product.seo or {}, 'updatedAt': iso(product.updated_at),
     }
     return {
         'product': detail,

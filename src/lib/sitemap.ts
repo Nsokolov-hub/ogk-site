@@ -4,21 +4,18 @@
  * Английские файлы (en-*) — только для страниц с переводом (EN-05): главная, каталог, бренды, услуги,
  * страницы доверия, субстанции и карточки с английским текстом.
  */
-import { articles, authors } from '@/data/mock/articles';
-import { aboutPage, contactsPage, deliveryPage, documentsPage } from '@/data/mock/pages';
-import { services } from '@/data/mock/services';
-import { solutions } from '@/data/mock/solutions';
-import { landingHref, landings, landingTextEn } from '@/data/seo-landings';
+import type { SeoFields } from '@/types/content';
 import type { Schemas } from './api-types';
 import { api } from './backend';
 import { isLandingIndexable } from './category-page';
-import { brandsFor, servicesFor } from './content-api';
+import { pageList } from './content';
+import { brandsFor, getArticles, getAuthors, getServices, getSolutions } from './content-api';
+import { allLandings, landingFor, landingHref } from './landings';
 import { getSubstanceList } from './product-api';
 import { absoluteUrl, SITE_URL } from './seo';
 
 /** Карточек в одном файле: столько отдаёт API за страницу (SEO-04) */
 export const PRODUCTS_PER_FILE = 25_000;
-const HOME_UPDATED = '2026-10-21';
 
 type ApiCategoryEntry = Schemas['CategoryNode'];
 type ProductsPage = Schemas['SitemapPage'];
@@ -35,11 +32,18 @@ const max = (dates: string[]) => dates.reduce((a, b) => (a > b ? a : b), '1970-0
 
 /** Все разделы, кроме карточек товаров: карточки идут отдельными файлами products-N */
 async function sections(): Promise<Record<string, Entry[]>> {
-  const [tree, root, substancesAll, brands] = await Promise.all([
+  const [tree, root, substancesAll, brands, services, solutions, articles, authors, trust, home, landings] = await Promise.all([
     api<ApiCategoryEntry[]>('/public/catalog/tree', undefined, { revalidate: 3600, tags: ['catalog'] }),
     api<Schemas['CategoryOut']>('/public/catalog/category', { path: '' }, { revalidate: 3600, tags: ['catalog'] }),
     getSubstanceList(),
     brandsFor('ru'),
+    getServices('ru'),
+    getSolutions('ru'),
+    getArticles('ru'),
+    getAuthors(),
+    pageList<SeoFields & { slug: string }>('trust', 'ru'),
+    pageList<{ updatedAt?: string }>('home', 'ru'),
+    allLandings(),
   ]);
   const categories = tree.flatMap((c) => [c, ...(c.children ?? [])]);
   const catalogUpdated = max(categories.map((c) => c.updatedAt ?? '').filter(Boolean));
@@ -47,14 +51,12 @@ async function sections(): Promise<Record<string, Entry[]>> {
   const indexableAuthors = authors.filter((a) => a.bio?.length);
   const landingFlags = await Promise.all(landings.map(isLandingIndexable));
   const hasEn = new Map(categories.map((c) => [c.path, !!c.hasEn]));
+  const homeUpdated = home[0]?.updatedAt || catalogUpdated;
 
   return {
     pages: [
-      { path: '/', lastmod: HOME_UPDATED, hasEn: true },
-      { path: '/about/', lastmod: aboutPage.updatedAt, hasEn: aboutPage.hasEn },
-      { path: '/delivery/', lastmod: deliveryPage.updatedAt, hasEn: deliveryPage.hasEn },
-      { path: '/documents/', lastmod: documentsPage.updatedAt, hasEn: documentsPage.hasEn },
-      { path: '/contacts/', lastmod: contactsPage.updatedAt, hasEn: contactsPage.hasEn },
+      { path: '/', lastmod: homeUpdated, hasEn: true },
+      ...trust.map((p) => ({ path: `/${p.slug}/`, lastmod: p.updatedAt, hasEn: p.hasEn })),
       { path: '/brands/', lastmod: max(brands.map((b) => b.updatedAt)), hasEn: true },
       { path: '/services/', lastmod: max(services.map((s) => s.updatedAt)), hasEn: true },
       { path: '/solutions/', lastmod: max(solutions.map((s) => s.updatedAt)) },
@@ -68,11 +70,11 @@ async function sections(): Promise<Record<string, Entry[]>> {
       // SEO-посадочные из срезов (URL-07) — только с достаточным числом позиций
       ...landings
         .filter((_, i) => landingFlags[i])
-        .map((l) => ({ path: landingHref(l), lastmod: l.updatedAt, hasEn: !!hasEn.get(l.parent) && !!landingTextEn[l.slug] })),
+        .map((l) => ({ path: landingHref(l), lastmod: landingFor(l, 'ru').updatedAt, hasEn: !!hasEn.get(l.parent) && landingFor(l, 'en').hasEn })),
     ],
     substances: substances.map((s) => ({ path: `/substances/${s.slug}/`, lastmod: catalogUpdated, hasEn: s.hasEn })),
     brands: brands.map((b) => ({ path: `/brands/${b.slug}/`, lastmod: b.updatedAt, hasEn: b.hasEn })),
-    services: servicesFor('ru').map((s) => ({ path: `/services/${s.slug}/`, lastmod: s.updatedAt, hasEn: s.hasEn })),
+    services: services.map((s) => ({ path: `/services/${s.slug}/`, lastmod: s.updatedAt, hasEn: s.hasEn })),
     solutions: solutions.map((s) => ({ path: `/solutions/${s.slug}/`, lastmod: s.updatedAt, hasEn: s.hasEn })),
     articles: articles.map((a) => ({ path: `/articles/${a.slug}/`, lastmod: a.updatedAt, hasEn: a.hasEn })),
   };

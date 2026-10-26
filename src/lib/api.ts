@@ -1,15 +1,12 @@
 /**
  * Функции данных сайта. Работают и на сервере, и в браузере.
- * Каталог и заявки — API сайта (backend/); настройки и тексты главной пока в коде, до админки (ADM-02, ADM-10).
+ * Каталог, заявки, тексты главной, контакты и реквизиты — API сайта (backend/); тексты ведут в админке (ADM-02, ADM-10).
  */
 import type { Locale } from '@/i18n/routing';
 import type { Category, ProductPreview } from '@/types/catalog';
 import type { HomeContent } from '@/types/content';
 import type { SiteRequestPayload, SiteRequestResult } from '@/types/requests';
 import type { SiteSettings } from '@/types/settings';
-import { homeContentEn } from '@/data/mock/en/home';
-import { homeContentRu } from '@/data/mock/home';
-import { siteSettings, siteSettingsEn } from '@/data/mock/settings';
 import type { Schemas } from './api-types';
 import { api } from './backend';
 import { requestCaptcha } from './captcha-store';
@@ -21,11 +18,16 @@ async function networkDelay(ms = 300) {
 }
 
 export async function getSiteSettings(locale: Locale = 'ru'): Promise<SiteSettings> {
-  return locale === 'en' ? siteSettingsEn : siteSettings;
+  const { siteSettingsFor } = await import('./content');
+  return siteSettingsFor(locale);
 }
 
-export async function getHomeContent(locale: Locale): Promise<HomeContent> {
-  return locale === 'en' ? homeContentEn : homeContentRu;
+/** Тексты главной; preview — черновик из админки по подписанной ссылке */
+export async function getHomeContent(locale: Locale, preview?: string): Promise<HomeContent & { preview?: boolean }> {
+  const { pageContent } = await import('./content');
+  const found = await pageContent<HomeContent>('home', 'home', locale, preview);
+  if (!found.page) throw new Error('Нет текстов главной: python -m app.catalog.cli seed --content-only');
+  return { ...found.page, preview: found.preview };
 }
 
 type ApiCategoryNode = Schemas['CategoryNode'];

@@ -16,23 +16,24 @@ import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
+import { previewParam } from '@/lib/content';
 import { getBrandPage, getBrands } from '@/lib/content-api';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type Props = { params: Promise<{ locale: Locale; slug: string }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const data = await getBrandPage(slug, locale);
+  const data = await getBrandPage(slug, locale, previewParam((await searchParams).preview));
   if (!data) return {};
   const b = data.brand;
   return pageMetadata({ locale, path: `/brands/${b.slug}/`, title: b.title, description: b.description, hasEn: b.hasEn });
 }
 
-export default async function BrandPage({ params }: Props) {
+export default async function BrandPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [data, brands, settings] = await Promise.all([getBrandPage(slug, locale), getBrands(locale), getSiteSettings(locale)]);
+  const [data, brands, settings] = await Promise.all([getBrandPage(slug, locale, previewParam((await searchParams).preview)), getBrands(locale), getSiteSettings(locale)]);
   if (!data) notFound();
   const t = await getTranslations('brands');
   const tc = await getTranslations('catalog');

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { ArrowRight, CircleCheck, ListPlus } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
@@ -14,28 +14,35 @@ import { Chip } from '@/components/ui/Chip';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
+import { previewParam } from '@/lib/content';
 import { getSolutionPage } from '@/lib/content-api';
+import { previewMetadata } from '@/lib/page-guard';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type Props = { params: Promise<{ locale: Locale; slug: string }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const data = await getSolutionPage(slug, locale);
-  if (!data) return {};
+  const data = await getSolutionPage(slug, locale, previewParam((await searchParams).preview));
+  if (!data || 'moved' in data) return {};
   const s = data.solution;
-  return pageMetadata({ locale, path: `/solutions/${s.slug}/`, title: s.title, description: s.description, hasEn: s.hasEn });
+  return previewMetadata(
+    pageMetadata({ locale, path: `/solutions/${s.slug}/`, title: s.title, description: s.description, hasEn: s.hasEn }),
+    data.preview,
+  );
 }
 
 /**
  * Отраслевое решение (ТЗ 4.1): задачи лаборатории → что поставляем (разделы и подборки каталога) →
  * часто заказывают → услуги → статьи → FAQ → заявка. Перелинковка решение → категории → товары (SEO-08).
  */
-export default async function SolutionPage({ params }: Props) {
+export default async function SolutionPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [data, settings] = await Promise.all([getSolutionPage(slug, locale), getSiteSettings(locale)]);
+  const preview = previewParam((await searchParams).preview);
+  const [data, settings] = await Promise.all([getSolutionPage(slug, locale, preview), getSiteSettings(locale)]);
   if (!data) notFound();
+  if ('moved' in data) permanentRedirect(locale === 'en' ? `/en${data.moved}` : data.moved);
   const { solution: s, counts, products, services, articles } = data;
   const t = await getTranslations('solutions');
   const tc = await getTranslations('catalog');

@@ -13,21 +13,24 @@ import { SubscribeSection } from '@/components/home/SubscribeSection';
 import { WhyUsSection } from '@/components/home/WhyUsSection';
 import { JsonLd, organizationLd, websiteLd } from '@/components/seo/JsonLd';
 import { getHomeContent, getSiteSettings } from '@/lib/api';
+import { previewParam } from '@/lib/content';
+import { previewMetadata } from '@/lib/page-guard';
 import { pageMetadata } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale }> };
+type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'home.meta' });
-  // EN-контент главной ещё не переведён: /en/ — noindex с canonical на русскую версию (EN-05)
-  return pageMetadata({ locale, path: '/', title: t('title'), description: t('description'), hasEn: true });
+  const preview = previewParam((await searchParams).preview);
+  return previewMetadata(pageMetadata({ locale, path: '/', title: t('title'), description: t('description'), hasEn: true }), !!preview);
 }
 
-export default async function HomePage({ params }: Props) {
+export default async function HomePage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [content, settings] = await Promise.all([getHomeContent(locale), getSiteSettings(locale)]);
+  const preview = previewParam((await searchParams).preview);
+  const [content, settings] = await Promise.all([getHomeContent(locale, preview), getSiteSettings(locale)]);
 
   return (
     <>

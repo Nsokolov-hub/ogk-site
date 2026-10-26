@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import { ArrowRight, TriangleAlert } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { fillTemplate, getSite } from '@/lib/content';
 import type { Locale } from '@/i18n/routing';
 import type { BreadcrumbItem } from '@/types/content';
 import { ProductTable } from '@/components/catalog/ProductTable';
@@ -41,20 +42,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const data = await getProductPage(slug, locale);
   if (!data || 'moved' in data) return {};
-  const t = await getTranslations({ locale, namespace: 'productPage.meta' });
+  const [t, site] = await Promise.all([getTranslations({ locale, namespace: 'productPage.meta' }), getSite()]);
   const p = data.product;
   const numberLabel = p.cardType === 'equipment' ? 'P/N' : t('number');
-  const title = p.cas
-    ? t('title', { name: shortName(p.name), brand: p.brand.name, number: p.catalogNumber, cas: p.cas })
-    : t('titleNoCas', { name: shortName(p.name), brand: p.brand.name, number: p.catalogNumber, numberLabel });
   const ids = [`${p.brand.name}`, `${numberLabel} ${p.catalogNumber}`, p.cas ? `CAS ${p.cas}` : null, p.formula ? p.formula : null]
     .filter(Boolean)
     .join(', ');
-  const description = t('description', {
-    name: shortName(p.name, 90),
-    ids,
-    logistics: p.storage && COLD.has(p.storage) ? t('cold') : t('ambient'),
-  });
+  const logistics = p.storage && COLD.has(p.storage) ? t('cold') : t('ambient');
+  // Порядок (SEO-02): ручные Title и Description карточки → шаблон из админки → шаблон ТЗ 10.2 из messages
+  const own = p.seo?.[locale];
+  const template = site.metaTemplates?.product?.[locale] ?? {};
+  const values = { name: shortName(p.name), brand: p.brand.name, number: p.catalogNumber, cas: p.cas, ids, logistics, numberLabel };
+  const titleTemplate = p.cas ? template.title : (template.titleNoCas ?? template.title);
+  const title =
+    own?.title ||
+    (titleTemplate
+      ? fillTemplate(titleTemplate, values)
+      : p.cas
+        ? t('title', { name: values.name, brand: p.brand.name, number: p.catalogNumber, cas: p.cas })
+        : t('titleNoCas', { name: values.name, brand: p.brand.name, number: p.catalogNumber, numberLabel }));
+  const description =
+    own?.description ||
+    (template.description
+      ? fillTemplate(template.description, { ...values, name: shortName(p.name, 90) })
+      : t('description', { name: shortName(p.name, 90), ids, logistics }));
 
   return pageMetadata({ locale, path: `/product/${p.slug}/`, title, description, index: p.indexable, hasEn: p.hasEn });
 }
@@ -177,7 +188,7 @@ export default async function ProductPage({ params }: Props) {
   return (
     <>
       <JsonLd data={ld} />
-      <TrackView event="product_view" params={{ sku: p.catalogNumber, brand: p.brand.name, category: p.categorySlug }} />
+      <TrackView event="product_view" params={{ sku: p.catalogNumber, brand: p.brand.name, category: p.categorySlug }} demandSlug={p.slug} />
       <Container className="pt-24 lg:pt-[150px]">
         <Breadcrumbs items={breadcrumbs} className="[&_li:last-child]:min-w-0 [&_li:last-child>span]:line-clamp-1" />
 

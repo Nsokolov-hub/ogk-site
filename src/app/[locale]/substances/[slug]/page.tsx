@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { fillTemplate, getSite, previewParam } from '@/lib/content';
 import type { Locale } from '@/i18n/routing';
 import type { BreadcrumbItem } from '@/types/content';
 import { Formula } from '@/components/content/Formula';
@@ -14,30 +15,35 @@ import { getSiteSettings } from '@/lib/api';
 import { getSubstancePage } from '@/lib/product-api';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type Props = { params: Promise<{ locale: Locale; slug: string }>; searchParams: Promise<{ preview?: string }> };
 
 /** Метатеги по шаблону ТЗ 10.2; index — при ≥ 3 позициях и тексте (ТЗ 4.1) */
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
-  const data = await getSubstancePage(slug, locale);
+  const data = await getSubstancePage(slug, locale, previewParam((await searchParams).preview));
   if (!data || 'moved' in data) return {};
-  const t = await getTranslations({ locale, namespace: 'substancePage.meta' });
+  const [t, site] = await Promise.all([getTranslations({ locale, namespace: 'substancePage.meta' }), getSite()]);
   const s = data.substance;
   const impurities = data.items.filter((p) => p.substance?.role !== 'api').length;
+  const brands = data.brands.slice(0, 4).join(', ');
+  // Шаблон из админки (SEO-02), иначе шаблон ТЗ 10.2 из messages
+  const template = site.metaTemplates?.substance?.[locale] ?? {};
   return pageMetadata({
     locale,
     path: `/substances/${s.slug}/`,
-    title: t('title', { name: s.name }),
-    description: t('description', { name: s.name, count: impurities, brands: data.brands.slice(0, 4).join(', ') }),
+    title: template.title ? fillTemplate(template.title, { name: s.name }) : t('title', { name: s.name }),
+    description: template.description
+      ? fillTemplate(template.description, { name: s.name, count: impurities, brands })
+      : t('description', { name: s.name, count: impurities, brands }),
     index: data.indexable,
     hasEn: s.hasEn,
   });
 }
 
-export default async function SubstancePage({ params }: Props) {
+export default async function SubstancePage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [data, settings] = await Promise.all([getSubstancePage(slug, locale), getSiteSettings(locale)]);
+  const [data, settings] = await Promise.all([getSubstancePage(slug, locale, previewParam((await searchParams).preview)), getSiteSettings(locale)]);
   if (!data) notFound();
   if ('moved' in data) return permanentRedirect({ href: `/substances/${data.moved}/`, locale });
   const t = await getTranslations('substancePage');

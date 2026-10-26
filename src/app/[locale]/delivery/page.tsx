@@ -11,24 +11,24 @@ import { breadcrumbsLd, faqLd, JsonLd } from '@/components/seo/JsonLd';
 import { Chip } from '@/components/ui/Chip';
 import { Container } from '@/components/ui/Container';
 import { getSiteSettings } from '@/lib/api';
-import { deliveryPageEn } from '@/data/mock/en/pages';
-import { deliveryPage } from '@/data/mock/pages';
-import { COUNTRIES_EN } from '@/data/mock/en/services';
-import { COUNTRIES } from '@/data/mock/services';
+import type { DeliveryPageContent } from '@/types/content';
+import { previewParam } from '@/lib/content';
+import { getTrustPage } from '@/lib/content-api';
+import { ensurePage } from '@/lib/page-guard';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
 
-type Props = { params: Promise<{ locale: Locale }> };
+type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ preview?: string }> };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const page = locale === 'en' ? deliveryPageEn : deliveryPage;
+  const page = ensurePage(await getTrustPage<DeliveryPageContent>('delivery', locale, previewParam((await searchParams).preview)), locale);
   return pageMetadata({ locale, path: '/delivery/', title: page.title, description: page.description, hasEn: page.hasEn });
 }
 
 /** Доставка и условия поставки (ТЗ 10.4): география, сроки, температура, оплата, документы */
-export default async function DeliveryPage({ params }: Props) {
+export default async function DeliveryPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const page = locale === 'en' ? deliveryPageEn : deliveryPage;
+  const page = ensurePage(await getTrustPage<DeliveryPageContent>('delivery', locale, previewParam((await searchParams).preview)), locale);
   setRequestLocale(locale);
   const t = await getTranslations('trust');
   const tc = await getTranslations('catalog');
@@ -79,7 +79,7 @@ export default async function DeliveryPage({ params }: Props) {
                 ) : null}
                 {s.id === 'geo' ? (
                   <ul className="flex flex-wrap gap-2" aria-label={t('delivery.countries')}>
-                    {(locale === 'en' ? COUNTRIES_EN : COUNTRIES).map((c) => (
+                    {page.countries.map((c) => (
                       <li key={c}>
                         <Chip label={c} />
                       </li>

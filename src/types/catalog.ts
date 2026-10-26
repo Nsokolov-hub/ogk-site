@@ -133,6 +133,8 @@ export interface SpecRow {
 
 /** Карточка товара (ТЗ 5.2, 5.4). Пустые необязательные поля на витрине не выводятся. */
 export interface ProductDetail extends ProductPreview {
+  /** Title и Description, написанные вручную в админке (SEO-02): по языкам */
+  seo?: Partial<Record<'ru' | 'en', { title?: string; description?: string }>>;
   nameRu?: string;
   synonyms?: string[];
   altCas?: string[];

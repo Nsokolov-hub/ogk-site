@@ -250,3 +250,34 @@ export interface TrustPage extends SeoFields {
   slug: 'about' | 'delivery' | 'documents' | 'contacts';
   intro: string;
 }
+
+/** О компании /about/ (ТЗ 10.4) */
+export interface AboutPageContent extends SeoFields {
+  lead: string;
+  facts: { value: string; label: string }[];
+  directions: { title: string; text: string; href: string }[];
+  steps: { title: string; text: string }[];
+  audience: { title: string; text: string }[];
+}
+
+/** Доставка /delivery/: разделы, вопросы, ссылки и страны, откуда доставляем */
+export interface DeliveryPageContent extends SeoFields {
+  lead: string;
+  sections: { id: string; title: string; text?: string; items?: string[] }[];
+  faq: Faq[];
+  links: LinkItem[];
+  countries: string[];
+}
+
+/** Документы /documents/ */
+export interface DocumentsPageContent extends SeoFields {
+  lead: string;
+  supplyDocs: { title: string; text: string }[];
+  edo: string;
+  licenses: string;
+}
+
+/** Контакты /contacts/ */
+export interface ContactsPageContent extends SeoFields {
+  lead: string;
+}

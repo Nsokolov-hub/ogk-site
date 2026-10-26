@@ -381,6 +381,120 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/site": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Site
+         * @description Контакты и реквизиты (RU и EN), счётчики, шаблоны метатегов, дополнение robots.txt.
+         */
+        get: operations["site_api_v1_public_site_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/pages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Page List
+         * @description Опубликованные страницы одного вида — для списков /services/, /articles/, /solutions/ и Sitemap.
+         */
+        get: operations["page_list_api_v1_public_pages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/pages/{kind}/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Page */
+        get: operations["page_api_v1_public_pages__kind___slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/landings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Landings
+         * @description SEO-посадочные (URL-07): все опубликованные или посадочные одного раздела.
+         */
+        get: operations["landings_api_v1_public_landings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/landing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Landing */
+        get: operations["landing_api_v1_public_landing_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/redirects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Redirects
+         * @description Редиректы из админки (ADM-07): витрина применяет их до рендера страницы.
+         */
+        get: operations["redirects_api_v1_public_redirects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -781,6 +895,10 @@ export interface components {
             indexable: boolean;
             /** Availability */
             availability: string;
+            /** Seo */
+            seo?: {
+                [key: string]: unknown;
+            };
             /** Updatedat */
             updatedAt: string;
         };
@@ -1174,6 +1292,7 @@ export interface operations {
         parameters: {
             query?: {
                 path?: string;
+                preview?: string | null;
             };
             header?: never;
             path?: never;
@@ -1442,6 +1561,7 @@ export interface operations {
         parameters: {
             query?: {
                 lang?: "ru" | "en";
+                preview?: string | null;
             };
             header?: never;
             path: {
@@ -1495,6 +1615,7 @@ export interface operations {
         parameters: {
             query?: {
                 lang?: "ru" | "en";
+                preview?: string | null;
             };
             header?: never;
             path: {
@@ -1785,6 +1906,187 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    site_api_v1_public_site_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+        };
+    };
+    page_list_api_v1_public_pages_get: {
+        parameters: {
+            query: {
+                kind: "home" | "service" | "solution" | "article" | "author" | "trust";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    page_api_v1_public_pages__kind___slug__get: {
+        parameters: {
+            query?: {
+                preview?: string | null;
+            };
+            header?: never;
+            path: {
+                kind: "home" | "service" | "solution" | "article" | "author" | "trust";
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    landings_api_v1_public_landings_get: {
+        parameters: {
+            query?: {
+                path?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    landing_api_v1_public_landing_get: {
+        parameters: {
+            query: {
+                path: string;
+                slug: string;
+                preview?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    redirects_api_v1_public_redirects_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    }[];
                 };
             };
         };

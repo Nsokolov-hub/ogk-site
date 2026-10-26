@@ -18,6 +18,7 @@ import { catalogHref, countSelected, parseCatalogQuery, type SearchParams } from
 import { getCatalogListing } from '@/lib/catalog-api';
 import { getCategoryPage, isLandingIndexable } from '@/lib/category-page';
 import { cn } from '@/lib/cn';
+import { previewParam } from '@/lib/content';
 import { pageMetadata } from '@/lib/seo';
 
 type Props = {
@@ -25,9 +26,10 @@ type Props = {
   searchParams: Promise<SearchParams>;
 };
 
-async function load(locale: Locale, slug: string[]) {
+async function load(locale: Locale, slug: string[], sp: SearchParams) {
   const t = await getTranslations({ locale, namespace: 'catalog' });
-  return getCategoryPage(slug, locale, { home: t('home'), catalog: t('catalog'), categories: t('categories') });
+  // preview — черновик раздела или посадочной из админки по подписанной ссылке
+  return getCategoryPage(slug, locale, { home: t('home'), catalog: t('catalog'), categories: t('categories') }, previewParam(sp.preview));
 }
 
 /**
@@ -37,7 +39,7 @@ async function load(locale: Locale, slug: string[]) {
  */
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale, slug = [] } = await params;
-  const data = await load(locale, slug);
+  const data = await load(locale, slug, await searchParams);
   if (!data) return {};
   const t = await getTranslations({ locale, namespace: 'catalog' });
   const q = parseCatalogQuery(await searchParams);
@@ -60,7 +62,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function CatalogPage({ params, searchParams }: Props) {
   const { locale, slug = [] } = await params;
   setRequestLocale(locale);
-  const data = await load(locale, slug);
+  const data = await load(locale, slug, await searchParams);
   if (!data) notFound();
   const t = await getTranslations({ locale, namespace: 'catalog' });
 
