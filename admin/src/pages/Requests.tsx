@@ -23,11 +23,39 @@ interface RequestRow {
   email: string;
   phone: string;
   channel: string | null;
+  crmStatus: string | null;
+  crmStage: string | null;
+  crmRequestNumber: string | null;
+  sale: { amount: string; currency: string | null } | null;
 }
 
 const STATUS: Record<string, [string, 'good' | 'warn' | 'bad']> = {
   delivered: ['в CRM', 'good'], accepted: ['ждёт доставки', 'warn'], failed: ['не доставлена', 'bad'],
 };
+
+// What the CRM reported back (flow F2): the fate of the site request and the stage of the CRM request made from it.
+const CRM_STATUS: Record<string, string> = { in_work: 'в работе', converted: 'преобразована', rejected: 'отклонена' };
+const CRM_STAGE: Record<string, string> = {
+  new: 'новая', clarification: 'уточнение', collecting_quotes: 'сбор квот', quote_given: 'квота получена',
+  calculation: 'расчёт', proposal_sent: 'КП отправлено', composition_agreed: 'состав согласован',
+  awaiting_payment: 'ждёт оплаты', sale_confirmed: 'продажа', lost: 'проиграна',
+};
+
+function money(sale: RequestRow['sale']) {
+  return sale ? `${Number(sale.amount).toLocaleString('ru-RU', { maximumFractionDigits: 0 })} ${sale.currency === 'RUB' || !sale.currency ? '₽' : sale.currency}` : '';
+}
+
+function CrmProgress({ r }: { r: RequestRow }) {
+  if (!r.crmStatus && !r.crmStage) return <span className="muted">—</span>;
+  return (
+    <>
+      {r.crmStage ? <Badge tone={r.crmStage === 'sale_confirmed' ? 'good' : r.crmStage === 'lost' ? 'bad' : 'info'}>{CRM_STAGE[r.crmStage] ?? r.crmStage}</Badge>
+        : <Badge tone={r.crmStatus === 'rejected' ? 'bad' : 'info'}>{CRM_STATUS[r.crmStatus ?? ''] ?? r.crmStatus}</Badge>}
+      {r.crmRequestNumber ? <div className="muted small">{r.crmRequestNumber}</div> : null}
+      {r.sale ? <div className="small">{money(r.sale)}</div> : null}
+    </>
+  );
+}
 
 export function Requests() {
   const [params, setParams] = useSearchParams();
@@ -49,7 +77,7 @@ export function Requests() {
       {list.isLoading ? <Loading /> : (
         <div className="panel table-wrap">
           <table className="table">
-            <thead><tr><th>Номер</th><th>Когда</th><th>Тип</th><th>Компания</th><th>Контакт</th><th className="num">Позиций</th><th>Доставка</th><th>Канал</th></tr></thead>
+            <thead><tr><th>Номер</th><th>Когда</th><th>Тип</th><th>Компания</th><th>Контакт</th><th className="num">Позиций</th><th>Доставка</th><th>В CRM</th><th>Канал</th></tr></thead>
             <tbody>
               {(list.data?.items ?? []).map((r) => (
                 <tr key={r.id} className="clickable" onClick={() => setOpen(r.id)}>
@@ -64,6 +92,7 @@ export function Requests() {
                     {r.crmNumber ? <div className="muted small">{r.crmNumber}</div> : null}
                     {r.deliveryError ? <div className="small" style={{ color: 'var(--danger)' }}>{r.deliveryError}</div> : null}
                   </td>
+                  <td className="nowrap"><CrmProgress r={r} /></td>
                   <td className="muted">{r.channel ?? '—'}</td>
                 </tr>
               ))}
@@ -111,6 +140,7 @@ function RequestCard({ id, onClose }: { id: string; onClose: () => void }) {
           <div className="row">
             <Badge tone={STATUS[c.status]?.[1]}>{STATUS[c.status]?.[0] ?? c.status}</Badge>
             {c.crmNumber ? <span>в CRM: <strong>{c.crmNumber}</strong> ({formatDate(c.deliveredAt)})</span> : null}
+            {c.crmStatus || c.crmStage ? <span>· в работе CRM: <CrmProgress r={c} /></span> : null}
             {can('requests.resend') && c.status !== 'delivered' ? <Button size="sm" busy={resend.isPending} onClick={() => resend.mutate()}>Отправить в CRM повторно</Button> : null}
           </div>
           <div className="grid-2">

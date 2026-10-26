@@ -68,6 +68,13 @@ class SiteRequest(Entity):
     delivered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     delivery_error: Mapped[str | None] = mapped_column(String(80))
     alerted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # What the CRM reported back (flow F2): the request's fate, the stage of the CRM request made from it, a sale.
+    crm_status: Mapped[str | None] = mapped_column(String(20))
+    crm_stage: Mapped[str | None] = mapped_column(String(40))
+    crm_request_number: Mapped[str | None] = mapped_column(String(40))
+    crm_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    sale_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
+    sale_currency: Mapped[str | None] = mapped_column(String(3))
 
 
 class SiteRequestItem(Entity):

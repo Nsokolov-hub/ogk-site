@@ -192,11 +192,20 @@ def start_refresh(db: Session, outbox: OutboxEvent) -> Result:
     return Result('succeeded')
 
 
+def send_conversion(db: Session, outbox: OutboxEvent) -> Result:
+    """An offline conversion (flow F3) to Yandex Metrica or GA4."""
+    from app.crm import conversions
+
+    conversions.send(db, outbox.kind, outbox.payload)
+    return Result('succeeded')
+
+
 HANDLERS = {'crm.deliver': deliver, 'mail.customer': send_customer, 'mail.sales': send_sales, 'alert': send_alert,
             'search.delete': delete_from_index, 'mail.subscriber': send_subscriber,
             'mail.subscriber_sales': send_subscriber_sales, 'crm.subscriber': deliver_subscriber,
             'storefront.revalidate': revalidate_storefront, 'import.run': start_import,
-            'catalog.refresh': start_refresh}
+            'catalog.refresh': start_refresh, 'conversion.metrika': send_conversion,
+            'conversion.ga4': send_conversion}
 
 
 def dispatch(db: Session, outbox: OutboxEvent) -> Result:

@@ -113,7 +113,8 @@ def export_csv(db: Session, status: str | None = 'active') -> str:
 
 
 def crm_payload(row: Subscriber) -> dict[str, Any]:
-    return {'site_subscriber_id': row.id, 'email': row.email, 'lang': row.lang,
+    # version: the CRM keeps the newest state when deliveries arrive out of order.
+    return {'site_subscriber_id': row.id, 'version': row.version, 'email': row.email, 'lang': row.lang,
             'subscribed': row.status == 'active', 'consent_at': row.marketing_consent_at.isoformat(),
             'unsubscribed_at': row.unsubscribed_at.isoformat() if row.unsubscribed_at else None,
             'source': row.source, 'page_url': row.page_url}

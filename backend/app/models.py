@@ -2,6 +2,7 @@
 
 import app.admin.models  # noqa: F401
 import app.catalog.models  # noqa: F401
+import app.crm.models  # noqa: F401
 import app.outbox.models  # noqa: F401
 import app.requests.models  # noqa: F401
 import app.subscriptions.models  # noqa: F401

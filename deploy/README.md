@@ -33,6 +33,8 @@ python3 scripts/init-env.py staging --domain staging.ogk-chem.ru --admin-domain 
 | Переменная | Что указать |
 |---|---|
 | `CRM_URL`, `CRM_TOKEN`, `CRM_SIGNING_SECRET`, `CRM_DELIVERY_ENABLED=true` | В CRM: `docker compose exec api python -m app.integrations.site_tokens create --name staging`; адрес сервера сайта — в `SITE_INTEGRATION_ALLOWED_IPS` CRM |
+| `CRM_EVENTS_SECRET` (скрипт создаёт), `CRM_EVENTS_ALLOWED_IPS` | События из CRM (F2): в `.env` CRM `SITE_EVENTS_URL=https://<SITE_DOMAIN>/api/v1/crm/events` и `SITE_EVENTS_SECRET` = это значение. Адрес сервера CRM — в `CRM_EVENTS_ALLOWED_IPS`; пароль стейджа этот путь не закрывает, его защищает подпись |
+| `METRIKA_OAUTH_TOKEN`, `GA_API_SECRET` | Офлайн-конверсии (F3), см. ниже; пусто — счётчик их не получает |
 | `SMTP_*`, `MAIL_FROM` | Продакшен — почтовый провайдер с серверами в РФ. На стейдже письма остаются в Mailpit: `https://<SITE_DOMAIN>/mailpit/` |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | Чат оповещений: недоставленные заявки, сбои поиска и очереди, ошибки бэкапа |
 | `SENTRY_DSN`, `WEB_SENTRY_DSN` | Проект в Sentry или GlitchTip; пусто — ошибки только в журналах |
@@ -117,6 +119,18 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml exec api python 
 ```
 
 Смешанный трафик: главная, разделы с фильтрами, карточки, подсказки и страница поиска. Цель ТЗ: 50 запросов в секунду, страница без кэша p95 ≤ 800 мс, API p95 ≤ 300 мс. На стейдже с паролем добавьте `--auth ogk:<пароль>`. Весь тест идёт с одного адреса, поэтому на время теста поднимите лимит поиска на посетителя: `SEARCH_RATE_PER_MINUTE=1000000` в `.env` и `./scripts/deploy.sh --no-pull --skip-backup`, после теста верните.
+
+## Офлайн-конверсии (F3)
+
+Когда заявка с сайта продвигается в CRM, сайт отправляет цель в счётчик того посетителя, который её оставил (по ClientID Метрики и GA4 или yclid из атрибуции заявки; контакты не уходят). Каждая цель — один раз на заявку.
+
+| Событие в CRM | Метрика (цель «JavaScript-событие») | GA4 (событие) |
+|---|---|---|
+| Сбор квот и дальше | `crm_qualified` | `qualify_lead` |
+| КП отправлено | `crm_proposal` | `crm_proposal` |
+| Продажа подтверждена (с выручкой) | `crm_sale` | `close_convert_lead` |
+
+Метрика: создайте три цели с этими идентификаторами, в настройках счётчика включите «Офлайн-конверсии», выпустите OAuth-токен пользователя с доступом к счётчику (права `metrika:write`) — в `METRIKA_OAUTH_TOKEN`. GA4: «Администратор → Потоки данных → Секретные ключи Measurement Protocol» — в `GA_API_SECRET`; события отметьте ключевыми. Номера счётчиков — из админки («Счётчики») или `YM_COUNTER_ID`/`GA_MEASUREMENT_ID`. Сбои отправки повторяются очередью, как письма.
 
 ## Сайт и CRM на одном сервере
 

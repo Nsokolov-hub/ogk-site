@@ -164,7 +164,7 @@ class Product(Entity):
     created_batch_id: Mapped[str | None] = mapped_column(ForeignKey('import_batches.id'), index=True)
     # The import run that last saw the product in its source: a full load marks the rest «Под заказ» (IMP-05).
     last_import_run: Mapped[str | None] = mapped_column(String(36))
-    crm_product_id: Mapped[str | None] = mapped_column(String(36))
+    crm_product_id: Mapped[str | None] = mapped_column(String(36), index=True)
     status: Mapped[str] = mapped_column(String(20), default='draft', index=True)
     completeness: Mapped[int] = mapped_column(Integer, default=0)
     # None — decided by completeness; True / False — set by hand in the admin panel (SEO-07).

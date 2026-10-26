@@ -75,6 +75,8 @@ def main() -> None:
         'MEILI_ENV': 'production',
         'REVALIDATE_SECRET': token(32),
         'SECRET_KEY': token(48),
+        # Events of the CRM (flow F2): the same value goes to SITE_EVENTS_SECRET of the CRM.
+        'CRM_EVENTS_SECRET': token(32),
         'COMPOSE_PROFILES': 'mailpit' if staging else '',
     }
     plain = ''
@@ -88,6 +90,8 @@ def main() -> None:
     target.write_text(text, encoding='utf-8')
     target.chmod(0o600)
     print(f'Создан {target}. Заполните CRM_*, SMTP_* и TELEGRAM_* (deploy/README.md).')
+    print(f'В .env CRM: SITE_EVENTS_URL=https://{args.domain}/api/v1/crm/events и SITE_EVENTS_SECRET — значение '
+          'CRM_EVENTS_SECRET отсюда.')
     print('Первый сотрудник админки после запуска: docker compose -f docker-compose.yml -f docker-compose.prod.yml '
           'exec api python -m app.admin.cli create-user --email … --name … --role admin')
     if plain:

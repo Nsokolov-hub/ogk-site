@@ -35,7 +35,11 @@ def request_out(row: SiteRequest, items: int, pii: bool) -> dict[str, Any]:
             'crmNumber': row.crm_number, 'deliveredAt': row.delivered_at.isoformat() if row.delivered_at else None,
             'deliveryError': row.delivery_error, 'suspicious': row.suspicious, 'items': items,
             'company': show(row.company), 'customer': show(row.customer_name), 'email': show(row.email),
-            'phone': show(row.phone), 'channel': (row.attribution or {}).get('channel')}
+            'phone': show(row.phone), 'channel': (row.attribution or {}).get('channel'),
+            # What the CRM reported back (flow F2).
+            'crmStatus': row.crm_status, 'crmStage': row.crm_stage, 'crmRequestNumber': row.crm_request_number,
+            'sale': {'amount': str(row.sale_amount), 'currency': row.sale_currency} if row.sale_amount is not None
+            else None}
 
 
 @router.get('/requests', dependencies=[requires('requests.journal')])

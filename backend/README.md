@@ -144,6 +144,8 @@ docker compose exec api python -m app.cli resend S-2026-000123
 
 Подключение к CRM: в CRM выпустите токен (`python -m app.integrations.site_tokens create --name production`), впишите адрес сервера сайта в `SITE_INTEGRATION_ALLOWED_IPS` CRM, а здесь заполните `CRM_URL`, `CRM_TOKEN`, `CRM_SIGNING_SECRET` и включите `CRM_DELIVERY_ENABLED=true`. Подробно — `docs/site-integration.md` в репозитории CRM.
 
+События из CRM (F2) приходят на `POST /api/v1/crm/events` (`app/crm/events.py`), подписанные ключом `CRM_EVENTS_SECRET` (в CRM — `SITE_EVENTS_SECRET`): судьба заявки и стадия заявки CRM видны в журнале заявок админки; стадии уходят офлайн-конверсиями в Метрику и GA4 (F3, `app/crm/conversions.py`, настройка — `deploy/README.md`); позиция с галочкой «Публиковать на сайте» становится карточкой на модерации или привязывается к существующей (F4: тексты сайта CRM не перезаписывает, заполняет только пустое); изменения реестра производителей запускают загрузку брендов (F5) сразу. Повтор события с тем же id получает прежний ответ.
+
 После изменения зависимостей в `pyproject.toml`:
 
 ```bash
@@ -153,6 +155,4 @@ uv pip compile pyproject.toml --group dev -o requirements-dev.lock
 
 ## Что дальше
 
-- Админка (ADM-*): редактор карточек, мастер импорта поверх `app.catalog.importer`, очереди (без категории, конфликты, новые бренды, подконтрольные на проверку), журнал заявок.
-- События CRM → сайт (F2), офлайн-конверсии (F3), пополнение каталога из CRM (F4).
 - S3 для файлов и документов, ClamAV на стороне сайта.

@@ -22,6 +22,19 @@ class Settings(BaseSettings):
     # yet, or the CRM is being maintained. Undelivered alerts are off while delivery is off.
     crm_delivery_enabled: bool = False
     crm_timeout_seconds: float = 15.0
+    # ── CRM → site, flow F2: events signed by the CRM with this key (SITE_EVENTS_SECRET of the CRM) ──
+    crm_events_secret: str = ''
+    # Addresses the CRM calls from, comma-separated (networks allowed); empty — any address with a valid signature.
+    crm_events_allowed_ips: str = ''
+
+    # ── offline conversions, flow F3: stages of the CRM go to Yandex Metrica and GA4 ──
+    # The counter numbers may also be set in the admin panel («Счётчики»); the panel wins.
+    ym_counter_id: str = ''
+    ga_measurement_id: str = ''
+    # OAuth token of a Metrica user with access to the counter (offline conversions upload).
+    metrika_oauth_token: str = ''
+    # GA4 → Admin → Data streams → Measurement Protocol API secrets.
+    ga_api_secret: str = ''
 
     # ── search (TZ 6): Meilisearch behind app.catalog.search, rebuilt from PostgreSQL ──
     meili_url: str = 'http://127.0.0.1:7700'

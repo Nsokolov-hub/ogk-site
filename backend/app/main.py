@@ -22,6 +22,7 @@ from app.core.db import SessionLocal
 from app.core.errors import DomainError
 from app.core.logs import configure_logging, event
 from app.core.monitoring import check_parts, init_sentry
+from app.crm.events import router as crm_events_router
 from app.requests.routes import router as requests_router
 from app.requests.service import FormError
 from app.subscriptions.routes import router as subscriptions_router
@@ -131,3 +132,4 @@ app.include_router(catalog_router, prefix='/api/v1')
 app.include_router(subscriptions_router, prefix='/api/v1')
 app.include_router(content_router, prefix='/api/v1')
 app.include_router(admin_router, prefix='/api/v1')
+app.include_router(crm_events_router, prefix='/api/v1')
