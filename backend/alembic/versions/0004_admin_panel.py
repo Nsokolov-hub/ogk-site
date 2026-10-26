@@ -156,8 +156,8 @@ def upgrade():
     op.create_index(op.f('ix_product_demand_day'), 'product_demand', ['day'], unique=False)
     if op.get_bind().dialect.name == 'postgresql':
         # «Название содержит…» in the admin list of 1.7 million products (TZ 12.1: pg_trgm).
-        op.execute('CREATE EXTENSION IF NOT EXISTS pg_trgm')
-        op.execute('CREATE INDEX IF NOT EXISTS ix_products_name_en_trgm ON products USING gin (name_en gin_trgm_ops)')
+        op.execute('CREATE EXTENSION IF NOT EXISTS pg_trgm SCHEMA public')
+        op.execute('CREATE INDEX IF NOT EXISTS ix_products_name_en_trgm ON products USING gin (name_en public.gin_trgm_ops)')
 
 
 def downgrade():

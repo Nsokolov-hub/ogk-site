@@ -31,8 +31,7 @@ def engine() -> Iterator[Engine]:
     with admin.begin() as connection:
         connection.execute(text('CREATE EXTENSION IF NOT EXISTS pg_trgm'))
         connection.execute(CreateSchema(schema))
-    # public stays on the path: the operator classes of pg_trgm live there.
-    engine = create_engine(url, connect_args={'options': f'-csearch_path={schema},public -ctimezone=UTC'})
+    engine = create_engine(url, connect_args={'options': f'-csearch_path={schema} -ctimezone=UTC'})
     try:
         Base.metadata.create_all(engine)
         yield engine
