@@ -14,7 +14,7 @@ Caddy :443 ── SITE_DOMAIN ──┬─ /api/v1/*  → api (FastAPI) ─┬�
 
 - Ubuntu 24.04, от 4 ядер и 16 ГБ памяти для каталога на 1,7 млн позиций; диск SSD от 100 ГБ: база около 10 ГБ, индекс поиска около 10 ГБ, плюс базовые копии и журнал за `BACKUP_RETENTION_DAYS` дней.
 - Docker Engine с Compose 2.24 или новее: `docker compose version`.
-- DNS: A-записи `SITE_DOMAIN` (и `SITE_ALIASES` на продакшене) на адрес сервера. Порты 80 и 443 открыты.
+- DNS: A-записи `SITE_DOMAIN`, `ADMIN_DOMAIN` (и `SITE_ALIASES` на продакшене) на адрес сервера. Порты 80 и 443 открыты.
 
 ```bash
 sudo mkdir -p /srv/ogk-site && sudo chown $USER /srv/ogk-site
