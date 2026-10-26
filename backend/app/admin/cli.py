@@ -42,10 +42,10 @@ def main() -> None:
 
     with SessionLocal.begin() as db:
         if args.command == 'users':
-            for user in db.scalars(select(StaffUser).order_by(StaffUser.name)):
-                state = 'активен' if user.active else 'отключён'
-                print(f'{user.email:<35} {security.ROLE_NAMES[user.role]:<18} {state:<9} '
-                      f'{"TOTP" if user.totp_enabled else "без TOTP"}')
+            for row in db.scalars(select(StaffUser).order_by(StaffUser.name)):
+                state = 'активен' if row.active else 'отключён'
+                print(f'{row.email:<35} {security.ROLE_NAMES[row.role]:<18} {state:<9} '
+                      f'{"TOTP" if row.totp_enabled else "без TOTP"}')
             return
         email = args.email.strip().lower()
         user = db.scalar(select(StaffUser).where(StaffUser.email == email))
