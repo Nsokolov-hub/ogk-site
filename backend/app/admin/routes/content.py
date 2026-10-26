@@ -15,6 +15,7 @@ from app.admin import editables
 from app.admin.audit import history, record
 from app.admin.models import PAGE_KINDS, AuditEntry, ContentPage, Draft, SeoLanding
 from app.admin.security import Staff, StaffDep, requires
+from app.catalog.models import Brand, Category, Substance
 from app.catalog.normalize import slugify
 from app.core.config import settings
 from app.core.db import DB, as_utc, utcnow
@@ -51,7 +52,7 @@ def editor_view(db: DB, entity: str, entity_id: str) -> dict[str, Any]:
             'draftAuthor': draft.author_name if draft else None,
             'draftUpdatedAt': draft.updated_at.isoformat() if draft else None,
             'previewUrl': preview_url(kind, row), 'previewUrlEn': preview_url(kind, row, 'en'),
-            'history': history(db, entity, row.id, limit=30)}
+            'shape': shape(db, entity, row), 'history': history(db, entity, row.id, limit=30)}
 
 
 @router.get('/edit/{entity}/{entity_id}')
@@ -133,17 +134,47 @@ def pages(db: DB, kind: str | None = None) -> dict[str, Any]:
             'kinds': [{'key': k, 'name': KIND_NAMES[k]} for k in PAGE_KINDS]}
 
 
-def blank(value: Any) -> Any:
-    """The skeleton of a page of the same kind: the shape stays, the texts go."""
+def blank(value: Any, *, keep_items: bool = False) -> Any:
+    """The skeleton of a value: the shape stays, the texts go. ``keep_items`` — one empty item in every list of
+    objects: the editor learns from it what a new item of the list consists of."""
     if isinstance(value, dict):
-        return {k: blank(v) for k, v in value.items()}
+        return {k: blank(v, keep_items=keep_items) for k, v in value.items()}
     if isinstance(value, list):
-        return [blank(value[0])] if value and isinstance(value[0], (dict, list)) else []
+        if keep_items and value and isinstance(value[0], (dict, list)):
+            return [blank(value[0], keep_items=True)]
+        return []
     if isinstance(value, bool):
         return False
     if isinstance(value, (int, float)):
         return value
     return ''
+
+
+def merge_shapes(a: Any, b: Any) -> Any:
+    """One shape from two: keys of both objects, the first item of a list from whichever has one."""
+    if isinstance(a, dict) and isinstance(b, dict):
+        return {k: merge_shapes(a.get(k), b.get(k)) if k in a and k in b else (a[k] if k in a else b[k])
+                for k in {**a, **b}}
+    if isinstance(a, list) and isinstance(b, list):
+        return a if a else b
+    return a if a not in (None, '') else b
+
+
+SAMPLES: dict[str, Any] = {'category': Category, 'brand': Brand, 'landing': SeoLanding, 'substance': Substance}
+
+
+def shape(db: DB, entity: str, row: Any) -> dict[str, Any]:
+    """What one language version of this kind of page may hold, from the richest pages of the kind."""
+    if entity == 'page':
+        rows = db.scalars(select(ContentPage).where(ContentPage.kind == row.kind).limit(20))
+    else:
+        rows = db.scalars(select(SAMPLES[entity]).limit(50))
+    out: Any = {}
+    for sample in rows:
+        for value in (getattr(sample, 'content', None) or {}).values():
+            if isinstance(value, dict):
+                out = merge_shapes(out, blank(value, keep_items=True))
+    return out
 
 
 class NewPageIn(BaseModel):

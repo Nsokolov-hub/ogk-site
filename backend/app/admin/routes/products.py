@@ -291,7 +291,8 @@ def write_packagings(db: Session, product: Product, rows: list[dict[str, Any]] |
     if rows is None:
         return
     existing = {p.id: p for p in db.scalars(select(Packaging).where(Packaging.product_id == product.id))}
-    keep: set[str] = set()
+    by_key = {p.key: p for p in existing.values()}
+    planned: list[tuple[Packaging | None, dict[str, Any]]] = []
     keys: set[str] = set()
     for position, raw in enumerate(rows):
         label_ru, label_en = str(raw.get('labelRu') or '').strip(), str(raw.get('labelEn') or '').strip()
@@ -301,26 +302,28 @@ def write_packagings(db: Session, product: Product, rows: list[dict[str, Any]] |
         if parsed is None:
             raise DomainError('VALUE_INVALID', 'Фасовка: количество и единица или подпись, например «100 мг»', 422,
                               f'packagings.{position}')
-        amount, unit, key = parsed.amount, parsed.unit, parsed.key
-        label_ru, label_en = label_ru or parsed.label_ru, label_en or parsed.label_en
-        if key in keys:
+        if parsed.key in keys:
             raise DomainError('VALUE_INVALID', f'Фасовка «{label_ru or label_en}» повторяется', 422, 'packagings')
-        keys.add(key)
-        row = existing.get(str(raw.get('id') or ''))
-        if row is None:
-            row = Packaging(product_id=product.id)
-            db.add(row)
+        keys.add(parsed.key)
         number = (raw.get('catalogNumber') or '').strip() or None
-        row.position, row.key, row.amount, row.unit = position, key, amount, unit
-        row.label_ru, row.label_en = label_ru or label_en, label_en or label_ru
-        row.catalog_number, row.catalog_number_norm = number, compact(number) if number else None
-        row.availability = str(raw.get('availability')) if raw.get('availability') in ('on_order', 'in_stock') \
-            else 'on_order'
-        if row.id:
-            keep.add(row.id)
-    for row_id, row in existing.items():
-        if row_id not in keep:
-            db.delete(row)
+        values = {'position': position, 'key': parsed.key, 'amount': parsed.amount, 'unit': parsed.unit,
+                  'label_ru': label_ru or parsed.label_ru, 'label_en': label_en or parsed.label_en,
+                  'catalog_number': number, 'catalog_number_norm': compact(number) if number else None,
+                  'availability': str(raw.get('availability')) if raw.get('availability') in ('on_order', 'in_stock')
+                  else 'on_order'}
+        # A row without id but with the key of an existing one is that packaging again.
+        planned.append((existing.get(str(raw.get('id') or '')) or by_key.get(parsed.key), values))
+    kept = {row.id for row, _ in planned if row is not None}
+    for row_id, old in existing.items():
+        if row_id not in kept:
+            db.delete(old)
+    db.flush()
+    for found, values in planned:
+        target = found if found is not None else Packaging(product_id=product.id)
+        for name, value in values.items():
+            setattr(target, name, value)
+        if found is None:
+            db.add(target)
     db.flush()
 
 
