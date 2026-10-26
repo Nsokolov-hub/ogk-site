@@ -68,6 +68,8 @@ def main() -> None:
         'TLS_EMAIL': args.email,
         'SITE_ALIASES': args.aliases or ('' if staging else args.domain.removeprefix('www.')),
         'ADMIN_URL': f'https://{args.admin_domain}',
+        # Preview links of the admin panel and letters point to this server's site.
+        'SITE_URL': f'https://{args.domain}',
         'POSTGRES_PASSWORD': token(24),
         'MEILI_MASTER_KEY': token(32),
         'MEILI_ENV': 'production',
@@ -86,6 +88,8 @@ def main() -> None:
     target.write_text(text, encoding='utf-8')
     target.chmod(0o600)
     print(f'Создан {target}. Заполните CRM_*, SMTP_* и TELEGRAM_* (deploy/README.md).')
+    print('Первый сотрудник админки после запуска: docker compose -f docker-compose.yml -f docker-compose.prod.yml '
+          'exec api python -m app.admin.cli create-user --email … --name … --role admin')
     if plain:
         print(f'Пароль стейджа — пользователь ogk, пароль {plain}. Сохраните его: в .env только хеш.')
 

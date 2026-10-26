@@ -17,6 +17,21 @@ UNIT_RU = {'pack': 'уп.', 'mg': 'мг', 'g': 'г', 'ml': 'мл', 'pcs': 'шт.
 UNIT_EN = {'pack': 'pack', 'mg': 'mg', 'g': 'g', 'ml': 'ml', 'pcs': 'pcs'}
 
 
+def mail_setting(db: Session, key: str) -> str:
+    """A value of «Письма» in the admin panel (ADM-09); empty — the server's own setting."""
+    from app.catalog.settings import get_setting
+
+    return str((get_setting(db, 'mail') or {}).get(key) or '').strip()
+
+
+def sales_recipients(db: Session) -> list[str]:
+    return [mail_setting(db, 'sales_email') or settings.sales_email]
+
+
+def alert_recipients(db: Session) -> list[str]:
+    return [a.strip() for a in (mail_setting(db, 'alert_emails') or settings.alert_emails).split(',') if a.strip()]
+
+
 def quantity(value: Decimal) -> str:
     return format(value.normalize(), 'f') if value == value.to_integral_value() else format(value, 'f').rstrip('0')
 
@@ -44,6 +59,7 @@ def customer_letter(db: Session, row: SiteRequest) -> tuple[str, str]:
     if english:
         subject = f'Your request {row.number} — OGK-CHEM'
         body = [f'Dear {row.customer_name},', '',
+                mail_setting(db, 'customer_intro_en').replace('{number}', row.number) or
                 f'We have received your request {row.number}. A manager will contact you within 2 business hours '
                 '(Mon–Fri, 9:00–18:00 Moscow time) with a quotation.']
         if items:
@@ -53,6 +69,7 @@ def customer_letter(db: Session, row: SiteRequest) -> tuple[str, str]:
     else:
         subject = f'Ваша заявка {row.number} — ОГК-ХИМ'
         body = [f'Здравствуйте, {row.customer_name}!', '',
+                mail_setting(db, 'customer_intro_ru').replace('{number}', row.number) or
                 f'Мы получили вашу заявку {row.number}. Менеджер свяжется с вами в течение 2 рабочих часов '
                 '(пн–пт, 9:00–18:00 по Москве) и подготовит коммерческое предложение.']
         if items:

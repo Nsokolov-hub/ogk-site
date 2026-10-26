@@ -113,7 +113,7 @@ def send_customer(db: Session, outbox: OutboxEvent) -> Result:
 def send_sales(db: Session, outbox: OutboxEvent) -> Result:
     row = request_of(db, outbox)
     subject, body = texts.sales_letter(db, row)
-    mail.send([settings.sales_email], subject, body, reply_to=row.email)
+    mail.send(texts.sales_recipients(db), subject, body, reply_to=row.email)
     return Result('succeeded')
 
 
@@ -123,7 +123,7 @@ def send_alert(db: Session, outbox: OutboxEvent) -> Result:
     if outbox.attempts == 1:
         telegram.send(texts.alert_message(row, reason, int(outbox.payload.get('attempts') or 0)))
     subject, body = texts.alert_letter(db, row, reason)
-    mail.send(settings.alert_emails.split(','), subject, body)
+    mail.send(texts.alert_recipients(db), subject, body)
     return Result('succeeded')
 
 
@@ -153,7 +153,7 @@ def send_subscriber(db: Session, outbox: OutboxEvent) -> Result:
 
 def send_subscriber_sales(db: Session, outbox: OutboxEvent) -> Result:
     subject, body = texts.subscriber_sales_letter(subscriber_of(db, outbox))
-    mail.send([settings.sales_email], subject, body)
+    mail.send(texts.sales_recipients(db), subject, body)
     return Result('succeeded')
 
 
@@ -365,7 +365,30 @@ def admin_housekeeping() -> None:
     jobs.apply_search_settings(SessionLocal, search_engine)
 
 
+_content_ready = False
+
+
+def ensure_site_content() -> None:
+    """A new server gets the site's texts (seed/content.json) at the worker's first start: the storefront renders at
+    once, before anyone runs `seed`. Pages already in the database — edited in the admin panel — stay as they are."""
+    global _content_ready
+    if _content_ready:
+        return
+    from app.admin.models import ContentPage
+    from app.catalog import seed
+
+    try:
+        with SessionLocal.begin() as db:
+            if db.scalar(select(ContentPage.id).limit(1)) is None:
+                pages, landings = seed.load_content(db)
+                event(logger, 'site_content_loaded', pages=pages, landings=landings)
+        _content_ready = True
+    except Exception as exc:
+        event(logger, 'site_content_failed', logging.WARNING, error=str(exc)[:200])
+
+
 def run_once(*, housekeeping: bool = True) -> dict[str, int]:
+    ensure_site_content()
     ensure_search_index()
     if housekeeping:
         with SessionLocal.begin() as db:

@@ -26,6 +26,25 @@ jobs:
       - name: Production build
         run: npm run build
 
+  # The admin panel (admin/, TZ 13): audit, types, production build.
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - name: Audit production dependencies (NFR-04)
+        run: npm audit --omit=dev
+      - name: TypeScript and build
+        run: npm run build
+
   backend:
     runs-on: ubuntu-latest
     defaults:
@@ -103,9 +122,9 @@ jobs:
         run: |
           cp .env.example .env
           for mode in staging production; do
-            SITE_ENV=$mode SITE_DOMAIN=www.example.ru TLS_EMAIL=ci@example.ru \
+            SITE_ENV=$mode SITE_DOMAIN=www.example.ru ADMIN_DOMAIN=admin.example.ru TLS_EMAIL=ci@example.ru \
               docker compose -f docker-compose.yml -f docker-compose.prod.yml config -q
-            docker run --rm -e SITE_DOMAIN=www.example.ru -e TLS_EMAIL=ci@example.ru -e STAGING_USER=ogk \
+            docker run --rm -e SITE_DOMAIN=www.example.ru -e ADMIN_DOMAIN=admin.example.ru -e TLS_EMAIL=ci@example.ru -e STAGING_USER=ogk \
               -e 'STAGING_PASSWORD_HASH=$2a$14$Zkx19XLiW6VYouLHR5NmfOFU0z2GTNmpkT/5qqR7hx4wHAiSgLiAy' \
               -v "$PWD/deploy/Caddyfile.$mode:/etc/caddy/Caddyfile:ro" -v "$PWD/deploy/caddy:/etc/caddy/conf:ro" \
               caddy:2.11.6-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile

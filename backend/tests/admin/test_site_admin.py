@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from app.admin.models import Redirect
 from app.catalog.settings import get_setting
+from app.core.config import settings
 from app.outbox.models import OutboxEvent
 from app.requests.models import SiteRequest
 from tests.support import form, submit
@@ -127,3 +128,20 @@ def test_the_dashboard_and_the_journal_of_changes(seeded, signed_in):
     assert entry['summary'] == '/x/ → /y/ (301)'
     detail = admin.ok(admin.get(f'/audit/{entry["id"]}'))
     assert detail['after']['target'] == '/y/' and detail['before'] is None
+
+
+def test_letters_follow_the_mail_settings(seeded, signed_in, client, monkeypatch):
+    from app.notifications import mail
+    from app.outbox import worker
+
+    admin = signed_in('admin')
+    admin.ok(admin.put('/settings/mail', {'value': {'sales_email': 'sales@ogk-chem.ru',
+                                                   'customer_intro_ru': 'Спасибо! Заявка {number} у нас.'}}))
+    assert submit(client, form()).status_code == 201
+    letters: list[dict] = []
+    monkeypatch.setattr(mail, 'send', lambda to, subject, body, **kw: letters.append({'to': to, 'body': body}))
+    monkeypatch.setattr(settings, 'crm_delivery_enabled', False)
+    with seeded.begin() as db:
+        worker.process_events(db)
+    assert any(letter['to'] == ['sales@ogk-chem.ru'] for letter in letters)
+    assert any('Спасибо! Заявка S-' in letter['body'] for letter in letters)

@@ -4,6 +4,8 @@ Next.js 15 (App Router) · React 19 · TypeScript · Tailwind CSS v4 · next-int
 
 Бэкенд сайта — в [backend/](backend/README.md): FastAPI + PostgreSQL + Meilisearch. Каталог, поиск, корзина, импорт прайсов, приём заявок и доставка в «Реактив CRM» (потоки F1 и F5). Витрина берёт все данные каталога из API: моков каталога в коде нет.
 
+Админка — [admin/README.md](admin/README.md): товары, страницы, SEO, импорт, очереди, заявки, настройки (ТЗ 13).
+
 Стейдж и продакшен — [deploy/README.md](deploy/README.md): HTTPS через Caddy, пароль на стейдже, бэкапы с восстановлением на момент времени, мониторинг, нагрузочный тест; обновление — `./scripts/deploy.sh`.
 
 Весь сайт в Docker: `cp .env.example .env && docker compose up -d --build`, затем тестовый каталог `docker compose exec api python -m app.catalog.cli seed` — витрина <http://127.0.0.1:3000>, API <http://127.0.0.1:8001/api/docs>, письма в Mailpit <http://127.0.0.1:8025>. Витрина проксирует `/api/v1/*` на API внутри сети. Для правки витрины с горячей перезагрузкой остановите сервис `web` и запустите `npm run dev` — она пойдёт в API на `API_ORIGIN` (по умолчанию <http://127.0.0.1:8001>).

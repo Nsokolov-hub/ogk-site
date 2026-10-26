@@ -193,3 +193,19 @@ def test_landings_are_created_hidden_and_published(seeded, signed_in, client):
     assert clash.status_code in (200, 409)
     listing = content.ok(content.get('/landings'))['items']
     assert any(item['slug'] == 'phenomenex-c18' for item in listing)
+
+
+def test_a_new_server_gets_the_site_texts_at_the_first_worker_start(sessions, monkeypatch, client):
+    from app.outbox import worker
+
+    monkeypatch.setattr(worker, 'SessionLocal', sessions)
+    monkeypatch.setattr(worker, '_content_ready', False)
+    monkeypatch.setattr(worker, '_index_ready', True)
+    worker.ensure_site_content()
+    assert client.get('/api/v1/public/pages/home/home').status_code == 200
+    with sessions.begin() as db:
+        db.scalar(select(ContentPage).where(ContentPage.kind == 'service')).status = 'hidden'
+    monkeypatch.setattr(worker, '_content_ready', False)
+    worker.ensure_site_content()
+    with sessions() as db:
+        assert db.scalar(select(ContentPage.status).where(ContentPage.kind == 'service').limit(1)) == 'hidden'

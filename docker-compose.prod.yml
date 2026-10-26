@@ -8,10 +8,15 @@
 # Settings: deploy/README.md.
 
 services:
+  # Caddy with the admin panel's static files built in (deploy/caddy.Dockerfile).
   caddy:
-    image: caddy:2.11.6-alpine
+    build:
+      context: .
+      dockerfile: deploy/caddy.Dockerfile
+    image: ogk-site-caddy:local
     environment:
       SITE_DOMAIN: ${SITE_DOMAIN:?Set SITE_DOMAIN in .env, e.g. www.ogk-chem.ru}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN:?Set ADMIN_DOMAIN in .env, e.g. admin.ogk-chem.ru}
       SITE_ALIASES: ${SITE_ALIASES:-}
       TLS_EMAIL: ${TLS_EMAIL:?Set TLS_EMAIL in .env}
       STAGING_USER: ${STAGING_USER:-ogk}

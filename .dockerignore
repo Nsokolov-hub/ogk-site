@@ -20,3 +20,5 @@ scripts
 e2e
 playwright-report
 test-results
+admin/node_modules
+admin/dist

@@ -4,9 +4,10 @@
 
 ```
 Caddy :443 ── SITE_DOMAIN ──┬─ /api/v1/*  → api (FastAPI) ─┬─ PostgreSQL 17 (+ архив журнала в BACKUP_DIR/wal)
-                            │                               ├─ Meilisearch (индекс строится из базы)
-                            └─ остальное → web (Next.js)    └─ Redis (лимиты запросов)
-                                           worker: доставка в CRM, письма, индекс, сторож
+           │                └─ остальное → web (Next.js)    ├─ Meilisearch (индекс строится из базы)
+           └─ ADMIN_DOMAIN ─┬─ /api/v1/admin/* → api        └─ Redis (лимиты запросов)
+                            └─ админка (статика в образе Caddy)
+                                           worker: доставка в CRM, письма, индекс, публикации, импорт, сторож
 ```
 
 ## 1. Сервер
@@ -45,7 +46,15 @@ python3 scripts/init-env.py staging --domain staging.ogk-chem.ru --admin-domain 
 ./scripts/deploy.sh --no-pull --skip-backup
 ```
 
-Скрипт собирает образы, применяет миграции, поднимает сервисы и ждёт, пока API и витрина ответят. Caddy сам получит сертификаты при первом запросе.
+Скрипт собирает образы, применяет миграции, поднимает сервисы и ждёт, пока API и витрина ответят. Caddy сам получит сертификаты при первом запросе (DNS `ADMIN_DOMAIN` тоже должен указывать на сервер).
+
+Первый сотрудник админки — пароль печатается один раз, при первом входе админка попросит включить код из приложения:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml exec api python -m app.admin.cli create-user --email it@ogk-chem.ru --name "Имя Фамилия" --role admin
+```
+
+Остальных сотрудников заводят в админке: «Сотрудники». Потерянный телефон или пароль — `reset-totp` и `reset-password` той же команды.
 
 Структура каталога и тексты разделов, брендов, субстанций (без тестовых товаров):
 
