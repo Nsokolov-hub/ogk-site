@@ -24,6 +24,17 @@ compose() {
 
 BACKUP_DIR="$(env_value BACKUP_DIR ./backups)"
 
+# BACKUP_DIR belongs to the database user of the container (the db service chowns it at start), and base copies are
+# readable by that user only. The scripts touch them inside a database container, so they work for any member of the
+# docker group, not only root. backups_sh 'command' runs it with /backups = BACKUP_DIR; stdin and stdout pass through.
+backups_sh() {
+  if [ -n "$(compose ps --status running -q db 2>/dev/null)" ]; then
+    compose exec -T -u postgres db sh -c "$1"
+  else
+    compose run --rm --no-deps -T --entrypoint sh db -c "$1"
+  fi
+}
+
 checksum() {
   if command -v sha256sum >/dev/null; then sha256sum "$@"; else shasum -a 256 "$@"; fi
 }

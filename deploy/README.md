@@ -90,9 +90,11 @@ $C exec api python -m app.catalog.cli reindex
 - `scripts/backup.sh` раз в сутки делает базовую копию базы и файлов заявок, удаляет копии и журнал старше `BACKUP_RETENTION_DAYS` дней (две последние копии остаются всегда), проверяет, что архив журнала пишется, и копирует всё за пределы сервера.
 - Индекс Meilisearch не копируется: он перестраивается из базы.
 
+Расписание — у пользователя из группы `docker` (root не нужен: скрипты работают с файлами копий внутри контейнера базы):
+
 ```bash
-sudo crontab -e
-15 3 * * * /srv/ogk-site/scripts/backup.sh >> /srv/ogk-site/backups/backup.log 2>&1
+crontab -e
+15 3 * * * /srv/ogk-site/scripts/backup.sh >> /srv/ogk-site/backup.log 2>&1
 ```
 
 Восстановление:

@@ -31,16 +31,16 @@ if [ -z "$COPY" ]; then
   if [ -n "$TIME" ]; then
     limit="$(TZ=UTC0 date -u -d "$TIME" +%Y%m%dT%H%M%SZ 2>/dev/null || true)"
     [ -n "$limit" ] || { echo "Не понял время: $TIME (нужно, например, 2026-10-26 14:30:00+03)"; exit 1; }
-    COPY="$(find "$BACKUP_DIR/base" -mindepth 1 -maxdepth 1 -type d -name '20*' -exec basename {} \; | sort \
+    COPY="$(backups_sh "ls -1 /backups/base" | grep -E '^20[0-9]{6}T[0-9]{6}Z$' | sort \
       | awk -v limit="$limit" '$0 < limit' | tail -n 1)"
   else
-    COPY="$(find "$BACKUP_DIR/base" -mindepth 1 -maxdepth 1 -type d -name '20*' -exec basename {} \; | sort | tail -n 1)"
+    COPY="$(backups_sh "ls -1 /backups/base" | grep -E '^20[0-9]{6}T[0-9]{6}Z$' | sort | tail -n 1)"
   fi
 fi
-SOURCE="$BACKUP_DIR/base/$COPY"
-[ -n "$COPY" ] && [ -f "$SOURCE/base.tar.gz" ] || { echo "Нет подходящей копии в $BACKUP_DIR/base"; exit 1; }
+[ -n "$COPY" ] && backups_sh "test -f /backups/base/$COPY/base.tar.gz" \
+  || { echo "Нет подходящей копии в $BACKUP_DIR/base"; exit 1; }
 say "Проверяю копию $COPY"
-(cd "$SOURCE" && checksum -c SHA256SUMS >/dev/null)
+backups_sh "cd /backups/base/$COPY && sha256sum -c SHA256SUMS >/dev/null"
 
 say "Останавливаю сайт"
 compose stop web worker api db
@@ -87,8 +87,8 @@ say "Последняя восстановленная транзакция: $(c
   "select coalesce(to_char(pg_last_xact_replay_timestamp(), 'YYYY-MM-DD HH24:MI:SS TZ'), 'на момент копии')" | tr -d '\r')"
 
 say "Файлы заявок"
-compose run --rm --no-deps -T --entrypoint sh api -c 'find /data/files -mindepth 1 -delete && tar -xzf - -C /data/files' \
-  < "$SOURCE/files.tar.gz"
+backups_sh "cat /backups/base/$COPY/files.tar.gz" \
+  | compose run --rm --no-deps -T --entrypoint sh api -c 'find /data/files -mindepth 1 -delete && tar -xzf - -C /data/files'
 
 say "Запускаю сайт"
 compose up -d

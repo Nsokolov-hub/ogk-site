@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Daily base copy of the site's database and files (TZ 12.3, NFR-13). Cron on the server, as root:
-#   15 3 * * * /srv/ogk-site/scripts/backup.sh >> /srv/ogk-site/backups/backup.log 2>&1
+# Daily base copy of the site's database and files (TZ 12.3, NFR-13). Cron of a user in the docker group:
+#   15 3 * * * /srv/ogk-site/scripts/backup.sh >> /srv/ogk-site/backup.log 2>&1
 #
 # PostgreSQL itself archives its journal into BACKUP_DIR/wal at least every ARCHIVE_TIMEOUT seconds
 # (docker-compose.prod.yml); with the base copies it brings the database back to any moment of the last
@@ -24,32 +24,36 @@ compose exec -T -u postgres db pg_basebackup -U site -D "/backups/base/$STAMP" -
   -l "ogk-site $STAMP"
 
 say "Файлы заявок"
-compose exec -T api tar -C /data/files -czf - . > "$TARGET/files.tar.gz"
+compose exec -T api tar -C /data/files -czf - . | backups_sh "cat > /backups/base/$STAMP/files.tar.gz"
 
-# The first journal segment the copy needs: older segments are dropped together with older copies.
-tar -xzOf "$TARGET/base.tar.gz" backup_label | sed -n 's/.*(file \([0-9A-F]\{24\}\)).*/\1/p' > "$TARGET/wal_start"
-[ -s "$TARGET/wal_start" ]
-(cd "$TARGET" && checksum base.tar.gz pg_wal.tar.gz files.tar.gz > SHA256SUMS)
-say "Готово: $(du -sh "$TARGET" | cut -f1)"
+# The first journal segment the copy needs (older segments are dropped together with older copies) and checksums.
+backups_sh "set -e; cd /backups/base/$STAMP
+tar -xzOf base.tar.gz backup_label | sed -n 's/.*(file \\([0-9A-F]\\{24\\}\\)).*/\\1/p' > wal_start
+test -s wal_start
+sha256sum base.tar.gz pg_wal.tar.gz files.tar.gz > SHA256SUMS"
+say "Готово: $(backups_sh "du -sh /backups/base/$STAMP" | cut -f1)"
 
 # Copies older than RETENTION_DAYS go, but the two newest always stay.
 limit="$(date -u -d "-${RETENTION_DAYS} days" +%Y%m%dT%H%M%SZ 2>/dev/null || date -u -v-"${RETENTION_DAYS}"d +%Y%m%dT%H%M%SZ)"
-find "$BACKUP_DIR/base" -mindepth 1 -maxdepth 1 -type d -name '20*' | sort | sed '$d' | sed '$d' | while IFS= read -r copy; do
-  if [[ "$(basename "$copy")" < "$limit" ]]; then
-    say "Удаляю старую копию $(basename "$copy")"
-    rm -rf "$copy"
+copies="$(backups_sh "ls -1 /backups/base" | grep -E '^20[0-9]{6}T[0-9]{6}Z$' | sort || true)"
+printf '%s\n' "$copies" | sed '/^$/d' | sed '$d' | sed '$d' | while IFS= read -r copy; do
+  if [[ "$copy" < "$limit" ]]; then
+    say "Удаляю старую копию $copy"
+    backups_sh "rm -rf /backups/base/$copy"
   fi
 done
 
 # Journal segments older than the oldest kept copy are not needed any more; timeline histories always stay.
-oldest="$(find "$BACKUP_DIR/base" -mindepth 1 -maxdepth 1 -type d -name '20*' | sort | head -n 1)"
-if [ -n "$oldest" ] && [ -s "$oldest/wal_start" ]; then
-  start="$(cat "$oldest/wal_start")"
-  find "$BACKUP_DIR/wal" -maxdepth 1 -type f -name '[0-9A-F]*' | while IFS= read -r file; do
-    name="$(basename "$file")"
-    # Segments only (24 hex digits); timeline histories like 00000002.history.gz stay.
-    if [[ "$name" =~ ^[0-9A-F]{24} ]] && [[ "${name:0:24}" < "$start" ]]; then rm -f "$file"; fi
-  done
+oldest="$(backups_sh "ls -1 /backups/base" | grep -E '^20[0-9]{6}T[0-9]{6}Z$' | sort | head -n 1 || true)"
+if [ -n "$oldest" ]; then
+  start="$(backups_sh "cat /backups/base/$oldest/wal_start 2>/dev/null" | tr -d '[:space:]' || true)"
+  if [ -n "$start" ]; then
+    old_segments="$(backups_sh "ls -1 /backups/wal" | while IFS= read -r name; do
+      # Segments only (24 hex digits); timeline histories like 00000002.history.gz stay.
+      if [[ "$name" =~ ^[0-9A-F]{24} ]] && [[ "${name:0:24}" < "$start" ]]; then printf '/backups/wal/%s ' "$name"; fi
+    done)"
+    [ -z "$old_segments" ] || backups_sh "rm -f $old_segments"
+  fi
 fi
 
 # The archive must keep up: a failing archive_command means the moments since the last copy are not protected.
