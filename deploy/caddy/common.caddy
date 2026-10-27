@@ -12,6 +12,9 @@
 	}
 }
 
+# Upstreams are the compose services by default; a server shared with another compose project whose services have the
+# same names (the CRM: api, web) sets API_UPSTREAM, WEB_UPSTREAM and MAILPIT_UPSTREAM to container names (deploy/README.md).
+
 # The storefront and the public API. While a container restarts during a deploy, Caddy holds the request for up
 # to 30 seconds instead of answering 502: an update goes without visible downtime (NFR-02).
 (site_routes) {
@@ -22,11 +25,11 @@
 		respond /api/revalidate* 404
 		# The admin contour of the API is served on ADMIN_DOMAIN only (TZ 12.2).
 		respond /api/v1/admin* 404
-		reverse_proxy /api/v1/* api:8000 {
+		reverse_proxy /api/v1/* {$API_UPSTREAM:api:8000} {
 			lb_try_duration 30s
 			lb_try_interval 250ms
 		}
-		reverse_proxy web:3000 {
+		reverse_proxy {$WEB_UPSTREAM:web:3000} {
 			lb_try_duration 30s
 			lb_try_interval 250ms
 		}

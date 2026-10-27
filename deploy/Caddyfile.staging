@@ -16,7 +16,7 @@ import conf/common.caddy
 	}
 	# Letters of staging (COMPOSE_PROFILES=mailpit).
 	handle /mailpit/* {
-		reverse_proxy mailpit:8025
+		reverse_proxy {$MAILPIT_UPSTREAM:mailpit:8025}
 	}
 	import site_routes
 }

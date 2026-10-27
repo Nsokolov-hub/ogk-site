@@ -158,3 +158,13 @@ networks:
 ```
 
 Скрипты `deploy.sh`, `backup.sh` и `restore.sh` подключают `docker-compose.override.yml` сами, если он есть.
+
+У CRM сервисы называются так же (`api`, `web`), и в общей сети Caddy может попасть не в тот контейнер. Поэтому на общем сервере в `.env` сайта укажите имена контейнеров сайта:
+
+```
+API_UPSTREAM=ogk-site-api-1:8000
+WEB_UPSTREAM=ogk-site-web-1:3000
+MAILPIT_UPSTREAM=ogk-site-mailpit-1:8025
+```
+
+Если CRM открывают по IP-адресу, браузер не передаёт имя сервера, и Caddy должен знать сертификат по умолчанию: добавьте в глобальный блок Caddyfile `default_sni <IP>` (на сервере — своей копией `deploy/Caddyfile.server`, подключённой в `docker-compose.override.yml`).

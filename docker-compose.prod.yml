@@ -21,6 +21,10 @@ services:
       TLS_EMAIL: ${TLS_EMAIL:?Set TLS_EMAIL in .env}
       STAGING_USER: ${STAGING_USER:-ogk}
       STAGING_PASSWORD_HASH: ${STAGING_PASSWORD_HASH:-}
+      # Container names instead of service names when the server also runs the CRM (deploy/README.md).
+      API_UPSTREAM: ${API_UPSTREAM:-api:8000}
+      WEB_UPSTREAM: ${WEB_UPSTREAM:-web:3000}
+      MAILPIT_UPSTREAM: ${MAILPIT_UPSTREAM:-mailpit:8025}
     ports:
       - "80:80"
       - "443:443"

@@ -10,12 +10,12 @@
 	header /assets/* Cache-Control "public, max-age=31536000, immutable"
 	encode zstd gzip
 	route {
-		reverse_proxy /api/v1/admin/* api:8000 {
+		reverse_proxy /api/v1/admin/* {$API_UPSTREAM:api:8000} {
 			lb_try_duration 30s
 			lb_try_interval 250ms
 		}
 		# Photos, documents and structures of cards, for the editor's previews (public files, read only).
-		reverse_proxy /api/v1/media/* api:8000
+		reverse_proxy /api/v1/media/* {$API_UPSTREAM:api:8000}
 		respond /api/* 404
 		root * /srv/admin
 		try_files {path} /index.html
