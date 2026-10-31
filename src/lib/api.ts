@@ -105,7 +105,7 @@ export async function submitSiteRequest(p: SiteRequestPayload): Promise<SiteRequ
   if (process.env.NEXT_PUBLIC_API_MOCK === '1') {
     await networkDelay(700);
     mockCounter += 1;
-    return { siteRequestId: crypto.randomUUID(), number: `S-2026-${String(mockCounter).padStart(6, '0')}` };
+    return { siteRequestId: crypto.randomUUID(), number: `S-${mockCounter}` };
   }
   const { attachment, ...body } = p;
   const { digest, key } = await idempotencyKey(p);

@@ -8,7 +8,7 @@
     python -m app.catalog.cli batches                      — import journal
     python -m app.catalog.cli issues BATCH [--xlsx out.xlsx] — errors and conflicts of a batch
     python -m app.catalog.cli rollback BATCH               — undo a batch (IMP-06)
-    python -m app.catalog.cli controlled FILE.xlsx         — load the lists of controlled substances (TZ 5.2.1)
+    python -m app.catalog.cli controlled FILE.xlsx|.json   — load the lists of controlled substances (TZ 5.2.1)
     python -m app.catalog.cli sync-brands                  — manufacturer registry from the CRM (flow F5)
     python -m app.catalog.cli misses [--days 30]           — top queries without results (SRCH-12)
     python -m app.catalog.cli setting KEY [JSON]           — read or change a catalog setting
@@ -138,7 +138,7 @@ def _controlled(args: argparse.Namespace) -> None:
     from app.catalog import controlled
     from app.catalog.importer import run
 
-    entries = controlled.read_register_xlsx(Path(args.file))
+    entries = controlled.read_register(Path(args.file))
     with SessionLocal.begin() as db:
         count = controlled.load_register(db, entries)
         changed = run.recheck_controlled(db)

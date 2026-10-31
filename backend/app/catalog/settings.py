@@ -81,8 +81,8 @@ DEFAULTS: dict[str, Any] = {
     # TZ 5.2.1: products of the lists are hidden from the storefront, search, Sitemap and the feed.
     'hide_controlled': True,
     # TZ 15.4: categories (path prefixes) and brands of the Yandex Direct feed; empty brands — all.
-    'feed': {'categories': ['reference-standards', 'chromatography', 'reagents', 'biological-standards',
-                            'laboratory-equipment'], 'brands': []},
+    'feed': {'categories': ['reference-standards', 'chromatography', 'reagents', 'biological-standards'],
+             'brands': []},
     # Texts of the catalog root /catalog/: {"ru": CategoryContent, "en": CategoryContent}.
     'catalog_root': {},
     # Products of the home page block, by slug, in order.

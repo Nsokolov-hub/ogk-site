@@ -2,7 +2,7 @@
 
     python -m app.cli status                 — counts by status and the queue
     python -m app.cli undelivered            — requests not yet in the CRM
-    python -m app.cli resend S-2026-000123   — deliver a failed request again (a new 24-hour window)
+    python -m app.cli resend S-123   — deliver a failed request again (a new 24-hour window)
     python -m app.cli subscribers [--all] > subscribers.csv — subscribers of the mailing for a mailing service
 """
 

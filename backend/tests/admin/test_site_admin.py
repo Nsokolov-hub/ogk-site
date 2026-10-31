@@ -121,7 +121,7 @@ def test_the_dashboard_and_the_journal_of_changes(seeded, signed_in):
     admin = signed_in('admin')
     admin.ok(admin.post('/redirects', {'source': '/x/', 'target': '/y/'}))
     dashboard = admin.ok(admin.get('/dashboard'))
-    assert dashboard['products']['total'] == 413 and 'conflicts' in dashboard['queues']
+    assert dashboard['products']['total'] == 398 and 'conflicts' in dashboard['queues']
     assert dashboard['content']['pages'] == 27 and dashboard['integration']['deliveryEnabled'] is True
     journal = admin.ok(admin.get('/audit', params={'entity': 'redirect'}))
     entry = journal['items'][0]

@@ -138,19 +138,22 @@
     "errorFields": "Please check the form fields and send again. Your data has been kept.",
     "errorFile": "The file is not accepted: use xlsx, csv, pdf or docx up to 10 MB. Remove it or choose another one.",
     "errorCaptcha": "We could not confirm you are not a robot. Try again or call us at +7 495 234 28 63.",
-    "errorUnavailable": "The service is temporarily unavailable. Try again in a minute or call us at +7 495 234 28 63. Your data has been kept."
+    "errorUnavailable": "The service is temporarily unavailable. Try again in a minute or call us at +7 495 234 28 63. Your data has been kept.",
+    "errorEmailDomain": "The mail domain of the e-mail was not found — check the part after @ and send again."
   },
   "errors": {
     "required": "Please fill in this field",
     "tooShort": "Too short",
     "messageShort": "Please add a little more detail, at least 10 characters",
-    "email": "Check the email: it should look like name@company.com",
-    "phone": "Check the phone number",
+    "email": "Check the e-mail: it should look like name@company.com",
+    "phone": "Check the number: country code and the full number, e.g. +44 20 7946 0958",
     "consent": "Your consent is required",
     "fileType": "Supported files: xlsx, csv, pdf or docx",
     "fileSize": "The file is larger than 10 MB",
     "positive": "Enter an amount greater than zero",
-    "inn": "Check the INN: 10 digits for a company or 12 for a sole trader"
+    "inn": "Check the INN: 10 digits for a company or 12 for a sole trader",
+    "emailTypo": "The part after @ looks mistyped — please check it, e.g. gmail.com, outlook.com",
+    "emailDisposable": "Please give a work e-mail: we cannot send a quotation to a disposable or test address"
   },
   "subscribe": {
     "email": "Email for the newsletter",
@@ -160,8 +163,8 @@
   },
   "home": {
     "meta": {
-      "title": "Reference standards, reagents and equipment for pharmaceutical labs — OGK-CHEM",
-      "description": "Supply of EDQM, USP and LGC reference standards, reagents, HPLC consumables and laboratory equipment for pharmaceutical laboratories. Request a quote and get a reply within 2 business hours."
+      "title": "Reference standards, reagents and consumables for pharmaceutical labs — OGK-CHEM",
+      "description": "Supply of EDQM, USP and LGC reference standards, reagents and HPLC consumables for pharmaceutical laboratories. Request a quote and get a reply within 2 business hours."
     },
     "hero": {
       "region": "Featured offers",
@@ -514,7 +517,7 @@
     "list": {
       "breadcrumb": "Brands",
       "title": "Brands: EDQM, USP, Waters, Agilent, Merck and more | OGK-CHEM",
-      "description": "Manufacturers of reference standards, reagents, HPLC columns and lab equipment we supply: EDQM, USP, LGC, Merck, Waters, Agilent, Shimadzu, ATCC and others.",
+      "description": "Manufacturers of reference standards, reagents and HPLC columns we supply: EDQM, USP, LGC, Merck, Waters, Agilent, ATCC and others.",
       "h1": "Manufacturers",
       "lead": "We supply reference standards, reagents and chromatography consumables from leading manufacturers. Pick a brand to see its items and supply terms.",
       "count": "{count, plural, one {# item} other {# items}} in catalog",

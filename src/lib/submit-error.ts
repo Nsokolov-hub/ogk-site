@@ -17,6 +17,7 @@ export class SubmitError extends Error {
 export function submitErrorKey(error: unknown): string {
   const code = error instanceof SubmitError ? error.code : 'NETWORK';
   if (code === 'RATE_LIMITED') return 'errorRate';
+  if (code === 'EMAIL_DOMAIN') return 'errorEmailDomain';
   if (code === 'VALIDATION_ERROR') return 'errorFields';
   if (code.startsWith('FILE_')) return 'errorFile';
   if (code.startsWith('CAPTCHA_')) return 'errorCaptcha';

@@ -18,5 +18,5 @@ export async function fillContacts(page: Page, scope = page.locator('body')) {
 }
 
 export async function expectRequestNumber(page: Page) {
-  await expect(page.getByText(/S-\d{4}-\d{6}/).first()).toBeVisible();
+  await expect(page.getByText(/S-\d+/).first()).toBeVisible();
 }

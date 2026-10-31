@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     # False keeps requests in the queue (they are still saved and mailed to sales): the CRM module is not ready
     # yet, or the CRM is being maintained. Undelivered alerts are off while delivery is off.
     crm_delivery_enabled: bool = False
+    # Business remark of 31 October 2026: the API asks DNS whether the customer's mail domain exists.
+    check_email_domains: bool = True
     crm_timeout_seconds: float = 15.0
     # ── CRM → site, flow F2: events signed by the CRM with this key (SITE_EVENTS_SECRET of the CRM) ──
     crm_events_secret: str = ''

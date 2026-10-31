@@ -12,13 +12,14 @@ from typing import Any
 from uuid import uuid4
 
 from pydantic import ValidationError
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.db import utcnow
 from app.core.errors import DomainError
 from app.outbox.models import OutboxEvent
-from app.requests import antispam, attachments, attribution
+from app.requests import antispam, attachments, attribution, contacts
 from app.requests.models import NumberCounter, SiteRequest, SiteRequestAttachment, SiteRequestItem
 from app.requests.schemas import RequestIn
 
@@ -38,17 +39,21 @@ def advisory(db: Session, key: str) -> None:
 
 
 def next_number(db: Session, now: datetime) -> str:
-    """S-2026-000123: a counter per year, never reused (the number is shown to the customer)."""
-    key = f'site_requests:{now.year}'
+    """S-123: one counter for all years, never reused (the number is shown to the customer).
+
+    Business remark of 31 October 2026: «S-2026-000001» was too long, with too many zeros. The counter starts after
+    the requests numbered the old way, so the numbers keep growing.
+    """
+    key = 'site_requests'
     advisory(db, f'number:{key}')
     counter = db.scalar(select(NumberCounter).where(NumberCounter.key == key).with_for_update()
                         .execution_options(populate_existing=True))
     if counter is None:
-        counter = NumberCounter(key=key, value=0)
+        counter = NumberCounter(key=key, value=db.scalar(select(func.count(SiteRequest.id))) or 0)
         db.add(counter)
     counter.value += 1
     db.flush()
-    return f'S-{now.year}-{counter.value:06d}'
+    return f'S-{counter.value}'
 
 
 def parse(payload: str | None) -> tuple[RequestIn, str]:
@@ -93,7 +98,7 @@ def accept(db: Session, payload: str | None, client_key: str | None, upload: tup
     if data.antispam.website:
         # A filled trap field: a bot. It gets an ordinary-looking answer and nothing is saved.
         now = utcnow()
-        return {'site_request_id': str(uuid4()), 'number': f'S-{now.year}-{secrets.randbelow(900000) + 1:06d}'}, True
+        return {'site_request_id': str(uuid4()), 'number': f'S-{secrets.randbelow(9000) + 100}'}, True
     advisory(db, f'site-request:{client_key}')
     previous = db.scalar(select(SiteRequest).where(SiteRequest.client_key == client_key))
     if previous is not None:
@@ -101,6 +106,10 @@ def accept(db: Session, payload: str | None, client_key: str | None, upload: tup
             raise DomainError('IDEMPOTENCY_CONFLICT', 'Этот ключ уже использован для другой заявки', 409)
         return result(previous), False
     file = attachments.validate(*upload) if upload else None
+    if settings.check_email_domains and contacts.domain_receives_mail(data.customer.email.rsplit('@', 1)[1].lower()) \
+            is False:
+        raise DomainError('EMAIL_DOMAIN', 'Почтовый домен в адресе e-mail не найден: проверьте часть после @', 422,
+                          'customer.email')
     suspicious = antispam.check(db, data, ip)
     now = utcnow()
     customer = data.customer

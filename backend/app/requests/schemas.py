@@ -12,6 +12,8 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
+from app.requests.contacts import email_problem, plausible_phone
+
 Kind = Literal['product_rfq', 'one_click', 'service', 'general']
 Analogue = Literal['none', 'allowed', 'requested']
 Unit = Literal['pack', 'mg', 'g', 'ml', 'pcs']
@@ -60,15 +62,17 @@ class CustomerIn(CamelModel):
     @field_validator('phone')
     @classmethod
     def phone_e164(cls, value: str) -> str:
-        if not E164_RE.fullmatch(value) or (value.startswith('+7') and len(value) != 12):
+        # Business remark of 31 October 2026: the length of the country's numbers, no made-up numbers.
+        if not E164_RE.fullmatch(value) or not plausible_phone(value):
             raise ValueError('phone')
         return value
 
     @field_validator('email')
     @classmethod
     def email_shape(cls, value: str) -> str:
-        if not EMAIL_RE.fullmatch(value):
-            raise ValueError('email')
+        problem = email_problem(value) if EMAIL_RE.fullmatch(value) else 'email'
+        if problem:
+            raise ValueError(problem)
         return value
 
     @field_validator('inn')

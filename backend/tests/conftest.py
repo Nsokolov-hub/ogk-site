@@ -57,6 +57,7 @@ def isolated_settings(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, 'crm_token', 'ogk_site_test-token')
     monkeypatch.setattr(settings, 'crm_signing_secret', 'test-signing-secret')
     monkeypatch.setattr(settings, 'crm_delivery_enabled', True)
+    monkeypatch.setattr(settings, 'check_email_domains', False)
 
 
 @pytest.fixture

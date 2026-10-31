@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from app.core.db import utcnow
 from app.core.errors import DomainError
 from app.outbox.models import OutboxEvent
+from app.requests.contacts import email_problem
 from app.requests.models import RateEvent
 from app.requests.schemas import EMAIL_RE
 from app.subscriptions.models import Subscriber
@@ -38,7 +39,7 @@ class SubscribeIn(BaseModel):
     @field_validator('email')
     @classmethod
     def email_valid(cls, value: str) -> str:
-        if not EMAIL_RE.match(value):
+        if not EMAIL_RE.match(value) or email_problem(value):
             raise ValueError('Неверный адрес почты')
         return value.lower()
 

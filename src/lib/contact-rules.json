@@ -1,0 +1,32 @@
+{
+  "note": "Правила телефона и e-mail для форм сайта и API (замечания бизнеса от 31.10.2026). Копия: backend/app/requests/contact_rules.json — тест следит, чтобы они совпадали.",
+  "phoneLengths": {
+    "375": 12, "374": 11, "373": 11, "380": 12, "992": 12, "993": 11, "994": 12, "995": 12, "996": 12, "998": 12,
+    "7": 11, "1": 11
+  },
+  "phoneMinDigits": 10,
+  "phoneMaxDigits": 15,
+  "ruFirstDigits": "346789",
+  "typoDomains": {
+    "gmial.com": "gmail.com", "gmai.com": "gmail.com", "gamil.com": "gmail.com", "gnail.com": "gmail.com",
+    "gmaill.com": "gmail.com", "gmail.co": "gmail.com", "gmail.cm": "gmail.com", "gmail.con": "gmail.com",
+    "gmail.ru": "gmail.com", "gmal.com": "gmail.com", "gmeil.com": "gmail.com",
+    "yandex.ry": "yandex.ru", "yandex.ri": "yandex.ru", "yandx.ru": "yandex.ru", "yadex.ru": "yandex.ru",
+    "yndex.ru": "yandex.ru", "yandeks.ru": "yandex.ru", "yanex.ru": "yandex.ru", "ya.ry": "ya.ru",
+    "mail.ry": "mail.ru", "mail.ri": "mail.ru", "maill.ru": "mail.ru", "mai.ru": "mail.ru", "mial.ru": "mail.ru",
+    "mali.ru": "mail.ru", "inbox.ry": "inbox.ru", "list.ry": "list.ru", "bk.ry": "bk.ru",
+    "rambler.ry": "rambler.ru", "ramler.ru": "rambler.ru", "hotmial.com": "hotmail.com", "hotmail.co": "hotmail.com",
+    "outlok.com": "outlook.com", "outlook.co": "outlook.com", "icloud.co": "icloud.com", "iclod.com": "icloud.com"
+  },
+  "badTlds": ["ry", "ri", "rj", "rr", "ruu", "rru", "con", "cpm", "comm", "ocm", "cmo", "om", "coom", "nett", "ogr"],
+  "disposableDomains": [
+    "mailinator.com", "10minutemail.com", "10minutemail.net", "guerrillamail.com", "guerrillamail.net",
+    "guerrillamailblock.com", "sharklasers.com", "grr.la", "yopmail.com", "yopmail.net", "temp-mail.org",
+    "tempmail.com", "tempmail.net", "tempmailo.com", "tempail.com", "throwawaymail.com", "trashmail.com",
+    "trashmail.de", "getnada.com", "dispostable.com", "maildrop.cc", "mohmal.com", "emailondeck.com",
+    "fakeinbox.com", "mail.tm", "1secmail.com", "1secmail.org", "1secmail.net", "mintemail.com", "moakt.com",
+    "spamgourmet.com", "mytemp.email", "inboxkitten.com", "dropmail.me", "emailfake.com", "crazymailing.com",
+    "mailnesia.com", "mailcatch.com", "spambox.us", "tempinbox.com", "discard.email", "burnermail.io",
+    "example.com", "example.org", "example.net", "test.com", "test.ru", "mail.test"
+  ]
+}

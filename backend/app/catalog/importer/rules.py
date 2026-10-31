@@ -38,21 +38,8 @@ BRAND_CATEGORY: dict[str, str] = {
         'Welch Materials', 'Welch', 'Hawach Scientific', 'Bischoff', 'MZ-Analysentechnik', 'Nomura', 'Sciencix',
         'Regis Technologies', 'ALWSCI Technologies', 'Biocomma', 'Jet Bio-Filtration', 'Membrane Solutions',
         'La-Pha-Pack', 'LC Tech', 'IDEX', 'HiChrome', 'Владипор', 'Pickering Laboratories')},
-    **{brand_key(b): 'laboratory-equipment' for b in (
-        'Mettler Toledo', 'Heidolph', 'IKA', 'Julabo', 'DLAB', 'Biobase', 'Memmert', 'Binder', 'Liebherr',
-        'Martin Christ', 'Tuttnauer', 'Milestone', 'Haier Biomedical', 'NuAire', 'Arctiko', 'SNOL', 'Panasonic',
-        'Huber', 'Elma', 'Erweka', 'Gilson', 'Biosan', 'Kinematica', 'Gerhardt', 'BEING TECHNOLOGY', 'Boxun',
-        'Labonce', 'AND', 'Вибротехник', 'Ламинарные системы', 'ЛОиП', 'Химлаборприбор', 'Beckman Coulter',
-        'Sigma Laborzentrifugen', 'Shimadzu', 'SCIEX', 'Changsha Samy Instruments', 'Vacuubrand', 'Yamato',
-        'Kruss Optronic', 'Buchi Labortechnik', 'Vilber', 'Pharma Test', 'RWD', 'Adrona', 'GFL (LAUDA)', 'GFL',
-        'Elmi', 'Позис', 'Retsch', 'Aquila Biolabs', 'Hettich', 'Foss', 'Biohit', 'Labconco', 'Wenk LabTec',
-        'Fiocchetti', 'Testo', 'Metash', 'Miele', 'Fungilab', 'Hermle', 'Esco', 'Atlas Copco', 'CAMAG', 'VirTis',
-        'Bioer', 'Hanna Instruments', 'ЛОМО', 'Qsonica', 'Watson-Marlow', 'Hitachi', 'Avestin', 'Porkka', 'ZEISS',
-        'Stuart', 'Analytik Jena', 'Люмэкс', 'Томьаналит', 'ЭКАН', 'Эконикс-Эксперт', 'ЛТО', 'Duperthal',
-        'Смоленское СКТБ СПУ', 'Schuett', 'BioCision', 'Awel')},
-    **{brand_key(b): 'laboratory-glassware' for b in (
-        'Kavalier', 'Marienfeld', 'Hirschmann', 'Vitlab', 'ROBU', 'Isolab', 'Brand', 'DWK Life Sciences', 'Hellma',
-        'Экрос', 'Kavalierglass')},
+    # Business remark of 31 October 2026: equipment and glassware are not sold; their brands get no category and
+    # their rows are skipped by the list of seed/excluded-assortment.csv.gz.
     **{brand_key(b): 'biological-standards' for b in ('ATCC',)},
 }
 
@@ -91,8 +78,8 @@ def card_type_for(path: str | None) -> str:
     if not path:
         return 'standard'
     top = path.split('/')[0]
-    if top in ('chromatography', 'laboratory-equipment'):
+    if top == 'chromatography':
         return 'equipment'
-    if top in ('laboratory-glassware', 'biological-standards', 'pharmacopeias'):
+    if top in ('biological-standards', 'pharmacopeias'):
         return 'other'
     return 'standard'

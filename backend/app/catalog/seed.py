@@ -1,7 +1,7 @@
 """The catalog structure and the test catalog (backend/seed/catalog.json).
 
 ``--content-only`` loads what production needs before the first import: the category tree with its texts, brand
-pages and substances. The full load adds 413 test products for development and staging and is refused in
+pages and substances. The full load adds 398 test products for development and staging and is refused in
 production.
 
 Loading is idempotent: brands, categories and substances are matched by slug or path, products by brand and
@@ -32,6 +32,7 @@ from app.catalog.settings import get_setting, set_setting
 from app.core.db import utcnow
 
 SEED_FILE = Path(__file__).resolve().parents[2] / 'seed' / 'catalog.json'
+REGISTER_FILE = Path(__file__).resolve().parents[2] / 'seed' / 'controlled-register.json'
 CONTENT_FILE = Path(__file__).resolve().parents[2] / 'seed' / 'content.json'
 
 
@@ -141,7 +142,7 @@ def _product(db: Session, raw: dict[str, Any], brands: dict[str, Brand], categor
 
 def load(db: Session, path: Path = SEED_FILE, *, products_too: bool = True) -> dict[str, int]:
     """The catalog structure and texts (categories, brand pages, substances, the root); with ``products_too`` —
-    also the 413 test products, the register sample and the home selection (development and staging only)."""
+    also the 398 test products, the register of controlled substances and the home selection (development and staging only)."""
     data = json.loads(path.read_text())
     brands = _brands(db, data['brands'])
     categories = _categories(db, data['categories'], data.get('root') or {})
@@ -150,7 +151,8 @@ def load(db: Session, path: Path = SEED_FILE, *, products_too: bool = True) -> d
     if not products_too:
         return {'brands': len(brands), 'categories': len(categories), 'substances': len(substances),
                 'pages': pages, 'landings': landings}
-    controlled.load_register(db, data.get('controlled') or [])
+    # Business remark of 31 October 2026: the precursors of List IV with the test entries (seed/controlled-register.json).
+    controlled.load_register(db, controlled.read_register(REGISTER_FILE) if REGISTER_FILE.exists() else [])
     register = controlled.Register.load(db)
     weights, threshold = get_setting(db, 'completeness_weights'), get_setting(db, 'index_threshold')
     products = []

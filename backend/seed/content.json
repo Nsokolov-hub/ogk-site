@@ -75,7 +75,7 @@
       "slides": [
        {
         "id": "main",
-        "title": "Материалы, реактивы и оборудование для фармацевтических лабораторий",
+        "title": "Стандартные образцы, реактивы и расходные материалы для фармацевтических лабораторий",
         "subtitle": "Комплексные решения для фармкомпаний",
         "ctas": [
          {
@@ -173,7 +173,7 @@
      "products": {
       "title": "Каталог",
       "accent": "товаров",
-      "subtitle": "Стандартные образцы, реактивы, хроматография и оборудование ведущих производителей"
+      "subtitle": "Стандартные образцы, реактивы и хроматография ведущих производителей"
      },
      "brands": {
       "title": "Широкий",
@@ -560,13 +560,6 @@
         "href": "/catalog/biological-standards/"
        },
        {
-        "id": "c6",
-        "prefix": "Заказать",
-        "accent": "лабораторное оборудование",
-        "suffix": "для лаборатории",
-        "href": "/catalog/laboratory-equipment/"
-       },
-       {
         "id": "c7",
         "prefix": "Приобрести годовую",
         "accent": "подписку на онлайн-фармакопеи",
@@ -651,7 +644,7 @@
       "slides": [
        {
         "id": "main",
-        "title": "Materials, reagents and equipment for pharmaceutical laboratories",
+        "title": "Reference standards, reagents and consumables for pharmaceutical laboratories",
         "subtitle": "End-to-end supply for pharmaceutical companies",
         "ctas": [
          {
@@ -749,7 +742,7 @@
      "products": {
       "title": "Product",
       "accent": "catalogue",
-      "subtitle": "Reference standards, reagents, chromatography supplies and equipment from leading manufacturers"
+      "subtitle": "Reference standards, reagents and chromatography supplies from leading manufacturers"
      },
      "brands": {
       "title": "Wide",
@@ -1134,13 +1127,6 @@
         "accent": "microorganisms and biological standards",
         "suffix": "for laboratory studies",
         "href": "/catalog/biological-standards/"
-       },
-       {
-        "id": "c6",
-        "prefix": "Order",
-        "accent": "laboratory equipment",
-        "suffix": "for your laboratory",
-        "href": "/catalog/laboratory-equipment/"
        },
        {
         "id": "c7",
@@ -2679,20 +2665,15 @@
       },
       {
        "title": "Пробоподготовка",
-       "text": "Шприцевые фильтры PTFE, Nylon, PVDF, PES и RC с порами 0,22 и 0,45 мкм, виалы и крышки для автосамплера.",
+       "text": "Шприцевые фильтры PTFE, Nylon, PVDF, PES и RC с порами 0,22 и 0,45 мкм.",
        "links": [
         {
          "label": "Фильтры",
          "href": "/catalog/chromatography/filters/"
-        },
-        {
-         "label": "Посуда и тара",
-         "href": "/catalog/laboratory-glassware/"
         }
        ],
        "scope": [
-        "chromatography/filters",
-        "laboratory-glassware"
+        "chromatography/filters"
        ]
       },
       {
@@ -2719,19 +2700,6 @@
        ],
        "scope": [
         "reagents"
-       ]
-      },
-      {
-       "title": "Приборы и модули",
-       "text": "Хроматографы, насосы и детекторы Waters, Agilent и Shimadzu, спектрофотометры.",
-       "links": [
-        {
-         "label": "Лабораторное оборудование",
-         "href": "/catalog/laboratory-equipment/"
-        }
-       ],
-       "scope": [
-        "laboratory-equipment"
        ]
       }
      ],
@@ -2885,9 +2853,9 @@
      "name": "Микробиологическая лаборатория",
      "h1": "Оснащение микробиологической лаборатории",
      "title": "Тест-штаммы ATCC и оснащение микробиологической лаборатории | ОГК-ХИМ",
-     "description": "Тест-штаммы ATCC для фармакопейных микробиологических испытаний, лабораторная посуда и фармакопеи. Перевозка штаммов в нужном температурном режиме.",
-     "summary": "Тест-штаммы ATCC, посуда и фармакопеи для микробиологических испытаний.",
-     "intro": "Тест-штаммы ATCC для испытаний на микробиологическую чистоту, стерильность и эффективность консервантов, а также посуда и фармакопеи. Штаммы перевозим в нужном температурном режиме.",
+     "description": "Тест-штаммы ATCC для фармакопейных микробиологических испытаний и фармакопеи. Перевозка штаммов в нужном температурном режиме.",
+     "summary": "Тест-штаммы ATCC и фармакопеи для микробиологических испытаний.",
+     "intro": "Тест-штаммы ATCC для испытаний на микробиологическую чистоту, стерильность и эффективность консервантов, а также фармакопеи. Штаммы перевозим в нужном температурном режиме.",
      "tasks": [
       "Испытание на микробиологическую чистоту",
       "Испытание на стерильность",
@@ -2906,19 +2874,6 @@
        ],
        "scope": [
         "biological-standards"
-       ]
-      },
-      {
-       "title": "Лабораторная посуда",
-       "text": "Мерные колбы класса A, лабораторные бутыли и стаканы DURAN.",
-       "links": [
-        {
-         "label": "Посуда и тара",
-         "href": "/catalog/laboratory-glassware/"
-        }
-       ],
-       "scope": [
-        "laboratory-glassware"
        ]
       },
       {
@@ -4301,7 +4256,7 @@
      "intro": "",
      "h1": "О компании ОГК-ХИМ",
      "title": "О компании ОГК-ХИМ — поставки для фармацевтических лабораторий",
-     "description": "ОГК-ХИМ поставляет фармацевтическим лабораториям стандартные образцы, реактивы, расходные материалы для ВЭЖХ и оборудование от 60+ производителей, организует логистику с холодовой цепью и таможню.",
+     "description": "ОГК-ХИМ поставляет фармацевтическим лабораториям стандартные образцы, реактивы, расходные материалы для ВЭЖХ от 60+ производителей, организует логистику с холодовой цепью и таможню.",
      "lead": "ОГК-ХИМ — узкопрофильная компания: обеспечиваем фармацевтические предприятия всем необходимым для точных лабораторных исследований и разработок. Помогаем оптимизировать закупки и гарантируем качество поставляемой продукции.",
      "facts": [
       {
@@ -4387,7 +4342,7 @@
      "intro": "",
      "h1": "About OGK-CHEM",
      "title": "About OGK-CHEM — supplies for pharmaceutical laboratories",
-     "description": "OGK-CHEM supplies pharmaceutical laboratories with reference standards, reagents, HPLC consumables and equipment from 60+ manufacturers, and organises cold chain logistics and customs clearance.",
+     "description": "OGK-CHEM supplies pharmaceutical laboratories with reference standards, reagents, HPLC consumables from 60+ manufacturers, and organises cold chain logistics and customs clearance.",
      "lead": "OGK-CHEM is a specialised company that provides pharmaceutical manufacturers with everything they need for accurate laboratory research and development. We help optimise procurement and guarantee the quality of supplied products.",
      "facts": [
       {
@@ -4480,7 +4435,7 @@
      "intro": "",
      "h1": "Доставка и условия поставки",
      "title": "Доставка и условия поставки лабораторных материалов | ОГК-ХИМ",
-     "description": "Как мы поставляем стандартные образцы, реактивы и оборудование: доставка по России и из 23 стран, температурные режимы, сроки, оплата по счёту, документы для закупок по 44-ФЗ и 223-ФЗ.",
+     "description": "Как мы поставляем стандартные образцы и реактивы: доставка по России и из 23 стран, температурные режимы, сроки, оплата по счёту, документы для закупок по 44-ФЗ и 223-ФЗ.",
      "lead": "Поставляем под заказ из каталогов производителей и доставляем в любой регион России с соблюдением условий хранения. Цену, срок и условия по каждой позиции указываем в коммерческом предложении.",
      "sections": [
       {
@@ -4583,7 +4538,7 @@
      "intro": "",
      "h1": "Delivery and supply terms",
      "title": "Delivery and supply terms for laboratory materials | OGK-CHEM",
-     "description": "How we supply reference standards, reagents and equipment: delivery across Russia and from 23 countries, temperature ranges, lead times, payment by invoice and documents for public procurement.",
+     "description": "How we supply reference standards and reagents: delivery across Russia and from 23 countries, temperature ranges, lead times, payment by invoice and documents for public procurement.",
      "lead": "We supply to order from manufacturer catalogues and deliver to any region of Russia under the required storage conditions. The price, lead time and terms for each item are stated in the quotation.",
      "sections": [
       {
@@ -4714,7 +4669,7 @@
       },
       {
        "title": "Сертификаты и руководства",
-       "text": "Для колонок и оборудования: сертификат производителя и руководство по эксплуатации."
+       "text": "Для колонок: сертификат производителя и руководство по эксплуатации."
       },
       {
        "title": "Разрешительные документы",
@@ -4752,7 +4707,7 @@
       },
       {
        "title": "Certificates and manuals",
-       "text": "For columns and equipment: manufacturer certificate and user manual."
+       "text": "For columns: manufacturer certificate and user manual."
       },
       {
        "title": "Permits",

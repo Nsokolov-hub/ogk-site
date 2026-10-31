@@ -24,6 +24,7 @@ from sqlalchemy import delete, func, insert, select, tuple_, update
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.catalog import completeness, controlled
+from app.catalog.business_oct31 import not_sold
 from app.catalog.importer.reader import read_rows
 from app.catalog.importer.rules import card_type_for, category_for
 from app.catalog.importer.sources import OBSOLETE_OPTIONS, REQUIRED, SOURCE_BRANDS, TEMPLATES
@@ -203,6 +204,10 @@ def parse_row(db: Session, state: State, number: int, cells: list[str | None], c
     if not any(raw.values()):
         return None
     if state.options.get('exclude_source_brand') and brand_key(brand) in SOURCE_BRAND_KEYS:
+        state.counters['skipped'] += 1
+        return None
+    # Business remark of 31 October 2026: equipment, glassware (filters stay) and the USP–NF Online subscription.
+    if not_sold(brand_key(brand), compact(number_text), raw.get('name', '')):
         state.counters['skipped'] += 1
         return None
     if state.brand_filter and brand_key(brand) not in state.brand_filter:

@@ -4,7 +4,7 @@ from datetime import timedelta
 from uuid import uuid4
 
 import pytest
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from app.core.config import settings
 from app.core.db import utcnow
@@ -23,7 +23,7 @@ def test_request_is_saved_numbered_and_queued(client, sessions):
         '_ym_uid': '1700000000123', '_ga': 'GA1.1.123456789.1700000000'})
     assert response.status_code == 201, response.text
     answer = response.json()
-    assert answer['number'] == f'S-{utcnow().year}-000001'
+    assert answer['number'] == 'S-1'
     with sessions() as db:
         row = db.get(SiteRequest, answer['siteRequestId'])
         assert (row.status, row.company, row.inn, str(row.desired_date)) == (
@@ -40,7 +40,16 @@ def test_request_is_saved_numbered_and_queued(client, sessions):
 def test_numbers_follow_each_other(client):
     first = submit(client, form()).json()['number']
     second = submit(client, form()).json()['number']
-    assert int(second[-6:]) == int(first[-6:]) + 1
+    # Business remark of 31 October 2026: short numbers S-1, S-2… without the year and leading zeros.
+    assert (first, second) == ('S-1', 'S-2')
+
+
+def test_short_numbers_continue_after_the_old_ones(client, sessions):
+    first = submit(client, form()).json()['number']
+    with sessions.begin() as db:
+        db.execute(text("DELETE FROM number_counters WHERE key = 'site_requests'"))
+    assert first == 'S-1'
+    assert submit(client, form()).json()['number'] == 'S-2'
 
 
 def test_double_click_returns_the_same_request(client, sessions):

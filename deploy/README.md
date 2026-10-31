@@ -65,7 +65,13 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml exec api python 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml exec api python -m app.catalog.cli seed --content-only
 ```
 
-Выгрузка ассортимента (около 15 минут: 10 — импорт, 5 — индекс), файлы 1.xlsx…5.xlsx положите в `/srv/import`:
+Перечень подконтрольных веществ — прекурсоры Списка IV ПП РФ № 681 (ред. от 11.06.2025): такие товары скрыты с витрины, из поиска, Sitemap и фида. Загрузите до выгрузки ассортимента, чтобы импорт сразу их отмечал:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml exec api python -m app.catalog.cli controlled seed/controlled-register.json
+```
+
+Выгрузка ассортимента (около 15 минут: 10 — импорт, 5 — индекс), файлы 1.xlsx…5.xlsx положите в `/srv/import`. Оборудование, посуда и расходники (кроме фильтров), товары «Химмед» и подписка USP–NF Online при импорте пропускаются (`seed/excluded-assortment.csv.gz`, замечания бизнеса от 31.10.2026):
 
 ```bash
 C="docker compose -f docker-compose.yml -f docker-compose.prod.yml"

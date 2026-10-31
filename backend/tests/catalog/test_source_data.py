@@ -132,8 +132,33 @@ def test_saved_template_learns_new_fields_without_losing_edits(sessions):
 def test_content_only_seed_has_structure_without_test_products(sessions):
     with sessions.begin() as db:
         counts = seed.load(db, products_too=False)
-    assert counts['categories'] == 19 and 'products' not in counts
+    assert counts['categories'] == 17 and 'products' not in counts
     with sessions() as db:
         assert db.scalar(select(func.count()).select_from(Product)) == 0
         biochemistry = db.scalar(select(Category).where(Category.path == 'biochemistry'))
         assert biochemistry.name_en == 'Biochemistry and biotechnology' and biochemistry.content['ru']['h1']
+
+
+def test_equipment_glassware_and_precursors_leave_the_catalog():
+    """Business remarks of 31 October 2026."""
+    from app.catalog.business_oct31 import clean, not_sold
+    from app.catalog.controlled import Register, read_register
+    from app.catalog.normalize import brand_key, compact
+    from app.catalog.seed import REGISTER_FILE
+
+    register = Register.build((e['list'], e['cas'], e['names']) for e in read_register(REGISTER_FILE))
+    assert register.match('Acetone, HPLC grade, ≥99.9%', None) == ('pp681', 'review')
+    assert register.match('Acetonitrile', '75-05-8') == ('pp681', 'auto')
+    assert register.match('Кислота соляная хч', None) == ('pp681', 'review')
+    assert register.match('Ephedrine hydrochloride', None) == ('pp681', 'review')
+    for other in ('Benzaldehyde, 2,4-dibromo-6-fluoro-', 'Piperidine-4-carboxylic acid', 'Acetone-d6, 99.9 atom % D',
+                  '3,4-Dimethoxybenzaldehyde', 'Уксусная кислота, аммонийная соль, 97+%', 'Toluene-2,4-diisocyanate',
+                  'Diethyl (1-cyanoethyl)phosphonate', '1,4-Butanediol, dimethanesulfonate'):
+        assert register.match(other, None) is None, other
+    assert not_sold('usp', 'ph58847', 'USP–NF Online, annual subscription')
+    assert not not_sold(brand_key('Waters'), compact('186003116'), 'XBridge C18 Column')
+    page = {'links': [{'href': '/catalog/laboratory-glassware/'}, {'href': '/catalog/chromatography/filters/'}],
+            'groups': [{'scope': ['laboratory-equipment']}, {'scope': ['reagents', 'laboratory-glassware']}],
+            'title': 'Материалы, реактивы и оборудование для фармацевтических лабораторий'}
+    assert clean(page) == {'links': [{'href': '/catalog/chromatography/filters/'}], 'groups': [{'scope': ['reagents']}],
+                           'title': 'Стандартные образцы, реактивы и расходные материалы для фармацевтических лабораторий'}

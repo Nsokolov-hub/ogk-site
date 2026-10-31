@@ -54,6 +54,6 @@ test.describe('Каталог и заявки (ТЗ 3.2)', () => {
     const dialog = page.getByRole('dialog');
     await fillContacts(page, dialog);
     await dialog.getByRole('button', { name: 'Отправить запрос' }).click();
-    await expect(dialog.getByText(/Запрос № S-\d{4}-\d{6} отправлен/)).toBeVisible();
+    await expect(dialog.getByText(/Запрос № S-\d+ отправлен/)).toBeVisible();
   });
 });

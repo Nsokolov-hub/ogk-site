@@ -93,7 +93,7 @@ def test_worker_pushes_the_queue_and_drops_storefront_cache(seeded, monkeypatch)
         return httpx.Response(200)
 
     monkeypatch.setattr(storefront.httpx, 'post', post)
-    assert worker.index_catalog(limit=10) > 400
+    assert worker.index_catalog(limit=10) > 390
     with seeded() as db:
         total = db.scalar(select(func.count()).select_from(Product))
         hidden = db.scalar(select(func.count()).select_from(Product).where(Product.controlled.is_not(None)))
