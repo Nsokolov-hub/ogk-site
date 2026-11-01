@@ -42,8 +42,12 @@ SALTS = frozenset("""
     hbr citrate phosphate salt monohydrate dihydrate trihydrate hemihydrate sesquihydrate hydrate base
     гидрохлорид сульфат тартрат битартрат малеат гидробромид цитрат фосфат соль моногидрат дигидрат гидрат основание
 """.split())
-QUANTITY = re.compile(r'[≥≤<>~±]?\d+(?:[.,]\d+)?\+?(?:-\d+(?:[.,]\d+)?)?(?:%|‰|ppm|mm|m|n|mol/l|g/l|mg/ml|µg/ml'
-                      r'|ug/ml|ml|l|g|kg|mg|мл|л|г|кг|мг|м|н|моль/л|w/w|v/v)?|%|m|n|mol/l|моль/л|w/w|v/v|wt\.?')
+QUANTITY = re.compile(r'(?:>=|<=|=>|=<|[≥≤<>~±])?\d+(?:[.,]\d+)?\+?(?:-\d+(?:[.,]\d+)?)?(?:%|‰|ppm|mm|m|n|mol/l|g/l'
+                      r'|mg/ml|µg/ml|ug/ml|ml|l|g|kg|mg|мл|л|г|кг|мг|м|н|моль/л|w/w|v/v)?|%|m|n|mol/l|моль/л|w/w|v/v|wt\.?'
+                      # A packaging code glued to its amount: «7,00LMF», «2.5LGL».
+                      r'|\d+(?:[.,]\d+)?(?:ml|l|kg|g|mg)[a-z]{1,3}')
+# The source cuts long names at 40 characters and marks the cut with «&»: «ACETONE, >=99.5%, A.C.S. REAGENT (POLY-&».
+TRUNCATED = re.compile(r'\s*([(\[][^()\[\]]*|[^\s,;()\[\]]*)&$')
 STEREO = re.compile(r'^(?:\((?:[+±-]|[rs]|\d+[rs](?:,\d+[rs])*|rs|r/s)\)-|(?:dl|d|l|rac|cis|trans)-|[±+-]-)+')
 # After a comma these words make another substance: «Benzaldehyde, 4-methyl-», «Ether, butyl ethyl»,
 # «Уксусная кислота, аммонийная соль» (ammonium acetate), labelled forms.
@@ -71,6 +75,21 @@ def _descriptive(segment: str) -> bool:
     return True
 
 
+def _untruncated(value: str) -> str:
+    """A name cut by the source without its cut-off part, when that part only began a grade, purity, amount or a
+    bracket («…, A.C.S. REAGENT (POLY-&», «…, MEETS FCC ANALYTICAL SPE&»). A cut inside the chemical name
+    («TOLUENE-2,4-DIISOCYANATE&») keeps the name whole: it names another substance."""
+    match = TRUNCATED.search(value)
+    if match is None:
+        return value
+    fragment = match.group(1)
+    if (not fragment or fragment[0] in '([' or re.fullmatch(r'[≥≤<>=~±]*[\d.,]*%?', fragment)
+            or QUANTITY.fullmatch(fragment)
+            or (len(fragment) >= 2 and any(word.startswith(fragment) for word in DESCRIPTORS | SALTS))):
+        return value[:match.start()].rstrip(' ,;')
+    return value
+
+
 def core_name(text: str) -> str:
     """The substance a product name names: grade, purity, concentration, solvent, salt and stereo prefix taken off.
 
@@ -78,7 +97,10 @@ def core_name(text: str) -> str:
     another substance than its head word.
     """
     value = re.sub(r'[®™©*]', '', text.casefold().replace('ё', 'е'))
+    # Trademarks written out after a word: «REAGENTPLUS(R)», «SUPELCO(TM)»; a stereo prefix «(R)-» stays.
+    value = re.sub(r'(?<=[a-zа-я])\((?:r|tm)\)', '', value)
     value = re.sub(r'[‐‑‒–—−]', '-', value).strip()
+    value = _untruncated(value)
     value = re.split(r'\s-\s|\s/\s', value, maxsplit=1)[0]
     head, *rest = re.split(r'[,;]\s+', value)
     if not all(_descriptive(segment) for segment in rest):

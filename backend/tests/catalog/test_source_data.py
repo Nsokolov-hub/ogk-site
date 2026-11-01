@@ -151,9 +151,14 @@ def test_equipment_glassware_and_precursors_leave_the_catalog():
     assert register.match('Acetonitrile', '75-05-8') == ('pp681', 'auto')
     assert register.match('Кислота соляная хч', None) == ('pp681', 'review')
     assert register.match('Ephedrine hydrochloride', None) == ('pp681', 'review')
+    # Names the source cut at 40 characters («&»), with «>=» and trademarks written out.
+    for cut in ('ACETONE, >=99.5%, A.C.S. REAGENT (POLY-&', 'ACETONE >=99%, MEETS FCC ANALYTICAL SPE&',
+                'Acetone GC Plus 7,00LMF', 'ETHYL PHENYLACETATE, REAGENTPLUS(R), 99%', 'TOLUENE, ANHYDROUS, 99.8%&'):
+        assert register.match(cut, None) == ('pp681', 'review'), cut
     for other in ('Benzaldehyde, 2,4-dibromo-6-fluoro-', 'Piperidine-4-carboxylic acid', 'Acetone-d6, 99.9 atom % D',
                   '3,4-Dimethoxybenzaldehyde', 'Уксусная кислота, аммонийная соль, 97+%', 'Toluene-2,4-diisocyanate',
-                  'Diethyl (1-cyanoethyl)phosphonate', '1,4-Butanediol, dimethanesulfonate'):
+                  'Diethyl (1-cyanoethyl)phosphonate', '1,4-Butanediol, dimethanesulfonate', 'TOLUENE-2,4-DIISOCYANATE&',
+                  'Toluene, 4-nitro&', 'ACETONE-D6, 99.9 ATOM % D, CONTAINS 0.0&', 'ACETONE OXIME, 98%'):
         assert register.match(other, None) is None, other
     assert not_sold('usp', 'ph58847', 'USP–NF Online, annual subscription')
     assert not not_sold(brand_key('Waters'), compact('186003116'), 'XBridge C18 Column')
@@ -162,3 +167,27 @@ def test_equipment_glassware_and_precursors_leave_the_catalog():
             'title': 'Материалы, реактивы и оборудование для фармацевтических лабораторий'}
     assert clean(page) == {'links': [{'href': '/catalog/chromatography/filters/'}], 'groups': [{'scope': ['reagents']}],
                            'title': 'Стандартные образцы, реактивы и расходные материалы для фармацевтических лабораторий'}
+
+
+def test_a_later_row_keeps_the_latin_name_and_puts_a_precursor_on_the_lists(seeded, tmp_path):
+    """The same product in two rows: the manufacturer's Latin name without CAS, then a translated name with the CAS
+    of a precursor (List IV). The card keeps the Latin name and leaves the storefront."""
+    run.import_files(seeded, [assortment(tmp_path / 'one.xlsx', [
+        ('ETHYL PHENYLACETATE, REAGENTPLUS(R), 99&', '108049', None, 'Sigma-Aldrich', None)])],
+        source='assortment')
+    run.import_files(seeded, [assortment(tmp_path / 'two.xlsx', [
+        ('Этилфенилацетат, 99%', '10804-9', '101-97-3', 'Sigma-Aldrich', None)])], source='assortment')
+    with seeded() as db:
+        product = db.scalar(select(Product).where(Product.catalog_number_norm == '108049'))
+        assert product.name_en == 'ETHYL PHENYLACETATE, REAGENTPLUS(R), 99&'
+        assert (product.source_name, product.cas) == ('Этилфенилацетат, 99%', '101-97-3')
+        assert (product.controlled, product.controlled_state, product.indexable) == ('pp681', 'auto', False)
+
+
+def test_the_latin_name_of_any_row_of_a_product_wins(seeded, tmp_path):
+    run.import_files(seeded, [assortment(tmp_path / 'one.xlsx', [
+        ('Кофеин, ч.д.а.', 'C0750-100G', '58-08-2', 'Sigma-Aldrich', '100 г'),
+        ('CAFFEINE, REAGENTPLUS(R)', 'C0750-500G', '58-08-2', 'Sigma-Aldrich', '500 г')])], source='assortment')
+    with seeded() as db:
+        product = db.scalar(select(Product).where(Product.catalog_number == 'C0750'))
+        assert (product.name_en, product.source_name) == ('CAFFEINE, REAGENTPLUS(R)', 'Кофеин, ч.д.а.')

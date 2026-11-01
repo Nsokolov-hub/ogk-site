@@ -126,9 +126,11 @@ def _find_once(engine: SearchEngine, q: str, *, base: str | None, offset: int, l
     answers = engine.search(settings.meili_index, queries)
     rest = answers[0]
     if number and not rest.total and not first:
-        # «C18», «4-hydroxy…»: digits in a name — search everything.
-        text = Query(q=qn, filter=_and(base, exclude), offset=offset, limit=limit)
-        queries = [text] + ([Query(q=qn, filter=base, limit=0, facets=[*facets, 'all'])] if facets else [])
+        # «C18», «4-hydroxy…»: digits in a name — search everything, every word of it. Dropping words would turn
+        # a number nothing has (or a hidden product's «1.75775») into «1» and every product.
+        text = Query(q=qn, matching_strategy='all', filter=_and(base, exclude), offset=offset, limit=limit)
+        queries = [text] + ([Query(q=qn, matching_strategy='all', filter=base, limit=0, facets=[*facets, 'all'])]
+                            if facets else [])
         answers = engine.search(settings.meili_index, queries)
         rest = answers[0]
     page = (first[offset:offset + limit] + rest.hits)[:limit] if offset < len(first) else rest.hits[:limit]

@@ -116,7 +116,8 @@ jobs:
       - name: Smoke-test backend image
         run: >-
           docker run --rm -e DATABASE_URL=sqlite:// ogk-site-backend:ci python -c
-          "import app.main, app.outbox.worker, app.cli, app.catalog.cli, rdkit, boto3, redis, sentry_sdk"
+          "import app.main, app.outbox.worker, app.cli, app.catalog.cli, rdkit, boto3, redis, sentry_sdk;
+          from app.catalog.structures import render; assert render('CN1C=NC2=C1C(=O)N(C(=O)N2C)C')"
       # Staging and production (deploy/README.md): the compose files merge and both Caddyfiles are valid.
       - name: Staging and production configuration
         run: |

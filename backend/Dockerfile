@@ -5,6 +5,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 ENV FORWARDED_ALLOW_IPS="127.0.0.1,::1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 ENV STORAGE_DIR=/data/files
 WORKDIR /app
+# RDKit draws 2D structures (app.catalog.structures) with these libraries; the slim image has none of them.
+RUN apt-get update && apt-get install -y --no-install-recommends libxrender1 libxext6 libexpat1 \
+    && rm -rf /var/lib/apt/lists/*
 RUN groupadd --gid 10001 site && useradd --uid 10001 --gid site --create-home site \
     && mkdir -p /data/files && chown site:site /data/files
 # Runtime dependencies only; tests and linters are pinned separately in requirements-dev.lock.

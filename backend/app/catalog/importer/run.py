@@ -62,7 +62,8 @@ CHUNK = 5000
 SOURCE_BRAND_KEYS = {brand_key(b) for b in SOURCE_BRANDS}
 IN_STOCK = re.compile(r'в наличии|на складе|in stock|available', re.I)
 CYRILLIC = re.compile('[а-яё]', re.I)
-UPDATABLE = ('name_en', 'source_name', 'cas', 'availability', 'formula', 'formula_hill', 'molecular_weight')
+UPDATABLE = ('name_en', 'source_name', 'cas', 'availability', 'formula', 'formula_hill', 'molecular_weight', 'controlled',
+             'controlled_state', 'indexable')
 # Columns that are read for facts only and never stored as they are (the journal keeps none of their text).
 NOT_STORED = ('characteristics',)
 FILE_CATEGORY_SOURCES = [f'import:{code}' for code, t in TEMPLATES.items() if t['options'].get('file_categories')]
@@ -285,14 +286,30 @@ def resolve_brand(db: Session, state: State, row: Row) -> str | None:
     return brand_id
 
 
-def display_name(state: State, group: Group) -> tuple[str, str | None]:
-    """(English name, the source's name kept internally)."""
-    name = next((r.name for r in group.rows if r.name), '')
-    if state.options.get('names') == 'latin' and CYRILLIC.search(name):
-        cas = next((r.cas for r in group.rows if r.cas), None)
-        fallback = state.substance_names.get(cas or '') or f'{group.brand_name} {group.catalog_number}'
-        return fallback[:500], name
-    return (name or f'{group.brand_name} {group.catalog_number}')[:500], None
+def display_name(state: State, group: Group) -> tuple[str, str | None, bool]:
+    """(English name, the source's translated name kept internally, whether the English name is only a stand-in).
+
+    With «latin» names the manufacturer's Latin name of any row wins over a translated one; without one the card
+    is named by its substance or by brand and number.
+    """
+    names = [r.name for r in group.rows if r.name]
+    if state.options.get('names') == 'latin':
+        latin = next((n for n in names if not CYRILLIC.search(n)), None)
+        translated = next((n for n in names if CYRILLIC.search(n)), None)
+        if latin:
+            return latin[:500], translated, False
+        if translated:
+            cas = next((r.cas for r in group.rows if r.cas), None)
+            fallback = state.substance_names.get(cas or '') or f'{group.brand_name} {group.catalog_number}'
+            return fallback[:500], translated, True
+    name = names[0] if names else ''
+    return (name or f'{group.brand_name} {group.catalog_number}')[:500], None, not name
+
+
+def stand_in(state: State, product: Product, brand_name: str) -> bool:
+    """The product's name is only a stand-in: its brand and number, or the name of its substance."""
+    return product.name_en in (f'{brand_name} {product.catalog_number}'[:500],
+                               state.substance_names.get(product.cas or ''))
 
 
 # ── one chunk ──
@@ -346,7 +363,7 @@ def process(db: Session, state: State, rows: list[Row]) -> None:
         for row in group.rows:
             for pack in row.packs:
                 packs.setdefault(pack.key, (pack, row.pack_numbers.get(pack.key), row.availability))
-        name_en, source_name = display_name(state, group)
+        name_en, source_name, fallback = display_name(state, group)
         chem = next((r.facts for r in group.rows if r.facts), {})
         hit = controlled.apply(state.register, name=name_en, cas=cas, synonyms=[source_name] if source_name else [],
                                current=None, state=None)
@@ -399,7 +416,11 @@ def process(db: Session, state: State, rows: list[Row]) -> None:
                   group.first.raw, product.id)
             continue
         manual = set(product.manual_fields or [])
-        wanted: dict[str, Any] = {'name_en': name_en, 'source_name': source_name, 'cas': product.cas or cas}
+        wanted: dict[str, Any] = {'name_en': name_en, 'source_name': source_name or product.source_name,
+                                  'cas': product.cas or cas}
+        # A row with only a translated name does not take the manufacturer's Latin name away.
+        if fallback and not stand_in(state, product, group.brand_name):
+            wanted.pop('name_en')
         for name in ('formula', 'formula_hill', 'molecular_weight'):
             # Imported cards follow the source; cards written by people only get what they lack.
             if chem.get(name) and (product.source.startswith('import:') or not getattr(product, name)):
@@ -411,6 +432,16 @@ def process(db: Session, state: State, rows: list[Row]) -> None:
             # Products written by people or the seed keep their names; imports add only what is missing.
             wanted.pop('name_en', None)
             wanted.pop('source_name', None)
+        # A new CAS or name may put the product on the lists (TZ 5.2.1); the chemist's decision stays.
+        listed = controlled.apply(state.register, name=wanted.get('name_en', product.name_en), cas=wanted['cas'],
+                                 synonyms=[n for n in (wanted.get('source_name', product.source_name),
+                                                       *(product.synonyms or [])) if n],
+                                 current=product.controlled, state=product.controlled_state)
+        if listed != (product.controlled, product.controlled_state):
+            wanted['controlled'], wanted['controlled_state'] = listed
+            wanted['indexable'] = completeness.indexable(
+                status=product.status, completeness=product.completeness, threshold=state.threshold,
+                override=product.index_override, controlled=bool(listed[0]), discontinued=product.discontinued)
         before = {f: getattr(product, f) for f, value in wanted.items()
                   if f not in manual and getattr(product, f) != value}
         added = [(pack, number, pack_availability) for pack, number, pack_availability in packs.values()
@@ -471,7 +502,7 @@ def _free_slugs(db: Session, state: State, groups: list[Group]) -> dict[tuple[st
     wanted: dict[tuple[str, str], str] = {}
     for group in groups:
         brand = state.brands[group.brand_id]
-        name_en, source_name = display_name(state, group)
+        name_en, _source_name, _fallback = display_name(state, group)
         # A card named by its number gets the brand and the number only, not them twice.
         fallback = name_en == f'{group.brand_name} {group.catalog_number}'[:500]
         wanted[(group.brand_id, group.norm)] = product_slug(brand.slug, group.catalog_number,
