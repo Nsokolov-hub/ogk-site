@@ -307,9 +307,12 @@ def display_name(state: State, group: Group) -> tuple[str, str | None, bool]:
 
 
 def stand_in(state: State, product: Product, brand_name: str) -> bool:
-    """The product's name is only a stand-in: its brand and number, or the name of its substance."""
-    return product.name_en in (f'{brand_name} {product.catalog_number}'[:500],
-                               state.substance_names.get(product.cas or ''))
+    """The product's name is only a stand-in: the name of its substance, or its brand and number in any spelling
+    («Sigma-Aldrich 10804-9» for 108049)."""
+    name = product.name_en or ''
+    if product.cas and name == state.substance_names.get(product.cas):
+        return True
+    return name.startswith(f'{brand_name} ') and compact(name[len(brand_name) + 1:]) == product.catalog_number_norm
 
 
 # ── one chunk ──

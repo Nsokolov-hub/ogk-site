@@ -191,3 +191,15 @@ def test_the_latin_name_of_any_row_of_a_product_wins(seeded, tmp_path):
     with seeded() as db:
         product = db.scalar(select(Product).where(Product.catalog_number == 'C0750'))
         assert (product.name_en, product.source_name) == ('CAFFEINE, REAGENTPLUS(R)', 'Кофеин, ч.д.а.')
+
+
+def test_a_stand_in_name_is_known_in_any_spelling_of_the_number():
+    from types import SimpleNamespace
+
+    state = SimpleNamespace(substance_names={'58-08-2': 'Caffeine'})
+    card = SimpleNamespace(name_en='Sigma-Aldrich 10804-9', catalog_number_norm='108049', cas=None)
+    assert run.stand_in(state, card, 'Sigma-Aldrich')  # type: ignore[arg-type]
+    named = SimpleNamespace(name_en='Caffeine', catalog_number_norm='c0750', cas='58-08-2')
+    assert run.stand_in(state, named, 'Sigma-Aldrich')  # type: ignore[arg-type]
+    latin = SimpleNamespace(name_en='ETHYL PHENYLACETATE, 99%', catalog_number_norm='108049', cas='101-97-3')
+    assert not run.stand_in(state, latin, 'Sigma-Aldrich')  # type: ignore[arg-type]
