@@ -59,11 +59,18 @@ def moved(db: Session, entity: str, slug: str, model: Any) -> str | None:
 
 # ── categories ──
 
+def hidden_category(path: str, hidden: list[str]) -> bool:
+    """The category or one of its parents is kept off the storefront (setting hidden_categories)."""
+    return any(path == h or path.startswith(f'{h}/') for h in hidden)
+
+
 def tree(db: Session) -> list[dict[str, Any]]:
     rows = db.scalars(select(Category).order_by(Category.position, Category.name_ru)).all()
+    hidden = get_setting(db, 'hidden_categories')
     children: dict[str | None, list[Category]] = defaultdict(list)
     for row in rows:
-        children[row.parent_id].append(row)
+        if not hidden_category(row.path, hidden):
+            children[row.parent_id].append(row)
 
     def node(row: Category) -> dict[str, Any]:
         return {'slug': row.slug, 'path': row.path, 'nameRu': row.name_ru, 'nameEn': row.name_en,
@@ -80,7 +87,7 @@ def category(db: Session, path: str) -> dict[str, Any] | None:
         return {'path': '', 'nameRu': 'Каталог', 'nameEn': 'Catalog', 'cardType': 'standard', 'facets': facets,
                 'isIndexed': True, 'content': root, 'updatedAt': ''}
     row = db.scalar(select(Category).where(Category.path == path))
-    if row is None:
+    if row is None or hidden_category(row.path, get_setting(db, 'hidden_categories')):
         return None
     return {'path': row.path, 'nameRu': row.name_ru, 'nameEn': row.name_en, 'cardType': row.card_type,
             'facets': row.facets, 'isIndexed': row.is_indexed, 'content': row.content, 'updatedAt': iso(row.updated_at)}

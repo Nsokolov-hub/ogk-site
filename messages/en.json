@@ -493,7 +493,7 @@
     "weightPlaceholder": "e.g. 12",
     "placesPlaceholder": "e.g. 2 boxes",
     "goodsPlaceholder": "What it is, manufacturer, composition, purpose, quantity",
-    "permitLabel": "Need help with a Ministry of Health import permit",
+    "permitLabel": "Need help with an import permit",
     "temperatures": {
       "15-25": "+15…+25 °C",
       "2-8": "+2…+8 °C",

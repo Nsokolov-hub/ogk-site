@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from app.catalog.models import Product, Substance
 from app.catalog.service import change_slug
+from app.catalog.settings import set_setting
 
 URL = '/api/v1/public'
 
@@ -44,6 +45,18 @@ def test_controlled_products_have_no_pages(client, seeded):
     with seeded() as db:
         slug = db.scalar(select(Product.slug).where(Product.controlled.is_not(None)))
     assert client.get(f'{URL}/products/{slug}').status_code == 404
+
+
+def test_a_hidden_category_leaves_the_menu_and_its_page(client, seeded):
+    with seeded() as db:
+        set_setting(db, 'hidden_categories', ['reference-standards'])
+        db.commit()
+    slugs = [c['slug'] for c in client.get(f'{URL}/catalog/tree').json()]
+    assert 'reference-standards' not in slugs and 'reagents' in slugs
+    # Its subcategories go with it; the other categories stay.
+    for path in ('reference-standards', 'reference-standards/edqm'):
+        assert client.get(f'{URL}/catalog/category', params={'path': path}).status_code == 404
+    assert client.get(f'{URL}/catalog/category', params={'path': 'reagents'}).status_code == 200
 
 
 def test_tree_brands_substances_and_categories(client, seeded):

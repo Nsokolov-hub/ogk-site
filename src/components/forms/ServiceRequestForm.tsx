@@ -27,7 +27,8 @@ import { Honeypot } from './Honeypot';
 import { PhoneInput } from './PhoneInput';
 
 const TEMPERATURES = ['15-25', '2-8', '-20', 'dry-ice', 'unknown'] as const;
-const REGULATORS = ['minzdrav', 'fstec', 'unknown'] as const;
+// Минздрав (regulators.minzdrav) убран 01.11.2026, пока не пришла поставка препаратов: вернуть — добавить первым.
+const REGULATORS = ['fstec', 'unknown'] as const;
 
 /**
  * Форма заявки на услугу (SC-06, RFQ-08): набор полей задаётся на услугу, заявка уходит с kind = service.
