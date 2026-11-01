@@ -10,7 +10,8 @@ from app.catalog.models import Category, ImportIssue, Product, ProductCategory
 from tests.catalog.support import CATALOG_HEADER, assortment, catalog_file
 
 CHEM, STD, CHROM = 'Химические реактивы', 'Стандарты и эталонные материалы', 'Хроматография'
-SHEETS = {
+Row = tuple[str, str, str, str, str, str | None, str, str | None]
+SHEETS: dict[str, list[Row]] = {
     'Химия 1': [
         (CHEM, 'Органические соединения и строительные блоки', 'Гетероциклические соединения', '4-Benzylmorpholine',
          'CS-BB-2041', '10316-00-4', 'Clearsynth', '1 г'),
