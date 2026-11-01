@@ -11,7 +11,7 @@ export async function fillContacts(page: Page, scope = page.locator('body')) {
   // Полная форма: «ФИО», «Наименование организации»; окно «Заказать в 1 клик»: «Имя», «Компания»
   await scope.getByLabel(/^(ФИО|Имя)/).fill('Иван Петров');
   await scope.getByLabel(/^(Наименование организации|Компания)/).fill('ООО «Пример-Фарма»');
-  await scope.getByLabel(/^E-mail/).fill('e2e@example.ru');
+  await scope.getByLabel(/^E-mail/).fill('e2e@example.com');
   await scope.getByLabel(/^Телефон/).fill('+7 999 123-45-67');
   await scope.getByLabel(/Подтверждаю согласие на обработку персональных данных/).check();
   await page.waitForTimeout(3500);
