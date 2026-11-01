@@ -55,7 +55,9 @@ export default async function CasPage({ params }: Props) {
     { label: t('breadcrumb'), href: '/catalog/' },
     { label: page.name },
   ];
-  const textBrands = page.brands.slice(0, BRANDS_IN_TEXT).join(', ') + (page.brands.length > BRANDS_IN_TEXT ? ' …' : '');
+  const textBrands =
+    page.brands.slice(0, BRANDS_IN_TEXT).join(', ') +
+    (page.brands.length > BRANDS_IN_TEXT ? ` ${t('facts.more', { count: page.brands.length - BRANDS_IN_TEXT })}` : '');
   const factBrands =
     page.brands.slice(0, BRANDS_IN_FACTS).join(', ') +
     (page.brands.length > BRANDS_IN_FACTS ? ` ${t('facts.more', { count: page.brands.length - BRANDS_IN_FACTS })}` : '');
