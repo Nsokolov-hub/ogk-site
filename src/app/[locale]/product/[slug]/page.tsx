@@ -287,9 +287,20 @@ export default async function ProductPage({ params }: Props) {
 
           {data.analogues.length ? (
             <section aria-labelledby="product-analogues">
-              <h2 id="product-analogues" className={h2}>
-                {t('sections.analogues')}
-              </h2>
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <h2 id="product-analogues" className={h2}>
+                  {t('sections.analogues')}
+                </h2>
+                {data.casPage ? (
+                  <Link
+                    href={`/cas/${data.casPage.cas}/`}
+                    className="inline-flex items-center gap-2 text-body font-medium text-accent transition-colors hover:text-accent-hover"
+                  >
+                    {t('sections.casAll', { name: data.casPage.name, count: data.casPage.offers })}
+                    <ArrowRight aria-hidden size={18} strokeWidth={1.5} />
+                  </Link>
+                ) : null}
+              </div>
               <ul className="mt-6 grid gap-3 sm:grid-cols-2 md:gap-6 xl:grid-cols-4">
                 {data.analogues.map((a) => (
                   <li key={a.id}>

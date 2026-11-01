@@ -244,6 +244,13 @@ class SubstanceOut(Out):
     content: dict[str, Any] = Field(default_factory=dict)
 
 
+class CasRef(Out):
+    """A substance page by CAS number (/cas/<cas>/), as a link."""
+    cas: str
+    name: str
+    offers: int
+
+
 class ProductPage(Out):
     # Set instead of the page when the address changed (URL-03): the storefront answers 301.
     moved: str | None = None
@@ -254,6 +261,43 @@ class ProductPage(Out):
     sameSubstanceTotal: int = 0
     analogues: list[ProductPreview] = Field(default_factory=list)
     accessories: list[ProductPreview] = Field(default_factory=list)
+    # Every offer of the product's CAS number on one page, when there is one.
+    casPage: CasRef | None = None
+
+
+class CasPageOut(CasRef):
+    synonyms: list[str] = Field(default_factory=list)
+    formula: str | None = None
+    molecularWeight: str | None = None
+    brands: list[str] = Field(default_factory=list)
+    updatedAt: str
+
+
+class CasSection(Out):
+    path: str
+    nameRu: str
+    nameEn: str | None = None
+
+
+class CasPageResponse(Out):
+    # Set instead of the page when the substance has its own page: the storefront answers 301 to /substances/<slug>/.
+    substance: str | None = None
+    page: CasPageOut | None = None
+    # Top-level catalog sections of the offers, most offers first.
+    sections: list[CasSection] = Field(default_factory=list)
+    items: list[ProductPreview] = Field(default_factory=list)
+
+
+class CasSitemapEntry(Out):
+    cas: str
+    updatedAt: str
+
+
+class CasSitemapPage(Out):
+    items: list[CasSitemapEntry]
+    total: int
+    page: int
+    pageCount: int
 
 
 class SubstanceListItem(SubstanceOut):

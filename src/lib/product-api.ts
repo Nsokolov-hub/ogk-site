@@ -99,6 +99,7 @@ interface ApiProductPage {
   sameSubstanceTotal: number;
   analogues: ProductPreview[];
   accessories: ProductPreview[];
+  casPage?: CasRef | null;
 }
 
 const undef = <T,>(v: T | null | undefined): T | undefined => (v === null ? undefined : v);
@@ -183,6 +184,8 @@ export interface ProductPageData {
   analogues: ProductPreview[];
   /** Совместимые аксессуары: предколонки к колонке, фильтры */
   accessories: ProductPreview[];
+  /** Страница всех предложений того же CAS, если она есть */
+  casPage?: CasRef;
 }
 
 /** null — товара нет; { moved } — адрес сменился, страница отвечает 301 (URL-03) */
@@ -199,7 +202,55 @@ export async function getProductPage(slug: string, locale: Locale): Promise<Prod
     sameSubstanceTotal: data.sameSubstanceTotal,
     analogues: data.analogues,
     accessories: data.accessories,
+    casPage: data.casPage ?? undefined,
   };
+}
+
+// ── вещества по CAS: все предложения одного CAS на одной странице ──
+
+export interface CasRef {
+  cas: string;
+  name: string;
+  offers: number;
+}
+
+interface ApiCasPage {
+  substance?: string | null;
+  page?: (CasRef & { synonyms: string[]; formula?: string | null; molecularWeight?: string | null; brands: string[]; updatedAt: string }) | null;
+  sections: { path: string; nameRu: string; nameEn?: string | null }[];
+  items: ProductPreview[];
+}
+
+export interface CasPageData {
+  page: CasRef & { synonyms: string[]; formula?: string; molecularWeight?: string; brands: string[] };
+  items: ProductPreview[];
+  /** Позиции по разделам каталога верхнего уровня, самый большой раздел первым */
+  groups: { key: string; title: string; items: ProductPreview[] }[];
+}
+
+/** null — страницы нет; { substance } — у вещества своя страница, ответ 301 на /substances/<slug>/ */
+export async function getCasPage(cas: string, locale: string, otherTitle: string): Promise<CasPageData | { substance: string } | null> {
+  const data = await apiOrNull<ApiCasPage>(`/public/cas/${encodeURIComponent(cas)}`, { lang: locale }, { tags: ['catalog', `cas:${cas}`] });
+  if (!data) return null;
+  if (data.substance) return { substance: data.substance };
+  if (!data.page || !data.items.length) return null;
+  const top = (p: ProductPreview) => p.categorySlug.split('/')[0];
+  const known = new Set(data.sections.map((s) => s.path));
+  const groups = data.sections
+    .map((s) => ({ key: s.path, title: locale === 'ru' ? s.nameRu : (s.nameEn ?? s.nameRu), items: data.items.filter((p) => top(p) === s.path) }))
+    .filter((g) => g.items.length);
+  const rest = data.items.filter((p) => !known.has(top(p)));
+  if (rest.length) groups.push({ key: 'other', title: otherTitle, items: rest });
+  const { page } = data;
+  return {
+    page: { ...page, formula: undef(page.formula), molecularWeight: undef(page.molecularWeight) },
+    items: data.items,
+    groups,
+  };
+}
+
+export async function getCasSitemap(page: number): Promise<{ items: { cas: string; updatedAt: string }[]; total: number; pageCount: number }> {
+  return api('/public/cas/sitemap', { page }, { revalidate: 3600, tags: ['catalog'] });
 }
 
 // ── субстанции ──

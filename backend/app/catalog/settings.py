@@ -88,6 +88,8 @@ DEFAULTS: dict[str, Any] = {
     # Category paths kept off the storefront with their subcategories: the menu, the category page and the Sitemap
     # (e.g. «reference-drugs» while a supply is pending). The admin panel still shows them.
     'hidden_categories': [],
+    # The last nightly build of the substance pages by CAS number (app.catalog.cas_pages).
+    'cas_pages_built_at': None,
     # Products of the home page block, by slug, in order.
     'home_products': [],
     # Flow F5: the newest change of the CRM registry already loaded, and when the last load ran.

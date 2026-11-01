@@ -347,6 +347,20 @@ def sync_brands_if_due() -> None:
             set_setting(db, 'brands_sync_run_at', (utcnow() - timedelta(hours=23)).isoformat())
 
 
+def build_cas_pages_if_due() -> None:
+    """The nightly build of the substance pages by CAS number (app.catalog.cas_pages)."""
+    from app.catalog import cas_pages
+
+    with SessionLocal() as db:
+        if not cas_pages.due(db):
+            return
+    try:
+        cas_pages.build(SessionLocal)
+        storefront.revalidate(['catalog'])
+    except Exception as exc:  # the next night tries again; requests must keep flowing meanwhile
+        event(logger, 'cas_pages_failed', logging.WARNING, error=str(exc)[:300])
+
+
 _index_ready = False
 
 
@@ -405,6 +419,7 @@ def run_once(*, housekeeping: bool = True) -> dict[str, int]:
             antispam.prune(db)
             prune_carts(db)
         sync_brands_if_due()
+        build_cas_pages_if_due()
         admin_housekeeping()
     with SessionLocal.begin() as db:
         counts = process_events(db)

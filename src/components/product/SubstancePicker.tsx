@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from 'react';
 import { Check, ShoppingCart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { ProductPreview, SubstanceRole } from '@/types/catalog';
+import type { ProductPreview } from '@/types/catalog';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
 import { track } from '@/lib/analytics';
@@ -13,13 +13,15 @@ import { rfqKey, useRfqStore } from '@/lib/rfq-store';
 
 /**
  * Позиции субстанции с выбором нескольких строк и добавлением в корзину одним действием (ТЗ SC-05).
- * Группы: стандарты API, примеси, метаболиты, меченые соединения. Без JS — обычные ссылки на карточки.
+ * Группы: стандарты API, примеси, метаболиты, меченые соединения; у страницы CAS — разделы каталога.
+ * Без JS — обычные ссылки на карточки.
  */
 export function SubstancePicker({
   groups,
   headingLevel = 'h2',
 }: {
-  groups: { role: SubstanceRole; title: string; items: ProductPreview[] }[];
+  /** role — ключ группы: роль у субстанции (api, impurity…) или раздел каталога у страницы CAS */
+  groups: { role: string; title: string; items: ProductPreview[] }[];
   headingLevel?: 'h2' | 'h3';
 }) {
   const t = useTranslations('substancePage.picker');

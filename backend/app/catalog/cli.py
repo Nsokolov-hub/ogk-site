@@ -154,6 +154,13 @@ def _sync_brands(_args: argparse.Namespace) -> None:
     _refresh_storefront()
 
 
+def _cas_pages(_args: argparse.Namespace) -> None:
+    from app.catalog import cas_pages
+
+    print(json.dumps(cas_pages.build(SessionLocal), ensure_ascii=False))
+    _refresh_storefront()
+
+
 def _misses(args: argparse.Namespace) -> None:
     from app.catalog.models import SearchMiss
 
@@ -216,6 +223,7 @@ def main() -> None:
     command = commands.add_parser('controlled', help='загрузить перечни подконтрольных веществ')
     command.add_argument('file')
     commands.add_parser('sync-brands', help='реестр производителей из CRM')
+    commands.add_parser('cas-pages', help='страницы веществ по CAS из товаров каталога')
     command = commands.add_parser('misses', help='запросы без результатов')
     command.add_argument('--days', type=int, default=30)
     command.add_argument('--limit', type=int, default=50)
@@ -225,6 +233,7 @@ def main() -> None:
     args = parser.parse_args()
     handlers = {'seed': _seed, 'recategorize': _recategorize, 'index': _index, 'reindex': _reindex, 'import': _import, 'batches': _batches,
                 'issues': _issues, 'rollback': _rollback, 'controlled': _controlled, 'sync-brands': _sync_brands,
+                'cas-pages': _cas_pages,
                 'misses': _misses, 'setting': _setting}
     handlers[args.command](args)
 

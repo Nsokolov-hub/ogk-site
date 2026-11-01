@@ -392,6 +392,7 @@
     "sections": {
       "substance": "{name}: other standards and impurities",
       "substanceAll": "All items for this substance ({count})",
+      "casAll": "All offers: {name} ({count})",
       "analogues": "Alternatives from other manufacturers",
       "accessories": "Compatible accessories",
       "faq": "FAQ",
@@ -449,6 +450,31 @@
       "lead": "Reference standards, impurities and metabolites for one substance from every manufacturer on one page. Pick an INN and add the items you need in one go.",
       "letters": "First letter"
     }
+  },
+  "casPage": {
+    "meta": {
+      "title": "{name} (CAS {cas}): {count, plural, one {# product} other {# products}} from several manufacturers | OGK-CHEM",
+      "description": "{name}, CAS {cas}: {count, plural, one {# product} other {# products}} from {brands}. Compare pack sizes and grades, request a quotation — we reply within 2 business hours."
+    },
+    "h1": "{name}, CAS {cas}",
+    "lead": "The catalogue lists {count, plural, one {# product} other {# products}} of {name} (CAS {cas}) from {brandsCount, plural, one {# manufacturer} other {# manufacturers}}: {brands}. Supplied to order — we will send the price, lead time and documents in a quotation within 2 business hours.",
+    "breadcrumb": "Catalogue",
+    "facts": {
+      "name": "Name",
+      "formula": "Molecular formula",
+      "mw": "Molecular weight",
+      "mwValue": "{value} g/mol",
+      "items": "Products in the catalogue",
+      "brands": "Manufacturers",
+      "more": "and {count} more"
+    },
+    "other": "Other",
+    "synonyms": "Other names",
+    "shown": "Showing {shown} of {count} products. Search by CAS {cas} for the rest.",
+    "search": "All products in search",
+    "requestTitle": "Need another pack size or grade?",
+    "requestText": "Tell us the grade, pack size and quantity — we will find it at the manufacturers and send a quotation within 2 business hours.",
+    "requestMessage": "Substance: {name}, CAS {cas}. Needed: "
   },
   "services": {
     "list": {

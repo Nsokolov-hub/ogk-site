@@ -217,6 +217,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/cas/sitemap": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cas Sitemap
+         * @description The substance pages by CAS number for the Sitemap, SITEMAP_PAGE per page.
+         */
+        get: operations["cas_sitemap_api_v1_public_cas_sitemap_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/cas/{cas}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cas Page
+         * @description Every offer of one CAS number (app.catalog.cas_pages); a substance with its own page answers its slug.
+         */
+        get: operations["cas_page_api_v1_public_cas__cas__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/brands": {
         parameters: {
             query?: never;
@@ -633,6 +673,74 @@ export interface components {
             /** Updatedat */
             updatedAt?: string | null;
         };
+        /** CasPageOut */
+        CasPageOut: {
+            /** Cas */
+            cas: string;
+            /** Name */
+            name: string;
+            /** Offers */
+            offers: number;
+            /** Synonyms */
+            synonyms?: string[];
+            /** Formula */
+            formula?: string | null;
+            /** Molecularweight */
+            molecularWeight?: string | null;
+            /** Brands */
+            brands?: string[];
+            /** Updatedat */
+            updatedAt: string;
+        };
+        /** CasPageResponse */
+        CasPageResponse: {
+            /** Substance */
+            substance?: string | null;
+            page?: components["schemas"]["CasPageOut"] | null;
+            /** Sections */
+            sections?: components["schemas"]["CasSection"][];
+            /** Items */
+            items?: components["schemas"]["ProductPreview"][];
+        };
+        /**
+         * CasRef
+         * @description A substance page by CAS number (/cas/<cas>/), as a link.
+         */
+        CasRef: {
+            /** Cas */
+            cas: string;
+            /** Name */
+            name: string;
+            /** Offers */
+            offers: number;
+        };
+        /** CasSection */
+        CasSection: {
+            /** Path */
+            path: string;
+            /** Nameru */
+            nameRu: string;
+            /** Nameen */
+            nameEn?: string | null;
+        };
+        /** CasSitemapEntry */
+        CasSitemapEntry: {
+            /** Cas */
+            cas: string;
+            /** Updatedat */
+            updatedAt: string;
+        };
+        /** CasSitemapPage */
+        CasSitemapPage: {
+            /** Items */
+            items: components["schemas"]["CasSitemapEntry"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Pagecount */
+            pageCount: number;
+        };
         /** CatalogListing */
         CatalogListing: {
             /** Items */
@@ -921,6 +1029,7 @@ export interface components {
             analogues?: components["schemas"]["ProductPreview"][];
             /** Accessories */
             accessories?: components["schemas"]["ProductPreview"][];
+            casPage?: components["schemas"]["CasRef"] | null;
         };
         /** ProductPreview */
         ProductPreview: {
@@ -1578,6 +1687,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SubstancePage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cas_sitemap_api_v1_public_cas_sitemap_get: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CasSitemapPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cas_page_api_v1_public_cas__cas__get: {
+        parameters: {
+            query?: {
+                lang?: "ru" | "en";
+            };
+            header?: never;
+            path: {
+                cas: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CasPageResponse"];
                 };
             };
             /** @description Validation Error */

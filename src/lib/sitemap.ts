@@ -1,6 +1,7 @@
 /**
  * Sitemap (ТЗ SEO-04, EN-02): индекс /sitemap.xml и файлы по типам страниц — pages, catalog, products (по 25 000 URL),
- * substances, brands, services, solutions, articles. Только канонические URL с ответом 200 и index, с lastmod.
+ * substances, cas (вещества по CAS, по 25 000 URL), brands, services, solutions, articles. Только канонические URL
+ * с ответом 200 и index, с lastmod.
  * Английские файлы (en-*) — только для страниц с переводом (EN-05): главная, каталог, бренды, услуги,
  * страницы доверия, субстанции и карточки с английским текстом.
  */
@@ -11,7 +12,7 @@ import { isLandingIndexable } from './category-page';
 import { pageList } from './content';
 import { brandsFor, getArticles, getAuthors, getServices, getSolutions } from './content-api';
 import { allLandings, landingFor, landingHref } from './landings';
-import { getSubstanceList } from './product-api';
+import { getCasSitemap, getSubstanceList } from './product-api';
 import { absoluteUrl, SITE_URL } from './seo';
 
 /** Карточек в одном файле: столько отдаёт API за страницу (SEO-04) */
@@ -83,6 +84,10 @@ async function sections(): Promise<Record<string, Entry[]>> {
 const productEntries = async (n: number): Promise<Entry[]> =>
   (await productsPage(n)).items.map((p) => ({ path: `/product/${p.slug}/`, lastmod: p.updatedAt, hasEn: p.hasEn }));
 
+/** Вещества по CAS (/cas/<cas>/): тексты страницы есть на обоих языках */
+const casEntries = async (n: number): Promise<Entry[]> =>
+  (await getCasSitemap(n)).items.map((c) => ({ path: `/cas/${c.cas}/`, lastmod: c.updatedAt, hasEn: true }));
+
 /** Файлы карты: ru — как есть, en-* — только переведённые страницы; пустые файлы не выводим */
 function files(name: string, entries: Entry[]): Record<string, { loc: string; lastmod: string }[]> {
   const out: Record<string, { loc: string; lastmod: string }[]> = {};
@@ -99,6 +104,10 @@ export async function sitemapFiles(): Promise<Record<string, { loc: string; last
   for (let n = 1; n <= first.pageCount && first.total > 0; n += 1) {
     Object.assign(all, files(`products-${n}`, n === 1 ? first.items.map((p) => ({ path: `/product/${p.slug}/`, lastmod: p.updatedAt, hasEn: p.hasEn })) : await productEntries(n)));
   }
+  const cas = await getCasSitemap(1);
+  for (let n = 1; n <= cas.pageCount && cas.total > 0; n += 1) {
+    Object.assign(all, files(`cas-${n}`, await casEntries(n)));
+  }
   return all;
 }
 
@@ -114,9 +123,12 @@ export async function sitemapIndexXml(): Promise<string> {
 
 export async function sitemapFileXml(name: string): Promise<string | null> {
   const product = name.match(/^(en-)?products-(\d+)$/);
+  const cas = name.match(/^(en-)?cas-(\d+)$/);
   const urls = product
     ? files(`products-${product[2]}`, await productEntries(Number(product[2])))[name]
-    : (await sitemapFiles())[name];
+    : cas
+      ? files(`cas-${cas[2]}`, await casEntries(Number(cas[2])))[name]
+      : (await sitemapFiles())[name];
   if (!urls) return null;
   const items = urls.map((u) => `  <url>\n    <loc>${esc(u.loc)}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n  </url>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${items}\n</urlset>\n`;

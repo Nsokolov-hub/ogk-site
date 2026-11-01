@@ -97,6 +97,27 @@ class Category(Entity):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 
+class CasPage(Base):
+    """A substance by its CAS number (/cas/<cas>/): every offer of the catalog with that CAS on one page.
+
+    Built from the products every night (app.catalog.cas_pages) for CAS numbers that several brands sell; the name
+    is the one most brands use, the other names are its synonyms. Precursors and substances with their own page
+    (Substance) get none."""
+
+    __tablename__ = 'cas_pages'
+    cas: Mapped[str] = mapped_column(String(20), primary_key=True)
+    name: Mapped[str] = mapped_column(String(300))
+    synonyms: Mapped[list[str]] = mapped_column(JSON, default=list)
+    formula: Mapped[str | None] = mapped_column(String(200))
+    molecular_weight: Mapped[str | None] = mapped_column(String(40))
+    offers: Mapped[int] = mapped_column(Integer)
+    # Brand names and top-level category paths, most offers first.
+    brands: Mapped[list[str]] = mapped_column(JSON, default=list)
+    sections: Mapped[list[str]] = mapped_column(JSON, default=list)
+    # Changes only when the page's content does: the Sitemap's lastmod.
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class Substance(Entity):
     """An API (INN): the parent of standards, impurities, metabolites and labelled compounds."""
 

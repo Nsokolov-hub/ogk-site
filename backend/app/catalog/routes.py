@@ -181,6 +181,23 @@ def substance(slug: str, db: DB, response: Response, lang: Lang = 'ru', preview:
     return found
 
 
+@router.get('/cas/sitemap', response_model=s.CasSitemapPage)
+def cas_sitemap(db: DB, response: Response, page: Annotated[int, Query(ge=1)] = 1):
+    """The substance pages by CAS number for the Sitemap, SITEMAP_PAGE per page."""
+    cached(response)
+    return pages.cas_sitemap(db, page)
+
+
+@router.get('/cas/{cas}', response_model=s.CasPageResponse)
+def cas_page(cas: str, db: DB, response: Response, lang: Lang = 'ru'):
+    """Every offer of one CAS number (app.catalog.cas_pages); a substance with its own page answers its slug."""
+    found = pages.cas_page(db, cas, lang)
+    if found is None:
+        raise DomainError('NOT_FOUND', 'Страница вещества не найдена', 404)
+    cached(response)
+    return found
+
+
 @router.get('/brands', response_model=list[s.BrandOut])
 def brand_list(db: DB, response: Response):
     cached(response)

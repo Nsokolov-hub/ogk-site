@@ -663,6 +663,108 @@
         }
       }
     },
+    "/api/v1/public/cas/sitemap": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Cas Sitemap",
+        "description": "The substance pages by CAS number for the Sitemap, SITEMAP_PAGE per page.",
+        "operationId": "cas_sitemap_api_v1_public_cas_sitemap_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasSitemapPage"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/cas/{cas}": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Cas Page",
+        "description": "Every offer of one CAS number (app.catalog.cas_pages); a substance with its own page answers its slug.",
+        "operationId": "cas_page_api_v1_public_cas__cas__get",
+        "parameters": [
+          {
+            "name": "cas",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Cas"
+            }
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "ru",
+                "en"
+              ],
+              "type": "string",
+              "default": "ru",
+              "title": "Lang"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasPageResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/public/brands": {
       "get": {
         "tags": [
@@ -1868,6 +1970,213 @@
         ],
         "title": "CartOut"
       },
+      "CasPageOut": {
+        "properties": {
+          "cas": {
+            "type": "string",
+            "title": "Cas"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "offers": {
+            "type": "integer",
+            "title": "Offers"
+          },
+          "synonyms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Synonyms"
+          },
+          "formula": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Formula"
+          },
+          "molecularWeight": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Molecularweight"
+          },
+          "brands": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Brands"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cas",
+          "name",
+          "offers",
+          "updatedAt"
+        ],
+        "title": "CasPageOut"
+      },
+      "CasPageResponse": {
+        "properties": {
+          "substance": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Substance"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CasPageOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/CasSection"
+            },
+            "type": "array",
+            "title": "Sections"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ProductPreview"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "title": "CasPageResponse"
+      },
+      "CasRef": {
+        "properties": {
+          "cas": {
+            "type": "string",
+            "title": "Cas"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "offers": {
+            "type": "integer",
+            "title": "Offers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cas",
+          "name",
+          "offers"
+        ],
+        "title": "CasRef",
+        "description": "A substance page by CAS number (/cas/<cas>/), as a link."
+      },
+      "CasSection": {
+        "properties": {
+          "path": {
+            "type": "string",
+            "title": "Path"
+          },
+          "nameRu": {
+            "type": "string",
+            "title": "Nameru"
+          },
+          "nameEn": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nameen"
+          }
+        },
+        "type": "object",
+        "required": [
+          "path",
+          "nameRu"
+        ],
+        "title": "CasSection"
+      },
+      "CasSitemapEntry": {
+        "properties": {
+          "cas": {
+            "type": "string",
+            "title": "Cas"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cas",
+          "updatedAt"
+        ],
+        "title": "CasSitemapEntry"
+      },
+      "CasSitemapPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CasSitemapEntry"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageCount"
+        ],
+        "title": "CasSitemapPage"
+      },
       "CatalogListing": {
         "properties": {
           "items": {
@@ -2729,6 +3038,16 @@
             },
             "type": "array",
             "title": "Accessories"
+          },
+          "casPage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CasRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",

@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.catalog.models import (
     Brand,
+    CasPage,
     Category,
     Document,
     Product,
@@ -133,6 +134,46 @@ def substances(db: Session) -> list[dict[str, Any]]:
     return [{**substance_out(row), 'count': counts.get(row.id, 0)} for row in rows if counts.get(row.id)]
 
 
+# ── substances by CAS number (app.catalog.cas_pages) ──
+
+CAS_ITEMS = 300
+
+
+def cas_ref(row: CasPage) -> dict[str, Any]:
+    return {'cas': row.cas, 'name': row.name, 'offers': row.offers}
+
+
+def cas_page(db: Session, cas: str, lang: str) -> dict[str, Any] | None:
+    """The page of a CAS number with its offers; a substance with its own page is sent there."""
+    row = db.get(CasPage, cas)
+    if row is None:
+        own = db.scalar(select(Substance.slug).where(Substance.cas == cas).limit(1))
+        return {'substance': own} if own else None
+    hidden = get_setting(db, 'hidden_categories')
+    items = [p for p in db.scalars(select(Product).where(Product.cas == cas, visible(db))
+                                   .order_by(Product.popularity.desc(), Product.name_en).limit(CAS_ITEMS))]
+    out = previews(db, items, lang)
+    out = [p for p in out if not hidden_category(p['categorySlug'], hidden)]
+    paths = sorted({p['categorySlug'].split('/')[0] for p in out})
+    sections: list[dict[str, Any]] = [{'path': c.path, 'nameRu': c.name_ru, 'nameEn': c.name_en}
+                for c in db.scalars(select(Category).where(Category.path.in_(paths)))]
+    order = {path: i for i, path in enumerate(row.sections)}
+    sections.sort(key=lambda s: order.get(s['path'], len(order)))
+    return {'page': {**cas_ref(row), 'synonyms': row.synonyms, 'formula': row.formula,
+                     'molecularWeight': row.molecular_weight, 'brands': row.brands, 'updatedAt': iso(row.updated_at)},
+            'sections': sections, 'items': out}
+
+
+def cas_sitemap(db: Session, page: int) -> dict[str, Any]:
+    total = db.scalar(select(func.count()).select_from(CasPage)) or 0
+    page_count = max(1, -(-total // SITEMAP_PAGE))
+    page = max(1, min(page, page_count))
+    rows = db.execute(select(CasPage.cas, CasPage.updated_at).order_by(CasPage.cas)
+                      .offset((page - 1) * SITEMAP_PAGE).limit(SITEMAP_PAGE)).all()
+    return {'items': [{'cas': cas, 'updatedAt': iso(updated)} for cas, updated in rows], 'total': total,
+            'page': page, 'pageCount': page_count}
+
+
 # ── products ──
 
 def _column_key(product: Product) -> tuple[Any, ...]:
@@ -214,6 +255,7 @@ def product_page(db: Session, slug: str, lang: str) -> dict[str, Any]:
         'sameSubstanceTotal': same_total,
         'analogues': previews(db, analogues, lang),
         'accessories': previews(db, accessories, lang),
+        'casPage': cas_ref(found) if product.cas and (found := db.get(CasPage, product.cas)) else None,
     }
 
 
