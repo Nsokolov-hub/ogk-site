@@ -177,3 +177,26 @@ MAILPIT_UPSTREAM=ogk-site-mailpit-1:8025
 ```
 
 Если CRM открывают по IP-адресу, браузер не передаёт имя сервера, и Caddy должен знать сертификат по умолчанию: добавьте в глобальный блок Caddyfile `default_sni <IP>` (на сервере — своей копией `deploy/Caddyfile.server`, подключённой в `docker-compose.override.yml`).
+
+## Переезд ogk-chem.ru с сайта-визитки
+
+Сейчас `ogk-chem.ru` и `www.ogk-chem.ru` указывают на хостинг визитки (Beget), почта домена — в Яндекс 360 (MX, SPF, DKIM в DNS Яндекса). Основной адрес нового сайта — `https://www.ogk-chem.ru` (он зашит в канонические ссылки и Sitemap), `ogk-chem.ru` и `http://` отвечают 301 на него. Файлы визитки `/files/kartochka.pdf`, `politika.pdf`, `soglasie.pdf` лежат на новом сайте по тем же адресам.
+
+**За день до переезда**
+
+1. В DNS Яндекса: TTL записей `ogk-chem.ru` и `www` — 300 секунд. Новые A-записи `admin` (админка) и `crm` (CRM вместо IP) — на адрес сервера. MX, SPF (TXT) и DKIM не трогайте: от них зависит почта.
+2. Ящик `noreply@ogk-chem.ru` в Яндекс 360 и пароль приложения для него — это `SMTP_USER` и `SMTP_PASSWORD` (`SMTP_HOST=smtp.yandex.ru`, `SMTP_PORT=587`, `SMTP_STARTTLS=true`).
+3. Счётчик Метрики для `www.ogk-chem.ru` (`YM_COUNTER_ID`), по желанию GA4 и чат Telegram для оповещений.
+4. Тестовые заявки и подписки стейджа удалить из базы сайта, их копии в CRM отправить в архив.
+
+**Переезд**
+
+1. В `.env` сайта: `ENVIRONMENT=production`, `SITE_ENV=production`, `SITE_DOMAIN=www.ogk-chem.ru`, `SITE_ALIASES=ogk-chem.ru`, `SITE_URL=https://www.ogk-chem.ru`, `ADMIN_DOMAIN=admin.ogk-chem.ru`, `ADMIN_URL=https://admin.ogk-chem.ru`, `TLS_EMAIL`, `COMPOSE_PROFILES=` (без Mailpit), `SMTP_*`, счётчики.
+2. `deploy/Caddyfile.server` — копия `Caddyfile.production` с `default_sni <IP>` в глобальном блоке (как у стейджа).
+3. В `.env` CRM: `SITE_EVENTS_URL=https://www.ogk-chem.ru/api/v1/crm/events`, перезапустить api и worker CRM.
+4. В DNS: A-записи `ogk-chem.ru` и `www` — на адрес сервера.
+5. `source scripts/lib.sh; compose up -d` — Caddy сам получит сертификаты, как только DNS укажет на сервер (обычно 1–5 минут при TTL 300).
+
+**Проверка**: `https://www.ogk-chem.ru/` без пароля стейджа, `https://ogk-chem.ru/` → 301, `/robots.txt` открыт и со ссылкой на Sitemap, `/files/politika.pdf`, вход в админку, тестовая заявка доходит до CRM, письмо клиенту приходит.
+
+**После**: Яндекс Вебмастер — добавить `https://www.ogk-chem.ru`, подтвердить права, «Переезд сайта» на главное зеркало с www, Sitemap; Google Search Console — то же. Хостинг визитки держать ещё 2–3 недели и затем отключить.

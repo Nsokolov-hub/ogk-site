@@ -122,7 +122,8 @@ def test_the_catalog_file_lays_products_into_the_site_categories(seeded, tmp_pat
         assert (empty.values['sheet'], empty.row_number) == ('Химия 1', 6)
         # The source's descriptions and characteristics' text are never stored.
         assert all('Текст описания' not in str(v) for v in db.scalars(select(ImportIssue.values)))
-    summary = '\n'.join(run.issue_summary(seeded(), result['files'][0]['batch']))
+    with seeded() as db:
+        summary = '\n'.join(run.issue_summary(db, result['files'][0]['batch']))
     assert 'лист «Химия 1», строка 6' in summary
 
 
