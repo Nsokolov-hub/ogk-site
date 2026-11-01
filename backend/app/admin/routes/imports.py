@@ -19,7 +19,7 @@ from app.admin.audit import record
 from app.admin.models import ImportUpload
 from app.admin.security import StaffDep, requires
 from app.catalog.importer import run
-from app.catalog.importer.reader import UnreadableFile, read_rows
+from app.catalog.importer.reader import UnreadableFile, tables
 from app.catalog.importer.sources import FIELDS, REQUIRED, TEMPLATES
 from app.catalog.models import ImportBatch, ImportIssue, ImportSource
 from app.core.config import settings
@@ -30,7 +30,8 @@ from app.outbox.models import OutboxEvent
 router = APIRouter()
 MAX_UPLOAD = 500 * 1024 * 1024
 FIELD_NAMES = {'brand': 'Производитель', 'catalog_number': 'Каталожный номер', 'name': 'Наименование', 'cas': 'CAS',
-               'pack': 'Фасовка', 'availability': 'Наличие', 'characteristics': 'Характеристики (формула и масса)'}
+               'pack': 'Фасовка', 'availability': 'Наличие', 'characteristics': 'Характеристики (формула и масса)',
+               'direction': 'Направление (раздел каталога)', 'section': 'Категория', 'subgroup': 'Подгруппа'}
 
 
 def upload_dir() -> Path:
@@ -102,9 +103,12 @@ async def upload(staff: StaffDep, db: DB, file: Annotated[UploadFile, File()]) -
             digest.update(chunk)
             handle.write(chunk)
     try:
-        reader = read_rows(target, name)
-        header = [str(c or '') for c in next(reader, [])]
-        sample = [row for _, row in zip(range(10), reader, strict=False)]
+        # A workbook's contents or a title row may come first: the preview starts at the first sheet with columns
+        # a known source needs.
+        wanted = [[t['mapping'][f] for f in REQUIRED if f in t['mapping']] for t in TEMPLATES.values()]
+        table = next(tables(target, name, wanted=wanted), None)
+        header = [str(c or '') for c in table.header] if table else []
+        sample = [row for _, row in zip(range(10), table.rows, strict=False)] if table else []
     except (UnreadableFile, StopIteration, ValueError) as exc:
         target.unlink(missing_ok=True)
         raise DomainError('FILE_UNREADABLE', f'Файл не читается: {exc}', 422, 'file') from None

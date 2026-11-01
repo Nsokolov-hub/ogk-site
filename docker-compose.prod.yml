@@ -88,6 +88,10 @@ services:
     ports: !reset []
     environment:
       MEILI_ENV: production
+      # Indexing of the full catalog must not take the memory and cores of a shared server (by default Meilisearch
+      # takes up to two thirds of the RAM and every core).
+      MEILI_MAX_INDEXING_MEMORY: ${MEILI_MAX_INDEXING_MEMORY:-2GiB}
+      MEILI_MAX_INDEXING_THREADS: ${MEILI_MAX_INDEXING_THREADS:-2}
     restart: unless-stopped
     logging: *logging
 

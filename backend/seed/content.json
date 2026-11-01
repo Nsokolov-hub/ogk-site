@@ -297,7 +297,7 @@
         "id": "supply",
         "title": "Поставка лекарственных препаратов для исследований",
         "href": "/services/research-drug-supply/",
-        "text": "Поставляем лекарственные препараты в Россию для исследовательских целей, а также стандартные образцы, реактивы, расходные материалы для хроматографии (колонки, фильтры, предколонки, фитинги), референтные лекарственные препараты для лабораторных испытаний, лабораторную тару и вспомогательное оборудование. Продукция ведущих мировых брендов соответствует строгим международным стандартам, а предложения локальных производителей помогают закрыть потребности лаборатории без потери качества.",
+        "text": "Поставляем лекарственные препараты в Россию для исследовательских целей, а также стандартные образцы, реактивы, расходные материалы для хроматографии (колонки, фильтры, предколонки, фитинги), референтные лекарственные препараты для лабораторных испытаний. Продукция ведущих мировых брендов соответствует строгим международным стандартам, а предложения локальных производителей помогают закрыть потребности лаборатории без потери качества.",
         "captionLabel": "Поставляем:",
         "chips": [
          {
@@ -866,7 +866,7 @@
         "id": "supply",
         "title": "Supply of medicinal products for research",
         "href": "/services/research-drug-supply/",
-        "text": "We supply medicinal products to Russia for research purposes, as well as reference standards, reagents, chromatography consumables (columns, filters, guard columns, fittings), reference medicinal products for laboratory testing, laboratory containers and auxiliary equipment. Products of leading global brands meet strict international standards, and local manufacturers help cover laboratory needs without compromising quality.",
+        "text": "We supply medicinal products to Russia for research purposes, as well as reference standards, reagents, chromatography consumables (columns, filters, guard columns, fittings), reference medicinal products for laboratory testing. Products of leading global brands meet strict international standards, and local manufacturers help cover laboratory needs without compromising quality.",
         "captionLabel": "We supply:",
         "chips": [
          {

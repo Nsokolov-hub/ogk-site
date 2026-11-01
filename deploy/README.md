@@ -71,14 +71,15 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml exec api python 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml exec api python -m app.catalog.cli controlled seed/controlled-register.json
 ```
 
-Выгрузка ассортимента (около 15 минут: 10 — импорт, 5 — индекс), файлы 1.xlsx…5.xlsx положите в `/srv/import`. Оборудование, посуда и расходники (кроме фильтров), товары «Химмед» и подписка USP–NF Online при импорте пропускаются (`seed/excluded-assortment.csv.gz`, замечания бизнеса от 31.10.2026):
+Ассортимент — «Каталог продукции по категориям» (31.10.2026, 2,4 млн строк, около 1,6 млн карточек), источник `catalog`. Импорт читает все листы с товарами после оглавления, раздел сайта берёт из колонок «Направление», «Категория» и «Подгруппа» (`app/catalog/importer/rules.py`, `FILE_CATEGORIES`). Оборудование, посуда (кроме фильтров), «Прочие товары», товары «Химмед» и подписка USP–NF Online пропускаются (замечания бизнеса от 31.10.2026). Файл положите в `/srv/import`:
 
 ```bash
 C="docker compose -f docker-compose.yml -f docker-compose.prod.yml"
-$C run --rm -v /srv/import:/import:ro api python -m app.catalog.cli import /import/1.xlsx /import/2.xlsx /import/3.xlsx /import/4.xlsx /import/5.xlsx --no-index
-$C exec api python -m app.catalog.cli recategorize
+$C run --rm -v /srv/import:/import:ro api python -m app.catalog.cli import /import/Каталог_продукции_по_категориям.xlsx --source catalog --no-index
 $C exec api python -m app.catalog.cli reindex
 ```
+
+Индекс поиска при этом берёт не больше `MEILI_MAX_INDEXING_MEMORY` памяти и `MEILI_MAX_INDEXING_THREADS` ядер (по умолчанию 2 ГиБ и 2) — CRM на том же сервере продолжает работать. Прежняя выгрузка 1.xlsx…5.xlsx грузится источником `assortment` (раздел — по правилам бренда), после неё — `recategorize`.
 
 Для стейджа без выгрузки хватит тестового каталога из 413 позиций: `$C exec api python -m app.catalog.cli seed` (на продакшене тестовые товары не грузятся).
 

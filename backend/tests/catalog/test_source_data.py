@@ -132,7 +132,7 @@ def test_saved_template_learns_new_fields_without_losing_edits(sessions):
 def test_content_only_seed_has_structure_without_test_products(sessions):
     with sessions.begin() as db:
         counts = seed.load(db, products_too=False)
-    assert counts['categories'] == 17 and 'products' not in counts
+    assert counts['categories'] == 39 and 'products' not in counts
     with sessions() as db:
         assert db.scalar(select(func.count()).select_from(Product)) == 0
         biochemistry = db.scalar(select(Category).where(Category.path == 'biochemistry'))

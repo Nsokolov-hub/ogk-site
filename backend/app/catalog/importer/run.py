@@ -25,8 +25,8 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.catalog import completeness, controlled
 from app.catalog.business_oct31 import not_sold
-from app.catalog.importer.reader import read_rows
-from app.catalog.importer.rules import card_type_for, category_for
+from app.catalog.importer.reader import tables
+from app.catalog.importer.rules import SKIP, card_type_for, category_for, file_category
 from app.catalog.importer.sources import OBSOLETE_OPTIONS, REQUIRED, SOURCE_BRANDS, TEMPLATES
 from app.catalog.models import (
     Brand,
@@ -65,6 +65,7 @@ CYRILLIC = re.compile('[а-яё]', re.I)
 UPDATABLE = ('name_en', 'source_name', 'cas', 'availability', 'formula', 'formula_hill', 'molecular_weight')
 # Columns that are read for facts only and never stored as they are (the journal keeps none of their text).
 NOT_STORED = ('characteristics',)
+FILE_CATEGORY_SOURCES = [f'import:{code}' for code, t in TEMPLATES.items() if t['options'].get('file_categories')]
 
 
 class ImportFailed(Exception):
@@ -83,6 +84,8 @@ class Row:
     availability: str | None
     raw: dict[str, Any]
     facts: dict[str, str] = field(default_factory=dict)
+    # The category the file itself gives (option «file_categories»); None — the brand rules decide.
+    category: str | None = None
 
 
 @dataclass
@@ -115,6 +118,8 @@ class State:
     threshold: int
     counters: dict[str, int] = field(default_factory=lambda: defaultdict(int))
     reported_brands: set[str] = field(default_factory=set)
+    # The sheet being read, for the journal of a workbook with several sheets.
+    sheet: str | None = None
 
 
 # ── helpers ──
@@ -187,8 +192,9 @@ def load_state(db: Session, source: ImportSource, batch_id: str, run_id: str, dr
 def issue(db: Session, state: State, row: int, kind: str, code: str, message: str,
           values: dict[str, Any] | None = None, product_id: str | None = None) -> None:
     state.counters[f'issues_{kind}'] += 1
+    values = {**(values or {}), **({'sheet': state.sheet} if state.sheet else {})}
     db.add(ImportIssue(batch_id=state.batch_id, row_number=row, kind=kind, code=code, message=message[:500],
-                       values=values or {}, product_id=product_id))
+                       values=values, product_id=product_id))
 
 
 # ── rows ──
@@ -210,6 +216,13 @@ def parse_row(db: Session, state: State, number: int, cells: list[str | None], c
     if not_sold(brand_key(brand), compact(number_text), raw.get('name', '')):
         state.counters['skipped'] += 1
         return None
+    category = None
+    if state.options.get('file_categories'):
+        category = file_category(raw.get('direction', ''), raw.get('section', ''), raw.get('subgroup', ''), brand,
+                                 raw.get('name', ''))
+        if category == SKIP:
+            state.counters['skipped_not_sold'] += 1
+            return None
     if state.brand_filter and brand_key(brand) not in state.brand_filter:
         state.counters['filtered'] += 1
         return None
@@ -235,7 +248,8 @@ def parse_row(db: Session, state: State, number: int, cells: list[str | None], c
     if state.options.get('availability') == 'column':
         availability = 'in_stock' if IN_STOCK.search(raw.get('availability', '')) else 'on_order'
     return Row(number=number, brand=brand, catalog_number=catalog_number, name=clean_name(raw.get('name', '')),
-               cas=cas, packs=packs, pack_numbers=pack_numbers, availability=availability, raw=raw, facts=facts)
+               cas=cas, packs=packs, pack_numbers=pack_numbers, availability=availability, raw=raw, facts=facts,
+               category=category)
 
 
 def resolve_brand(db: Session, state: State, row: Row) -> str | None:
@@ -338,7 +352,8 @@ def process(db: Session, state: State, rows: list[Row]) -> None:
                                current=None, state=None)
         product = existing.get(key)
         if product is None:
-            path = category_for(group.brand_name, source_name or name_en)
+            path = next((r.category for r in group.rows if r.category), None) \
+                or category_for(group.brand_name, source_name or name_en)
             path = path if path in state.categories else None
             product_id = str(uuid4())
             availability = next((r.availability for r in group.rows if r.availability), None) or 'on_order'
@@ -490,12 +505,11 @@ def import_file(session_factory: sessionmaker[Session], path: Path, *, source: s
         state = load_state(db, source_row, batch_id, run_id, dry_run, brands)
     rows_seen = 0
     try:
-        reader = read_rows(path)
-        header = next(reader, None)
-        if header is None:
-            raise ImportFailed('Файл пустой')
-        cols = columns_of(header, state.source.mapping)
+        mapping = state.source.mapping
+        all_sheets = bool(state.options.get('all_sheets'))
+        wanted = [[mapping[f] for f in REQUIRED if f in mapping]]
         pending: list[tuple[int, list[str | None]]] = []
+        cols: dict[str, int] = {}
 
         def flush() -> None:
             with session_factory.begin() as db:
@@ -507,13 +521,27 @@ def import_file(session_factory: sessionmaker[Session], path: Path, *, source: s
             if progress:
                 progress(rows_seen)
 
-        for number, cells in enumerate(reader, start=2):
+        found = False
+        for table in tables(path, wanted=wanted, all_sheets=all_sheets):
+            found = True
+            # Each sheet has its own header: the rows read so far go with the columns of their sheet.
+            if pending:
+                flush()
+            cols = columns_of(table.header, mapping)
+            state.sheet = table.sheet if all_sheets else None
+            if all_sheets:
+                state.counters['sheets'] += 1
+            for number, cells in enumerate(table.rows, start=table.header_row + 1):
+                if limit and rows_seen >= limit:
+                    break
+                rows_seen += 1
+                pending.append((number, cells))
+                if len(pending) >= CHUNK:
+                    flush()
             if limit and rows_seen >= limit:
                 break
-            rows_seen += 1
-            pending.append((number, cells))
-            if len(pending) >= CHUNK:
-                flush()
+        if not found:
+            raise ImportFailed('Файл пустой')
         if pending:
             flush()
     except Exception as exc:
@@ -595,18 +623,19 @@ def issue_summary(db: Session, batch_id: str) -> list[str]:
         .group_by(ImportIssue.kind, ImportIssue.code).order_by(func.count().desc()))]
     for row in db.scalars(select(ImportIssue).where(ImportIssue.batch_id == batch_id)
                           .order_by(ImportIssue.id).limit(20)):
-        lines.append(f'  строка {row.row_number}: {row.message}')
+        sheet = (row.values or {}).get('sheet')
+        lines.append(f'  {f"лист «{sheet}», " if sheet else ""}строка {row.row_number}: {row.message}')
     return lines or ['Замечаний нет.']
 
 
 def export_issues(db: Session, batch_id: str, path: Path) -> int:
     """Errors and conflicts of a batch as xlsx (IMP-06): row, kind, code, message and the source values."""
-    header = ['Строка', 'Тип', 'Код', 'Сообщение', 'Производитель', 'Кат. №', 'Наименование', 'CAS', 'Фасовка']
+    header = ['Строка', 'Тип', 'Код', 'Сообщение', 'Производитель', 'Кат. №', 'Наименование', 'CAS', 'Фасовка', 'Лист']
     rows: list[list[Any]] = [header]
     for issue_row in db.scalars(select(ImportIssue).where(ImportIssue.batch_id == batch_id).order_by(ImportIssue.id)):
         v = issue_row.values or {}
         rows.append([issue_row.row_number, issue_row.kind, issue_row.code, issue_row.message, v.get('brand'),
-                     v.get('catalog_number'), v.get('name'), v.get('cas'), v.get('pack')])
+                     v.get('catalog_number'), v.get('name'), v.get('cas'), v.get('pack'), v.get('sheet')])
     write_xlsx(path, rows)
     return len(rows) - 1
 
@@ -660,7 +689,8 @@ def recategorize(session_factory: sessionmaker[Session], *, only_missing: bool =
                  progress: Callable[[int], None] | None = None) -> dict[str, int]:
     """Categories by the current rules for imported products: those without one, or all with ``only_missing=False``.
 
-    A category set by a person (any product not from an import) is never touched.
+    A category set by a person (any product not from an import) is never touched, nor one that came from the file
+    itself (a source with «file_categories»): the rules know less than the file did.
     """
     counts: dict[str, int] = defaultdict(int)
     with session_factory() as db:
@@ -676,6 +706,8 @@ def recategorize(session_factory: sessionmaker[Session], *, only_missing: bool =
             statement = select(Product).where(Product.id > last_id, Product.source.like('import:%'))
             if only_missing:
                 statement = statement.where(~has_primary)
+            elif FILE_CATEGORY_SOURCES:
+                statement = statement.where(Product.source.not_in(FILE_CATEGORY_SOURCES) | ~has_primary)
             products = db.scalars(statement.order_by(Product.id).limit(5000)).all()
             if not products:
                 break

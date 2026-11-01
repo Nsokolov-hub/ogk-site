@@ -44,6 +44,27 @@ TEXTS = {
         'Для колонок: сертификат производителя и руководство по эксплуатации.',
     'For columns and equipment: manufacturer certificate and user manual.':
         'For columns: manufacturer certificate and user manual.',
+    # The catalog's root (setting «catalog_root»), cleaned on 1 November 2026.
+    'Каталог: стандартные образцы, реактивы и оборудование для лабораторий | ОГК-ХИМ':
+        'Каталог: стандартные образцы, реактивы и расходные материалы для лабораторий | ОГК-ХИМ',
+    'Стандартные образцы, реактивы, расходные материалы для хроматографии, оборудование и фармакопеи для '
+    'фармацевтических лабораторий. Поиск по кат. № и CAS, запрос КП.':
+        'Стандартные образцы, реактивы, биохимия, расходные материалы для хроматографии и фармакопеи для '
+        'фармацевтических лабораторий. Поиск по кат. № и CAS, запрос КП.',
+    'Стандартные образцы, реактивы, хроматография и оборудование ведущих производителей. Ищите по каталожному '
+    'номеру или CAS — или добавляйте позиции в корзину запроса.':
+        'Стандартные образцы, реактивы, биохимия и хроматография ведущих производителей. Ищите по каталожному '
+        'номеру или CAS — или добавляйте позиции в корзину запроса.',
+    'Catalogue: reference standards, reagents and laboratory equipment | OGK-CHEM':
+        'Catalogue: reference standards, reagents and laboratory consumables | OGK-CHEM',
+    'Reference standards, reagents, chromatography consumables, equipment and pharmacopoeias for pharmaceutical '
+    'laboratories. Search by catalogue number and CAS, request a quotation.':
+        'Reference standards, reagents, biochemicals, chromatography consumables and pharmacopoeias for '
+        'pharmaceutical laboratories. Search by catalogue number and CAS, request a quotation.',
+    'Reference standards, reagents, chromatography supplies and equipment from leading manufacturers. Search by '
+    'catalogue number or CAS — or add items to the quote cart.':
+        'Reference standards, reagents, biochemicals and chromatography supplies from leading manufacturers. Search '
+        'by catalogue number or CAS — or add items to the quote cart.',
 }
 # Phrases inside longer texts.
 PHRASES = (
@@ -52,6 +73,9 @@ PHRASES = (
     ('HPLC consumables and equipment from', 'HPLC consumables from'),
     ('стандартные образцы, реактивы и оборудование:', 'стандартные образцы и реактивы:'),
     ('reference standards, reagents and equipment:', 'reference standards and reagents:'),
+    # The home page's «what we supply», cleaned on 1 November 2026.
+    (', лабораторную тару и вспомогательное оборудование.', '.'),
+    (', laboratory containers and auxiliary equipment.', '.'),
 )
 
 

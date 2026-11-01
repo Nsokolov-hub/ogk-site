@@ -3,9 +3,9 @@
  "root": {
   "ru": {
    "h1": "Каталог",
-   "title": "Каталог: стандартные образцы, реактивы и оборудование для лабораторий | ОГК-ХИМ",
-   "description": "Стандартные образцы, реактивы, расходные материалы для хроматографии, оборудование и фармакопеи для фармацевтических лабораторий. Поиск по кат. № и CAS, запрос КП.",
-   "intro": "Стандартные образцы, реактивы, хроматография и оборудование ведущих производителей. Ищите по каталожному номеру или CAS — или добавляйте позиции в корзину запроса.",
+   "title": "Каталог: стандартные образцы, реактивы и расходные материалы для лабораторий | ОГК-ХИМ",
+   "description": "Стандартные образцы, реактивы, биохимия, расходные материалы для хроматографии и фармакопеи для фармацевтических лабораторий. Поиск по кат. № и CAS, запрос КП.",
+   "intro": "Стандартные образцы, реактивы, биохимия и хроматография ведущих производителей. Ищите по каталожному номеру или CAS — или добавляйте позиции в корзину запроса.",
    "facets": [
     "brand"
    ],
@@ -63,9 +63,9 @@
   },
   "en": {
    "h1": "Catalogue",
-   "title": "Catalogue: reference standards, reagents and laboratory equipment | OGK-CHEM",
-   "description": "Reference standards, reagents, chromatography consumables, equipment and pharmacopoeias for pharmaceutical laboratories. Search by catalogue number and CAS, request a quotation.",
-   "intro": "Reference standards, reagents, chromatography supplies and equipment from leading manufacturers. Search by catalogue number or CAS — or add items to the quote cart.",
+   "title": "Catalogue: reference standards, reagents and laboratory consumables | OGK-CHEM",
+   "description": "Reference standards, reagents, biochemicals, chromatography consumables and pharmacopoeias for pharmaceutical laboratories. Search by catalogue number and CAS, request a quotation.",
+   "intro": "Reference standards, reagents, biochemicals and chromatography supplies from leading manufacturers. Search by catalogue number or CAS — or add items to the quote cart.",
    "delivery": [
     "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
     "Delivery to any region of Russia",
@@ -1158,6 +1158,456 @@
    }
   },
   {
+   "path": "reference-standards/analytical",
+   "parent": "reference-standards",
+   "slug": "analytical",
+   "position": 6,
+   "nameRu": "Аналитические стандарты и CRM",
+   "nameEn": "Analytical standards and CRMs",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage",
+    "purpose",
+    "type"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Аналитические стандарты и сертифицированные материалы (CRM)",
+     "title": "Аналитические стандарты и CRM | ОГК-ХИМ",
+     "description": "Аналитические стандарты и сертифицированные стандартные образцы (CRM) пестицидов, микотоксинов, металлов и лекарственных веществ. Запрос КП.",
+     "intro": "Стандарты для калибровки и контроля методик: пестициды, микотоксины, ПАУ, металлы, лекарственные вещества.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage",
+      "purpose",
+      "type"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      },
+      {
+       "q": "Чем стандарты EDQM отличаются от USP?",
+       "a": "EDQM выпускает стандартные образцы Европейской фармакопеи, USP — Фармакопеи США. Выбор зависит от того, по какой фармакопейной статье выполняется испытание."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Стандартные образцы",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Стандарты примесей",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Analytical standards and certified reference materials (CRMs)",
+     "title": "Analytical standards and CRMs | OGK-CHEM",
+     "description": "Analytical standards and certified reference materials (CRMs) of pesticides, mycotoxins, metals and drugs. Request a quotation.",
+     "intro": "Standards for calibration and method control: pesticides, mycotoxins, PAHs, metals, drugs.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage",
+      "purpose",
+      "type"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      },
+      {
+       "q": "How do EDQM standards differ from USP?",
+       "a": "EDQM issues European Pharmacopoeia reference standards and USP issues United States Pharmacopeia standards. The choice depends on the monograph you are testing against."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reference standards",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Impurity standards",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reference-standards/isotope-labelled",
+   "parent": "reference-standards",
+   "slug": "isotope-labelled",
+   "position": 7,
+   "nameRu": "Изотопно-меченые соединения",
+   "nameEn": "Isotope-labelled compounds",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage",
+    "purpose",
+    "type"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Изотопно-меченые соединения",
+     "title": "Изотопно-меченые стандарты: D, 13C, 15N | ОГК-ХИМ",
+     "description": "Дейтерированные и меченные 13C и 15N соединения — внутренние стандарты для ЖХ-МС и ГХ-МС. Поставка под заказ, запрос КП.",
+     "intro": "Дейтерированные и меченные 13C, 15N соединения — внутренние стандарты для масс-спектрометрии.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage",
+      "purpose",
+      "type"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      },
+      {
+       "q": "Чем стандарты EDQM отличаются от USP?",
+       "a": "EDQM выпускает стандартные образцы Европейской фармакопеи, USP — Фармакопеи США. Выбор зависит от того, по какой фармакопейной статье выполняется испытание."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Стандартные образцы",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Стандарты примесей",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Isotope-labelled compounds",
+     "title": "Isotope-labelled standards: D, 13C, 15N | OGK-CHEM",
+     "description": "Deuterated and 13C- or 15N-labelled compounds as internal standards for LC-MS and GC-MS. Supplied to order, request a quotation.",
+     "intro": "Deuterated and 13C- or 15N-labelled compounds — internal standards for mass spectrometry.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage",
+      "purpose",
+      "type"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      },
+      {
+       "q": "How do EDQM standards differ from USP?",
+       "a": "EDQM issues European Pharmacopoeia reference standards and USP issues United States Pharmacopeia standards. The choice depends on the monograph you are testing against."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reference standards",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Impurity standards",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reference-standards/solutions",
+   "parent": "reference-standards",
+   "slug": "solutions",
+   "position": 8,
+   "nameRu": "Стандартные растворы и титранты",
+   "nameEn": "Standard solutions and titrants",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage",
+    "purpose",
+    "type"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Стандартные растворы, буферы и титранты",
+     "title": "Стандартные растворы, буферы и титранты | ОГК-ХИМ",
+     "description": "Стандартные растворы элементов для ААС и ИСП, буферные растворы pH, титранты и реактивы для титрования по Карлу Фишеру. Запрос КП.",
+     "intro": "Готовые растворы для калибровки и титрования: стандарты элементов, буферы pH, титранты и реактивы Карла Фишера.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage",
+      "purpose",
+      "type"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      },
+      {
+       "q": "Чем стандарты EDQM отличаются от USP?",
+       "a": "EDQM выпускает стандартные образцы Европейской фармакопеи, USP — Фармакопеи США. Выбор зависит от того, по какой фармакопейной статье выполняется испытание."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Стандартные образцы",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Стандарты примесей",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Standard solutions, buffers and titrants",
+     "title": "Standard solutions, buffers and titrants | OGK-CHEM",
+     "description": "Element standards for AAS and ICP, pH buffer solutions, titrants and Karl Fischer reagents. Request a quotation.",
+     "intro": "Ready-to-use solutions for calibration and titration: element standards, pH buffers, titrants and Karl Fischer reagents.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage",
+      "purpose",
+      "type"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      },
+      {
+       "q": "How do EDQM standards differ from USP?",
+       "a": "EDQM issues European Pharmacopoeia reference standards and USP issues United States Pharmacopeia standards. The choice depends on the monograph you are testing against."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reference standards",
+       "href": "/catalog/reference-standards/"
+      },
+      {
+       "label": "Impurity standards",
+       "href": "/catalog/reference-standards/impurity-standards/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      }
+     ]
+    }
+   }
+  },
+  {
    "path": "reagents",
    "parent": null,
    "slug": "reagents",
@@ -1287,6 +1737,1480 @@
       "brand",
       "pack",
       "storage"
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/inorganic",
+   "parent": "reagents",
+   "slug": "inorganic",
+   "position": 0,
+   "nameRu": "Неорганические соединения",
+   "nameEn": "Inorganic compounds",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Неорганические реактивы: соли, оксиды, кислоты",
+     "title": "Неорганические реактивы — соли, оксиды и кислоты | ОГК-ХИМ",
+     "description": "Соли, оксиды, гидроксиды и неорганические кислоты для аналитических и фармацевтических лабораторий. Поставка под заказ, запрос КП.",
+     "intro": "Соли, оксиды, гидроксиды и неорганические кислоты разных квалификаций — от технической до особо чистой.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Inorganic reagents: salts, oxides, acids",
+     "title": "Inorganic reagents — salts, oxides and acids | OGK-CHEM",
+     "description": "Salts, oxides, hydroxides and inorganic acids for analytical and pharmaceutical laboratories. Supplied to order, request a quotation.",
+     "intro": "Salts, oxides, hydroxides and inorganic acids in grades from technical to ultra-pure.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/solvents",
+   "parent": "reagents",
+   "slug": "solvents",
+   "position": 1,
+   "nameRu": "Растворители",
+   "nameEn": "Solvents",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Растворители для хроматографии, спектроскопии и синтеза",
+     "title": "Растворители для ВЭЖХ, ЖХ-МС, ГХ и синтеза | ОГК-ХИМ",
+     "description": "Растворители для ВЭЖХ, ЖХ-МС, ГХ и спектроскопии, безводные и дейтерированные. Поставка под заказ, запрос КП.",
+     "intro": "Растворители для хроматографии, спектроскопии и синтеза, в том числе безводные и дейтерированные.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Solvents for chromatography, spectroscopy and synthesis",
+     "title": "Solvents for HPLC, LC-MS, GC and synthesis | OGK-CHEM",
+     "description": "Solvents for HPLC, LC-MS, GC and spectroscopy, anhydrous and deuterated. Supplied to order, request a quotation.",
+     "intro": "Solvents for chromatography, spectroscopy and synthesis, including anhydrous and deuterated grades.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/organic",
+   "parent": "reagents",
+   "slug": "organic",
+   "position": 2,
+   "nameRu": "Органические соединения и строительные блоки",
+   "nameEn": "Organic compounds and building blocks",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Органические соединения и строительные блоки",
+     "title": "Органические реактивы и строительные блоки для синтеза | ОГК-ХИМ",
+     "description": "Гетероциклы, амины, карбоновые и бороновые кислоты, эфиры и галогенпроизводные для органического и медицинского синтеза. Запрос КП.",
+     "intro": "Строительные блоки и промежуточные продукты для органического и медицинского синтеза: гетероциклы, амины, кислоты, бороорганические и галогенпроизводные соединения.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Organic compounds and building blocks",
+     "title": "Organic reagents and building blocks for synthesis | OGK-CHEM",
+     "description": "Heterocycles, amines, carboxylic and boronic acids, esters and halides for organic and medicinal chemistry. Request a quotation.",
+     "intro": "Building blocks and intermediates for organic and medicinal chemistry: heterocycles, amines, acids, organoboron and halogenated compounds.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/organometallics",
+   "parent": "reagents",
+   "slug": "organometallics",
+   "position": 3,
+   "nameRu": "Катализаторы и лиганды",
+   "nameEn": "Catalysts and ligands",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Металлоорганические соединения, катализаторы и лиганды",
+     "title": "Катализаторы, лиганды и металлоорганические соединения | ОГК-ХИМ",
+     "description": "Комплексы палладия, родия, рутения и других металлов, фосфиновые лиганды и металлоорганические реагенты. Запрос КП.",
+     "intro": "Катализаторы кросс-сочетания и гидрирования, лиганды и металлоорганические реагенты.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Organometallic compounds, catalysts and ligands",
+     "title": "Catalysts, ligands and organometallic compounds | OGK-CHEM",
+     "description": "Palladium, rhodium, ruthenium and other metal complexes, phosphine ligands and organometallic reagents. Request a quotation.",
+     "intro": "Cross-coupling and hydrogenation catalysts, ligands and organometallic reagents.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/amino-acids",
+   "parent": "reagents",
+   "slug": "amino-acids",
+   "position": 4,
+   "nameRu": "Аминокислоты и пептидный синтез",
+   "nameEn": "Amino acids and peptide synthesis",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Аминокислоты и реагенты для пептидного синтеза",
+     "title": "Аминокислоты и реагенты пептидного синтеза | ОГК-ХИМ",
+     "description": "Природные и защищённые аминокислоты (Fmoc, Boc), их производные и реагенты конденсации для синтеза пептидов. Запрос КП.",
+     "intro": "Аминокислоты, их защищённые производные и реагенты для твердофазного и жидкофазного синтеза пептидов.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Amino acids and peptide synthesis reagents",
+     "title": "Amino acids and peptide synthesis reagents | OGK-CHEM",
+     "description": "Natural and protected amino acids (Fmoc, Boc), their derivatives and coupling reagents for peptide synthesis. Request a quotation.",
+     "intro": "Amino acids, their protected derivatives and reagents for solid- and solution-phase peptide synthesis.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/biochemical",
+   "parent": "reagents",
+   "slug": "biochemical",
+   "position": 5,
+   "nameRu": "Биохимические реагенты",
+   "nameEn": "Biochemical reagents",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Биохимические реагенты",
+     "title": "Биохимические реагенты: буферы, детергенты, нуклеотиды | ОГК-ХИМ",
+     "description": "Буферные вещества, детергенты, витамины, липиды, нуклеозиды, нуклеотиды и углеводы для биохимических исследований. Запрос КП.",
+     "intro": "Буферы, детергенты и ПАВ, витамины и коферменты, липиды, нуклеозиды, нуклеотиды и углеводы.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Biochemical reagents",
+     "title": "Biochemical reagents: buffers, detergents, nucleotides | OGK-CHEM",
+     "description": "Buffer substances, detergents, vitamins, lipids, nucleosides, nucleotides and carbohydrates for biochemical research. Request a quotation.",
+     "intro": "Buffers, detergents and surfactants, vitamins and coenzymes, lipids, nucleosides, nucleotides and carbohydrates.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/bioactive",
+   "parent": "reagents",
+   "slug": "bioactive",
+   "position": 6,
+   "nameRu": "Биоактивные соединения и ингибиторы",
+   "nameEn": "Bioactive compounds and inhibitors",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Биоактивные соединения, ингибиторы и природные вещества",
+     "title": "Ингибиторы, биоактивные и природные соединения | ОГК-ХИМ",
+     "description": "Ингибиторы ферментов и рецепторов, агонисты, антагонисты и природные соединения для фармакологии и клеточной биологии. Запрос КП.",
+     "intro": "Малые молекулы для фармакологических и клеточных исследований: ингибиторы, модуляторы сигнальных путей и природные соединения.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Bioactive compounds, inhibitors and natural products",
+     "title": "Inhibitors, bioactive and natural compounds | OGK-CHEM",
+     "description": "Enzyme and receptor inhibitors, agonists, antagonists and natural products for pharmacology and cell biology. Request a quotation.",
+     "intro": "Small molecules for pharmacology and cell research: inhibitors, signalling pathway modulators and natural products.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/antibiotics",
+   "parent": "reagents",
+   "slug": "antibiotics",
+   "position": 7,
+   "nameRu": "Антибиотики",
+   "nameEn": "Antibiotics",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Антибиотики и противомикробные вещества",
+     "title": "Антибиотики и противомикробные вещества для лабораторий | ОГК-ХИМ",
+     "description": "Антибиотики, противогрибковые и противомикробные вещества для микробиологии, клеточных культур и аналитики. Запрос КП.",
+     "intro": "Антибиотики и противомикробные вещества для селективных сред, клеточных культур и аналитических задач.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Antibiotics and antimicrobials",
+     "title": "Antibiotics and antimicrobials for laboratories | OGK-CHEM",
+     "description": "Antibiotics, antifungals and antimicrobials for microbiology, cell culture and analysis. Request a quotation.",
+     "intro": "Antibiotics and antimicrobials for selective media, cell culture and analytical work.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/dyes",
+   "parent": "reagents",
+   "slug": "dyes",
+   "position": 8,
+   "nameRu": "Красители, индикаторы и зонды",
+   "nameEn": "Dyes, indicators and probes",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Красители, индикаторы, флуоресцентные зонды и субстраты",
+     "title": "Красители, индикаторы и флуоресцентные зонды | ОГК-ХИМ",
+     "description": "Красители для микроскопии и электрофореза, кислотно-основные индикаторы, флуоресцентные зонды и хромогенные субстраты. Запрос КП.",
+     "intro": "Красители, индикаторы, флуоресцентные зонды и субстраты для микроскопии, титрования и иммуноанализа.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Dyes, indicators, fluorescent probes and substrates",
+     "title": "Dyes, indicators and fluorescent probes | OGK-CHEM",
+     "description": "Stains for microscopy and electrophoresis, acid-base indicators, fluorescent probes and chromogenic substrates. Request a quotation.",
+     "intro": "Dyes, indicators, fluorescent probes and substrates for microscopy, titration and immunoassays.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/polymers",
+   "parent": "reagents",
+   "slug": "polymers",
+   "position": 9,
+   "nameRu": "Полимеры и наноматериалы",
+   "nameEn": "Polymers and nanomaterials",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Полимеры, ПЭГ-линкеры, смолы и наноматериалы",
+     "title": "Полимеры, ПЭГ-линкеры, смолы и наноматериалы | ОГК-ХИМ",
+     "description": "Полимеры, производные ПЭГ и линкеры, смолы для синтеза и ионного обмена, микро- и наночастицы. Запрос КП.",
+     "intro": "Полимеры и ПЭГ-линкеры, смолы для синтеза и ионного обмена, микро- и наноматериалы.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Polymers, PEG linkers, resins and nanomaterials",
+     "title": "Polymers, PEG linkers, resins and nanomaterials | OGK-CHEM",
+     "description": "Polymers, PEG derivatives and linkers, synthesis and ion-exchange resins, micro- and nanoparticles. Request a quotation.",
+     "intro": "Polymers and PEG linkers, synthesis and ion-exchange resins, micro- and nanomaterials.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "reagents/metals",
+   "parent": "reagents",
+   "slug": "metals",
+   "position": 10,
+   "nameRu": "Металлы и сплавы",
+   "nameEn": "Metals and alloys",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack",
+    "storage"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Металлы, сплавы и материалы",
+     "title": "Металлы, сплавы и материалы высокой чистоты | ОГК-ХИМ",
+     "description": "Металлы и сплавы в виде фольги, проволоки, порошков и гранул, материалы высокой чистоты для исследований. Запрос КП.",
+     "intro": "Металлы и сплавы высокой чистоты: фольга, проволока, порошки, гранулы и мишени.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Реактивы",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Колонки для ВЭЖХ",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Metals, alloys and materials",
+     "title": "High-purity metals, alloys and materials | OGK-CHEM",
+     "description": "Metals and alloys as foil, wire, powder and granules, high-purity materials for research. Request a quotation.",
+     "intro": "High-purity metals and alloys: foil, wire, powder, granules and targets.",
+     "facets": [
+      "brand",
+      "pack",
+      "storage"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Reagents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "HPLC columns",
+       "href": "/catalog/chromatography/hplc-columns/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
      ]
     }
    }
@@ -1912,6 +3836,518 @@
    }
   },
   {
+   "path": "chromatography/gc-columns",
+   "parent": "chromatography",
+   "slug": "gc-columns",
+   "position": 4,
+   "nameRu": "Колонки для ГХ",
+   "nameEn": "GC columns",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "equipment",
+   "facets": [
+    "brand"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Колонки для газовой хроматографии",
+     "title": "Капиллярные колонки для ГХ и ГХ-МС | ОГК-ХИМ",
+     "description": "Капиллярные и насадочные колонки для газовой хроматографии и ГХ-МС. Поставка под заказ, запрос КП.",
+     "intro": "Капиллярные колонки разной полярности, длины и толщины плёнки для ГХ и ГХ-МС.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Расходные материалы для хроматографии",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "Растворители для ВЭЖХ",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Gas chromatography columns",
+     "title": "Capillary columns for GC and GC-MS | OGK-CHEM",
+     "description": "Capillary and packed columns for gas chromatography and GC-MS. Supplied to order, request a quotation.",
+     "intro": "Capillary columns of different polarity, length and film thickness for GC and GC-MS.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Chromatography consumables",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "HPLC solvents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "chromatography/vials",
+   "parent": "chromatography",
+   "slug": "vials",
+   "position": 5,
+   "nameRu": "Виалы, септы и крышки",
+   "nameEn": "Vials, septa and caps",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "equipment",
+   "facets": [
+    "brand"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Виалы, септы и крышки для хроматографии",
+     "title": "Виалы, септы и крышки для автосамплера | ОГК-ХИМ",
+     "description": "Виалы, микровставки, крышки и септы для автосамплеров ВЭЖХ и ГХ. Поставка под заказ, запрос КП.",
+     "intro": "Виалы, микровставки, крышки и септы для автосамплеров ВЭЖХ и ГХ.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Расходные материалы для хроматографии",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "Растворители для ВЭЖХ",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Chromatography vials, septa and caps",
+     "title": "Autosampler vials, septa and caps | OGK-CHEM",
+     "description": "Vials, micro-inserts, caps and septa for HPLC and GC autosamplers. Supplied to order, request a quotation.",
+     "intro": "Vials, micro-inserts, caps and septa for HPLC and GC autosamplers.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Chromatography consumables",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "HPLC solvents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "chromatography/spe",
+   "parent": "chromatography",
+   "slug": "spe",
+   "position": 6,
+   "nameRu": "Сорбенты и ТФЭ",
+   "nameEn": "Sorbents and SPE",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "equipment",
+   "facets": [
+    "brand"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Сорбенты и картриджи для твердофазной экстракции",
+     "title": "Картриджи ТФЭ (SPE) и сорбенты | ОГК-ХИМ",
+     "description": "Картриджи и планшеты для твердофазной экстракции, сорбенты для пробоподготовки и набивки колонок. Запрос КП.",
+     "intro": "Картриджи и планшеты ТФЭ, сорбенты для пробоподготовки и набивки колонок.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Расходные материалы для хроматографии",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "Растворители для ВЭЖХ",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Sorbents and solid-phase extraction cartridges",
+     "title": "SPE cartridges and sorbents | OGK-CHEM",
+     "description": "Cartridges and plates for solid-phase extraction, sorbents for sample preparation and column packing. Request a quotation.",
+     "intro": "SPE cartridges and plates, sorbents for sample preparation and column packing.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Chromatography consumables",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "HPLC solvents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "chromatography/tlc",
+   "parent": "chromatography",
+   "slug": "tlc",
+   "position": 7,
+   "nameRu": "Пластины для ТСХ",
+   "nameEn": "TLC plates",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "equipment",
+   "facets": [
+    "brand"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Пластины для тонкослойной хроматографии",
+     "title": "Пластины для ТСХ и ВЭТСХ | ОГК-ХИМ",
+     "description": "Пластины для ТСХ и ВЭТСХ на стекле, алюминии и пластике — с силикагелем, обращённой фазой и другими сорбентами. Запрос КП.",
+     "intro": "Пластины для ТСХ и ВЭТСХ с силикагелем, обращённой фазой и другими сорбентами.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Доставка в любой регион России",
+      "Документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Расходные материалы для хроматографии",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "Растворители для ВЭЖХ",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Таможенное оформление",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Thin-layer chromatography plates",
+     "title": "TLC and HPTLC plates | OGK-CHEM",
+     "description": "TLC and HPTLC plates on glass, aluminium and plastic, with silica gel, reversed phase and other sorbents. Request a quotation.",
+     "intro": "TLC and HPTLC plates with silica gel, reversed phase and other sorbents.",
+     "facets": [
+      "brand"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Delivery to any region of Russia",
+      "Documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Chromatography consumables",
+       "href": "/catalog/chromatography/"
+      },
+      {
+       "label": "HPLC solvents",
+       "href": "/catalog/reagents/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Customs clearance",
+       "href": "/services/customs-clearance/"
+      }
+     ]
+    }
+   }
+  },
+  {
    "path": "reference-drugs",
    "parent": null,
    "slug": "reference-drugs",
@@ -2263,6 +4699,506 @@
       }
      ],
      "related": [
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Microorganisms and biological standards",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "biochemistry/antibodies",
+   "parent": "biochemistry",
+   "slug": "antibodies",
+   "position": 0,
+   "nameRu": "Антитела и иммуноанализ",
+   "nameEn": "Antibodies and immunoassays",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Антитела и наборы для иммуноанализа",
+     "title": "Антитела и наборы ИФА | ОГК-ХИМ",
+     "description": "Моноклональные и поликлональные антитела, конъюгаты, вторичные антитела и наборы ИФА. Поставка под заказ с холодовой цепью, запрос КП.",
+     "intro": "Первичные и вторичные антитела, конъюгаты с метками, наборы ИФА и мультиплексные панели.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Биохимия и биотехнологии",
+       "href": "/catalog/biochemistry/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Микроорганизмы и биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Antibodies and immunoassay kits",
+     "title": "Antibodies and ELISA kits | OGK-CHEM",
+     "description": "Monoclonal and polyclonal antibodies, conjugates, secondary antibodies and ELISA kits. Supplied to order with the cold chain, request a quotation.",
+     "intro": "Primary and secondary antibodies, labelled conjugates, ELISA kits and multiplex panels.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Biochemistry and biotechnology",
+       "href": "/catalog/biochemistry/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Microorganisms and biological standards",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "biochemistry/proteins",
+   "parent": "biochemistry",
+   "slug": "proteins",
+   "position": 1,
+   "nameRu": "Белки, ферменты и пептиды",
+   "nameEn": "Proteins, enzymes and peptides",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Белки, ферменты и пептиды",
+     "title": "Рекомбинантные белки, ферменты и пептиды | ОГК-ХИМ",
+     "description": "Рекомбинантные и нативные белки, антигены, ферменты, пептиды, лизаты и экстракты. Поставка под заказ с холодовой цепью, запрос КП.",
+     "intro": "Рекомбинантные и нативные белки, антигены, ферменты, пептиды, клеточные лизаты и экстракты.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Биохимия и биотехнологии",
+       "href": "/catalog/biochemistry/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Микроорганизмы и биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Proteins, enzymes and peptides",
+     "title": "Recombinant proteins, enzymes and peptides | OGK-CHEM",
+     "description": "Recombinant and native proteins, antigens, enzymes, peptides, lysates and extracts. Supplied to order with the cold chain, request a quotation.",
+     "intro": "Recombinant and native proteins, antigens, enzymes, peptides, cell lysates and extracts.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Biochemistry and biotechnology",
+       "href": "/catalog/biochemistry/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Microorganisms and biological standards",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "biochemistry/molecular-biology",
+   "parent": "biochemistry",
+   "slug": "molecular-biology",
+   "position": 2,
+   "nameRu": "Молекулярная биология",
+   "nameEn": "Molecular biology",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Молекулярная биология и генетика",
+     "title": "Клоны кДНК, siRNA, праймеры и реагенты для ПЦР | ОГК-ХИМ",
+     "description": "Клоны кДНК и векторы, siRNA и CRISPR, праймеры и зонды, полимеразы, наборы для выделения нуклеиновых кислот. Запрос КП.",
+     "intro": "Клоны и векторы, РНК-интерференция и CRISPR, олигонуклеотиды, ферменты и наборы для ПЦР, клонирования и электрофореза.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Биохимия и биотехнологии",
+       "href": "/catalog/biochemistry/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Микроорганизмы и биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Molecular biology and genetics",
+     "title": "cDNA clones, siRNA, primers and PCR reagents | OGK-CHEM",
+     "description": "cDNA clones and vectors, siRNA and CRISPR, primers and probes, polymerases, nucleic acid purification kits. Request a quotation.",
+     "intro": "Clones and vectors, RNA interference and CRISPR, oligonucleotides, enzymes and kits for PCR, cloning and electrophoresis.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Biochemistry and biotechnology",
+       "href": "/catalog/biochemistry/"
+      },
+      {
+       "label": "Cold chain",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Microorganisms and biological standards",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "path": "biochemistry/cell-biology",
+   "parent": "biochemistry",
+   "slug": "cell-biology",
+   "position": 3,
+   "nameRu": "Клеточная биология и микробиология",
+   "nameEn": "Cell biology and microbiology",
+   "shortRu": null,
+   "shortEn": null,
+   "cardType": "standard",
+   "facets": [
+    "brand",
+    "pack"
+   ],
+   "content": {
+    "ru": {
+     "h1": "Клеточная биология и микробиология",
+     "title": "Среды для культур клеток и микробиологии | ОГК-ХИМ",
+     "description": "Среды и сыворотки для культур клеток, питательные среды и добавки для микробиологии, диски для тестов чувствительности. Запрос КП.",
+     "intro": "Среды, сыворотки и реагенты для культур клеток, питательные среды для микробиологии и тесты на чувствительность к антибиотикам.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Поставка под заказ из каталогов производителей — срок указываем в коммерческом предложении",
+      "Соблюдаем условия хранения при перевозке: +2…+8 °C, −20 °C, сухой лёд",
+      "Сопроводительные документы: сертификат анализа (CoA) партии, паспорт безопасности (SDS)",
+      "Доставка в любой регион России, документы для закупок по 44-ФЗ и 223-ФЗ"
+     ],
+     "faq": [
+      {
+       "q": "Почему на сайте нет цен?",
+       "a": "Цена зависит от фасовки, количества, условий доставки и курса. Добавьте позиции в корзину запроса — менеджер рассчитает поставку и пришлёт коммерческое предложение в течение 2 рабочих часов."
+      },
+      {
+       "q": "Можно заказать позицию, которой нет на сайте?",
+       "a": "Да. Отправьте запрос с каталожным номером или CAS — поставим под заказ из каталогов производителей."
+      },
+      {
+       "q": "Можно ли получить сертификат анализа конкретной партии?",
+       "a": "Да, CoA партии предоставляем по запросу — укажите это в комментарии к заявке."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Карточка организации и реквизиты",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Политика конфиденциальности",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Биохимия и биотехнологии",
+       "href": "/catalog/biochemistry/"
+      },
+      {
+       "label": "Холодовая цепь",
+       "href": "/services/cold-chain/"
+      },
+      {
+       "label": "Микроорганизмы и биологические стандарты",
+       "href": "/catalog/biological-standards/"
+      }
+     ]
+    },
+    "en": {
+     "h1": "Cell biology and microbiology",
+     "title": "Cell culture and microbiology media | OGK-CHEM",
+     "description": "Cell culture media and sera, microbiological media and supplements, antimicrobial susceptibility discs. Request a quotation.",
+     "intro": "Media, sera and reagents for cell culture, microbiological media and antimicrobial susceptibility tests.",
+     "facets": [
+      "brand",
+      "pack"
+     ],
+     "delivery": [
+      "Supplied to order from manufacturer catalogues — lead time is stated in the quotation",
+      "Storage conditions are kept in transit: +2…+8 °C, −20 °C, dry ice",
+      "Accompanying documents: batch certificate of analysis (CoA), safety data sheet (SDS)",
+      "Delivery to any region of Russia; documents for public procurement under 44-FZ and 223-FZ"
+     ],
+     "faq": [
+      {
+       "q": "Why are there no prices on the website?",
+       "a": "The price depends on pack size, quantity, delivery terms and exchange rates. Add items to the quote cart and a manager will calculate the supply and send a quotation within 2 business hours."
+      },
+      {
+       "q": "Can I order an item that is not on the website?",
+       "a": "Yes. Send a request with the catalogue number or CAS and we will supply it to order from the manufacturer’s catalogue."
+      },
+      {
+       "q": "Can I get a certificate of analysis for a specific batch?",
+       "a": "Yes, we provide the batch CoA on request — mention it in the comment to your request."
+      }
+     ],
+     "documents": [
+      {
+       "title": "Company details (in Russian)",
+       "href": "/files/kartochka.pdf"
+      },
+      {
+       "title": "Privacy policy (in Russian)",
+       "href": "/files/politika.pdf"
+      }
+     ],
+     "related": [
+      {
+       "label": "Biochemistry and biotechnology",
+       "href": "/catalog/biochemistry/"
+      },
       {
        "label": "Cold chain",
        "href": "/services/cold-chain/"
@@ -2773,14 +5709,6 @@
       {
        "label": "Предколонки",
        "href": "/catalog/chromatography/precolumns/"
-      },
-      {
-       "label": "Лабораторная посуда и тара",
-       "href": "/catalog/laboratory-glassware/"
-      },
-      {
-       "label": "Лабораторное оборудование",
-       "href": "/catalog/laboratory-equipment/"
       }
      ],
      "updatedAt": "2026-10-20"
@@ -2808,14 +5736,6 @@
       {
        "label": "Guard columns",
        "href": "/catalog/chromatography/precolumns/"
-      },
-      {
-       "label": "Laboratory glassware and containers",
-       "href": "/catalog/laboratory-glassware/"
-      },
-      {
-       "label": "Laboratory equipment",
-       "href": "/catalog/laboratory-equipment/"
       }
      ],
      "updatedAt": "2026-10-20",
@@ -2859,10 +5779,6 @@
       {
        "label": "Фитинги",
        "href": "/catalog/chromatography/fittings/"
-      },
-      {
-       "label": "Лабораторное оборудование",
-       "href": "/catalog/laboratory-equipment/"
       }
      ],
      "updatedAt": "2026-10-20"
@@ -2894,10 +5810,6 @@
       {
        "label": "Fittings",
        "href": "/catalog/chromatography/fittings/"
-      },
-      {
-       "label": "Laboratory equipment",
-       "href": "/catalog/laboratory-equipment/"
       }
      ],
      "updatedAt": "2026-10-20",
@@ -2932,10 +5844,6 @@
       {
        "label": "Колонки для ВЭЖХ",
        "href": "/catalog/chromatography/hplc-columns/"
-      },
-      {
-       "label": "Лабораторное оборудование",
-       "href": "/catalog/laboratory-equipment/"
       }
      ],
      "updatedAt": "2026-10-20"
@@ -2958,10 +5866,6 @@
       {
        "label": "HPLC columns",
        "href": "/catalog/chromatography/hplc-columns/"
-      },
-      {
-       "label": "Laboratory equipment",
-       "href": "/catalog/laboratory-equipment/"
       }
      ],
      "updatedAt": "2026-10-20",
@@ -2992,12 +5896,7 @@
      "text": [
       "Позиции SCIEX поставляем по каталожным номерам производителя: пришлите список — проверим доступность и пришлём одно коммерческое предложение на всё."
      ],
-     "groups": [
-      {
-       "label": "Лабораторное оборудование",
-       "href": "/catalog/laboratory-equipment/"
-      }
-     ],
+     "groups": [],
      "updatedAt": "2026-10-20"
     },
     "en": {
@@ -3014,12 +5913,7 @@
      "text": [
       "We supply SCIEX items by the manufacturer’s catalogue numbers: send a list and we will check availability and send one quotation for everything."
      ],
-     "groups": [
-      {
-       "label": "Laboratory equipment",
-       "href": "/catalog/laboratory-equipment/"
-      }
-     ],
+     "groups": [],
      "updatedAt": "2026-10-20",
      "hasEn": true
     }
@@ -3525,12 +6419,7 @@
      "text": [
       "Мерные колбы класса A, стаканы и лабораторные бутыли DURAN поставляем поштучно и упаковками."
      ],
-     "groups": [
-      {
-       "label": "Лабораторная посуда и тара",
-       "href": "/catalog/laboratory-glassware/"
-      }
-     ],
+     "groups": [],
      "updatedAt": "2026-10-20"
     },
     "en": {
@@ -3546,12 +6435,7 @@
      "text": [
       "Class A volumetric flasks, beakers and DURAN laboratory bottles are supplied individually and in packs."
      ],
-     "groups": [
-      {
-       "label": "Laboratory glassware and containers",
-       "href": "/catalog/laboratory-glassware/"
-      }
-     ],
+     "groups": [],
      "updatedAt": "2026-10-20",
      "hasEn": true
     }
