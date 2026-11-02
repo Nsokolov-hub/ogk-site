@@ -51,9 +51,10 @@ def test_the_crm_connects_the_token_and_reads_the_reports(client, fake, sessions
     assert answer['status']['savedBy'] == 'Анна Петрова (CRM)' and answer['access']['webmaster']['ok']
     assert len([g for g in answer['goals'] if g['state'] == 'created']) == len(yandex.GOALS) - 1
 
+    assert ask(client, {'action': 'sitemap', 'author': 'Анна Петрова'}).json()['state'] == 'added'
     report = ask(client, {'action': 'refresh', 'period': 7}).json()
     assert report['metrika']['totals']['visits'] == 20 and report['webmaster']['summary']['inSearch'] == 9
-    assert ask(client, {'action': 'sitemap', 'author': 'Анна Петрова'}).json()['state'] == 'added'
+    assert ask(client, {'action': 'sitemap', 'author': 'Анна Петрова'}).json()['state'] == 'exists'
     assert {g['state'] for g in ask(client, {'action': 'goals'}).json()['goals']} == {'exists'}
 
     with sessions() as db:

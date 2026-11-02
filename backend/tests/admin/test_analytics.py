@@ -230,7 +230,9 @@ def test_the_reports_of_each_period_come_from_one_snapshot(fake, signed_in, sess
         {'title': 'Маловостребованная', 'count': 2,
          'examples': ['https://www.ogk-chem.ru/a/', 'https://www.ogk-chem.ru/b/']},
         {'title': 'Неканоническая: указан другой canonical', 'count': 1, 'examples': ['https://www.ogk-chem.ru/c/']}]
-    assert webmaster['sitemaps'][0]['children'] == 26 and webmaster['sitemaps'][0]['added'] is False
+    # Webmaster has loaded the site and had our map only from robots.txt: the refresh added it itself, once.
+    assert webmaster['loaded'] is True and fake.sitemaps == ['https://www.ogk-chem.ru/sitemap.xml']
+    assert webmaster['sitemaps'][0]['children'] == 26 and webmaster['sitemaps'][-1]['added'] is True
     assert webmaster['queries'] == [{'text': 'маннит стандарт', 'shows': 120, 'clicks': 7, 'position': 8.3}]
     assert webmaster['queryTotals']['shows'] == 120 and webmaster['queryTotals']['clicks'] == 7
     # Pages in search are counted every few days: the gaps carry the last value.
@@ -351,3 +353,38 @@ def test_metrica_gets_at_most_two_requests_at_a_time_and_a_429_is_retried(fake, 
     report = admin.ok(admin.post('/analytics/refresh', params={'period': 7}))
     assert report['metrika']['errors'] == [] and report['metrika']['sources'] and report['metrika']['engines']
     assert state['most'] <= yandex.METRIKA_PARALLEL and waits and set(waits) == {1.0}
+
+
+def test_no_sitemap_before_webmaster_has_loaded_the_site_then_it_is_added_by_itself(fake, signed_in, sessions):
+    """02.11.2026 in production: a site added the day before is NOT_LOADED, and adding a Sitemap answers 504."""
+    real, state = fake.handle, {'loaded': False}
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        if request.url.path == '/v4/user/42/hosts':
+            return httpx.Response(200, json={'hosts': [
+                {'host_id': HOST, 'ascii_host_url': 'https://www.ogk-chem.ru/', 'verified': True,
+                 'host_data_status': 'OK' if state['loaded'] else 'NOT_LOADED'}]})
+        if not state['loaded'] and request.url.path.startswith(f'/v4/user/42/hosts/{HOST}/'):
+            if request.url.path.endswith('/user-added-sitemaps') and request.method == 'POST':
+                return httpx.Response(504)
+            if not request.url.path.endswith(('/user-added-sitemaps', '/sitemaps', '/diagnostics')):
+                return httpx.Response(404, json={'error_code': 'HOST_NOT_LOADED', 'error_message': 'not loaded yet'})
+        return real(request)
+
+    fake.handle = handle  # type: ignore[method-assign]
+    admin = signed_in('admin')
+    admin.ok(admin.put('/analytics/token', {'token': TOKEN}))
+    early = admin.post('/analytics/sitemap')
+    assert early.status_code == 422 and early.json()['code'] == 'YANDEX_SITEMAP_LATER'
+    assert 'robots.txt' in early.json()['message'] and fake.sitemaps == []
+    report = admin.ok(admin.post('/analytics/refresh'))
+    assert report['webmaster']['loaded'] is False and fake.sitemaps == []
+
+    state['loaded'] = True
+    report = admin.ok(admin.post('/analytics/refresh'))
+    assert report['webmaster']['loaded'] is True and fake.sitemaps == ['https://www.ogk-chem.ru/sitemap.xml']
+    assert any(s['added'] for s in report['webmaster']['sitemaps'])
+    admin.ok(admin.post('/analytics/refresh'))
+    assert fake.sitemaps == ['https://www.ogk-chem.ru/sitemap.xml']
+    with sessions() as db:
+        assert db.scalar(select(AuditEntry).where(AuditEntry.entity_id == 'webmaster_sitemap')).actor_name == 'система'

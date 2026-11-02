@@ -52,6 +52,8 @@ export interface MetrikaReport {
 
 export interface WebmasterReport {
   host: string | null;
+  /** false — Вебмастер ещё не загрузил данные о сайте: отчётов и добавления Sitemap пока нет */
+  loaded?: boolean;
   errors: string[];
   summary?: { inSearch: number; excluded: number; sqi: number; problems: Record<string, number> };
   problems?: { code: string; title: string; severity: string; severityTitle: string }[];

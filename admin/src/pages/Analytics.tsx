@@ -322,7 +322,12 @@ function Webmaster({ w, admin }: { w: WebmasterReport; admin: boolean }) {
           </tbody>
         </table>
       </div>
-      {admin && !hasOwnSitemap && w.host ? (
+      {w.loaded === false ? (
+        <p className="muted small">
+          Вебмастер ещё не загрузил данные о сайте и пока не принимает Sitemap. Яндекс находит карту сайта сам через robots.txt, а когда данные загрузятся,
+          сайт добавит её в Вебмастер автоматически.
+        </p>
+      ) : admin && !hasOwnSitemap && w.host ? (
         <div className="row" style={{ marginTop: 10 }}>
           <Button size="sm" busy={sitemap.isPending} onClick={() => sitemap.mutate()}>Добавить sitemap.xml в Вебмастер</Button>
           <span className="muted small">Яндекс и так находит его через robots.txt; добавление ускоряет первую загрузку.</span>

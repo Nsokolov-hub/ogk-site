@@ -27,6 +27,7 @@ import httpx
 from cryptography.fernet import Fernet, InvalidToken
 from sqlalchemy.orm import Session
 
+from app.admin.audit import record
 from app.catalog.settings import get_setting, set_setting
 from app.core.config import settings
 from app.core.db import utcnow
@@ -324,8 +325,9 @@ def metrika_period(api: Api, ym: str, period: tuple[date, date],
 
 # ── Webmaster ──
 
-def webmaster_host(api: Api) -> tuple[int, str, str]:
-    """(user id, host id, address) of the site in the account's Webmaster."""
+def webmaster_host(api: Api) -> tuple[int, str, str, str]:
+    """(user id, host id, address, state of its data) of the site in the account's Webmaster. A site added a day
+    or two ago is NOT_LOADED: Yandex has not collected its data, the reports answer 404 and adding a Sitemap 504."""
     uid = api.get(f'{WEBMASTER}/user')['user_id']
     hosts = api.get(f'{WEBMASTER}/user/{uid}/hosts').get('hosts') or []
     wanted = urlsplit(settings.site_url).hostname
@@ -333,7 +335,7 @@ def webmaster_host(api: Api) -> tuple[int, str, str]:
         if urlsplit(host.get('ascii_host_url') or '').hostname == wanted:
             if not host.get('verified'):
                 raise Refused('NOT_VERIFIED', f'Права на {wanted} в Вебмастере не подтверждены')
-            return uid, host['host_id'], host.get('ascii_host_url') or ''
+            return uid, host['host_id'], host.get('ascii_host_url') or '', str(host.get('host_data_status') or '')
     raise Refused('NO_HOST', f'Сайта {wanted} нет в Вебмастере этого аккаунта')
 
 
@@ -477,7 +479,8 @@ def fetch(oauth: str, ym: str, end: date | None = None) -> dict[str, Any]:
         'metrika': {'counter': ym or None, 'errors': metrika_errors,
                     'missingGoals': [i for i, _ in GOALS if i not in present] if 'goals' in first and ym else [],
                     'periods': {str(days): blocks('metrika', days) for days in PERIODS}},
-        'webmaster': {'host': host[2] if host else None, 'errors': webmaster_errors, **blocks('webmaster', 0),
+        'webmaster': {'host': host[2] if host else None, 'loaded': host is not None and host[3] != 'NOT_LOADED',
+                      'errors': webmaster_errors, **blocks('webmaster', 0),
                       'periods': {str(days): blocks('webmaster', days) for days in PERIODS}},
     }
 
@@ -488,6 +491,16 @@ def refresh(db: Session) -> dict[str, Any] | None:
     if not oauth:
         return None
     data = fetch(oauth, ym)
+    if sitemap_missing(data['webmaster']):
+        # Nobody has to press «Добавить sitemap.xml»: once Webmaster has loaded the site, the hourly refresh does it.
+        with http_client() as client:
+            try:
+                result = put_sitemap(Api(oauth, client))
+                data['webmaster']['sitemaps'].append({'url': result['url'], 'urls': 0, 'errors': 0, 'children': 0,
+                                                      'lastAccess': None, 'added': True})
+                record(db, None, 'setting', 'webmaster_sitemap', 'create', f'Sitemap в Вебмастере: {result["url"]}')
+            except Refused as exc:
+                event(logger, 'webmaster_sitemap_failed', logging.WARNING, error=exc.code)
     set_setting(db, 'yandex_reports', data)
     set_setting(db, 'yandex_reports_at', data['fetchedAt'])
     event(logger, 'yandex_reports_fetched', metrika_errors=len(data['metrika']['errors']),
@@ -596,20 +609,42 @@ def ensure_goals(db: Session) -> list[dict[str, Any]]:
     return out
 
 
+SITEMAP_LATER = ('Вебмастер ещё не загрузил данные о сайте и пока не принимает Sitemap. Делать ничего не нужно: '
+                 'Яндекс находит карту сайта сам через robots.txt, а когда данные загрузятся (обычно несколько дней), '
+                 'сайт добавит её в Вебмастер автоматически')
+
+
+def sitemap_url() -> str:
+    return f'{settings.site_url.rstrip("/")}/sitemap.xml'
+
+
+def put_sitemap(api: Api) -> dict[str, Any]:
+    """The site's sitemap index in Webmaster («Файлы Sitemap»), once; not before Webmaster has loaded the site."""
+    uid, host, _address, data_state = webmaster_host(api)
+    if data_state == 'NOT_LOADED':
+        raise Refused('SITEMAP_LATER', SITEMAP_LATER)
+    url = sitemap_url()
+    base = f'{WEBMASTER}/user/{uid}/hosts/{host}/user-added-sitemaps'
+    if url in {s.get('sitemap_url') for s in api.get(base).get('sitemaps') or []}:
+        return {'url': url, 'state': 'exists'}
+    api.post(base, {'url': url})
+    return {'url': url, 'state': 'added'}
+
+
 def add_sitemap(db: Session) -> dict[str, Any]:
-    """The site's sitemap index in Webmaster («Файлы Sitemap»), once."""
     oauth, _ = _connected(db)
-    url = f'{settings.site_url.rstrip("/")}/sitemap.xml'
     with http_client() as client:
-        api = Api(oauth, client)
         try:
-            uid, host, _address = webmaster_host(api)
-            base = f'{WEBMASTER}/user/{uid}/hosts/{host}/user-added-sitemaps'
-            added = {s.get('sitemap_url') for s in api.get(base).get('sitemaps') or []}
-            if url in added:
-                return {'url': url, 'state': 'exists'}
-            api.post(base, {'url': url})
+            result = put_sitemap(Api(oauth, client))
         except Refused as exc:
             raise exc.domain() from None
-    set_setting(db, 'yandex_reports_at', None)
-    return {'url': url, 'state': 'added'}
+    if result['state'] == 'added':
+        set_setting(db, 'yandex_reports_at', None)
+    return result
+
+
+def sitemap_missing(webmaster: dict[str, Any]) -> bool:
+    """Webmaster has loaded the site and its list of Sitemap files does not have ours yet."""
+    found = webmaster.get('sitemaps')
+    return bool(webmaster.get('loaded')) and found is not None and not any(
+        s.get('added') and s.get('url') == sitemap_url() for s in found)
