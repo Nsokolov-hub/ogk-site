@@ -250,7 +250,8 @@ def test_a_refused_service_leaves_the_other_and_an_expired_token_is_reported(fak
     fake.refuse = {'api.webmaster.yandex.net': 403}
     report = admin.ok(admin.post('/analytics/refresh'))
     assert report['metrika']['errors'] == [] and report['metrika']['totals']['visits'] > 0
-    assert report['webmaster']['host'] is None and report['webmaster']['errors'][0].startswith('Нет доступа')
+    assert report['webmaster']['host'] is None
+    assert report['webmaster']['errors'][0].startswith('Нет доступа к Вебмастеру: в приложении Яндекса')
     assert report['status']['tokenInvalid'] is False
 
     fake.refuse = {'api-metrika.yandex.net': 401, 'api.webmaster.yandex.net': 401}
@@ -289,3 +290,29 @@ def test_the_worker_fetches_once_an_hour_and_conversions_use_the_admin_token(fak
         set_setting(db, 'yandex_token', None)
         assert yandex.token(db) == 'server-token-from-env' and yandex.status(db)['source'] == 'server'
         assert yandex.status(db)['tail'] is None
+
+
+def test_a_token_without_metrica_and_a_site_webmaster_has_not_loaded_yet(fake, signed_in):
+    """02.11.2026 in production: the app had no metrika:* rights; the site was added to Webmaster the day before."""
+    real = fake.handle
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        if request.url.host == 'api-metrika.yandex.net':
+            fake.calls.append(request)
+            return httpx.Response(403, json={'errors': [{'error_type': 'access_denied', 'message': 'Access Denied'}],
+                                             'code': 403, 'message': 'Access Denied'})
+        if request.url.path.startswith(f'/v4/user/42/hosts/{HOST}/'):
+            fake.calls.append(request)
+            return httpx.Response(404, json={'error_code': 'HOST_NOT_LOADED',
+                                             'error_message': f'Host "{HOST}" is not loaded in Ya.Webmaster yet'})
+        return real(request)
+
+    fake.handle = handle  # type: ignore[method-assign]
+    admin = signed_in('admin')
+    answer = admin.ok(admin.put('/analytics/token', {'token': TOKEN}))
+    assert answer['access']['metrika']['error'].startswith('Нет доступа к Метрике: в приложении Яндекса не отмечены')
+    assert answer['access']['webmaster']['ok'] and answer['goals'] == 'нет доступа к Метрике'
+    report = admin.ok(admin.post('/analytics/refresh'))
+    assert report['webmaster']['errors'] == ['Вебмастер ещё собирает данные о сайте: после добавления это занимает '
+                                             'несколько дней. Отчёт появится сам']
+    assert report['metrika']['errors'][0].startswith('Нет доступа к Метрике')

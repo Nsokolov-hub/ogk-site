@@ -156,12 +156,24 @@ def _refusal(response: httpx.Response) -> Refused:
     except ValueError:
         data = {}
     detail = str((data.get('message') or data.get('error_message') or '') if isinstance(data, dict) else '')[:200]
+    code = str(data.get('error_code') or '') if isinstance(data, dict) else ''
+    host = response.request.url.host if response.request else ''
     if status_code == 401:
         return Refused('TOKEN_INVALID', 'Яндекс не принял токен: он отозван или истёк. Получите новый и вставьте '
                                         'в настройках')
+    if status_code == 403 and host == urlsplit(METRIKA).hostname:
+        return Refused('NO_ACCESS', 'Нет доступа к Метрике: в приложении Яндекса не отмечены права metrika:read и '
+                                    'metrika:write или токен получен не под владельцем счётчика')
+    if status_code == 403 and host == urlsplit(WEBMASTER).hostname:
+        return Refused('NO_ACCESS', 'Нет доступа к Вебмастеру: в приложении Яндекса не отмечены права '
+                                    'webmaster:hostinfo и webmaster:verify или токен получен не под владельцем сайта')
     if status_code == 403:
         return Refused('NO_ACCESS', 'Нет доступа: у приложения не отмечены нужные права или токен получен не под '
                                     'тем аккаунтом' + (f' ({detail})' if detail else ''))
+    if status_code == 404 and (code == 'HOST_NOT_LOADED' or 'not loaded' in detail):
+        # A site added to Webmaster a day or two ago: Yandex has not collected its data yet.
+        return Refused('NOT_LOADED', 'Вебмастер ещё собирает данные о сайте: после добавления это занимает '
+                                     'несколько дней. Отчёт появится сам')
     if status_code == 429:
         return Refused('RATE_LIMIT', 'Яндекс просит подождать: слишком много запросов. Попробуйте через час')
     if status_code >= 500:

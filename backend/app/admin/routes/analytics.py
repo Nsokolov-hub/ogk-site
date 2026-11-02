@@ -44,7 +44,7 @@ def connect(body: TokenIn, staff: StaffDep, db: DB) -> dict[str, Any]:
     state = yandex.status(db)
     record(db, staff, 'setting', 'yandex_token', 'update',
            f'подключён Яндекс: токен …{state["tail"]}' + (f', аккаунт {state["login"]}' if state['login'] else ''))
-    goals: list[dict[str, Any]] | str = []
+    goals: list[dict[str, Any]] | str = 'нет доступа к Метрике'
     if access['metrika']['ok']:
         try:
             goals = create_goals(db, staff)
