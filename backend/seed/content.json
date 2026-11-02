@@ -74,59 +74,48 @@
      "hero": {
       "slides": [
        {
-        "id": "main",
-        "title": "Стандартные образцы, реактивы и расходные материалы для фармацевтических лабораторий",
-        "subtitle": "Комплексные решения для фармкомпаний",
-        "ctas": [
-         {
-          "label": "Сделать заказ",
-          "href": "#request",
-          "variant": "primary",
-          "icon": "plus"
-         },
-         {
-          "label": "Связаться с нами",
-          "href": "/contacts/",
-          "variant": "secondary",
-          "icon": "dot"
-         }
-        ],
-        "imageMode": "cover",
-        "image": {
-         "src": "/images/home/hero-1.jpg",
-         "alt": "Флакон стандартного образца с зелёной крышкой",
-         "width": 2880,
-         "height": 1728
-        }
-       },
-       {
         "id": "standards",
-        "title": "Стандартные образцы ведущих производителей",
-        "subtitle": "EDQM, USP, LGC, Merck и другие бренды — поставка под заказ из каталогов производителей, с документами и соблюдением условий хранения",
+        "plate": "reference",
+        "title": "Стандартные образцы и реактивы",
+        "titleAccent": "",
+        "subtitle": "от ведущих мировых брендов под заказ",
+        "subtitleAccent": "мировых брендов",
         "ctas": [
          {
           "label": "Перейти в каталог",
-          "href": "/catalog/reference-standards/",
+          "href": "/catalog/",
           "variant": "primary",
           "icon": "arrow"
          }
-        ],
-        "imageMode": "object",
-        "image": {
-         "src": "/images/home/hero-2.png",
-         "alt": "Флакон реактива Merck",
-         "width": 824,
-         "height": 1478
-        }
+        ]
+       },
+       {
+        "id": "chromatography",
+        "plate": "chromatography",
+        "title": "Все для хроматографии",
+        "titleAccent": "хроматографии",
+        "subtitle": "Колонки, фильтры и фиттинги",
+        "subtitleAccent": "",
+        "ctas": [
+         {
+          "label": "Посмотреть раздел",
+          "href": "/catalog/chromatography/",
+          "variant": "primary",
+          "icon": "arrow"
+         }
+        ]
        },
        {
         "id": "logistics",
-        "title": "Логистика с холодовой цепью из 23 стран",
-        "subtitle": "Термоконтейнеры, хладоэлементы и логгеры температуры, таможенное оформление и разрешения на ввоз",
+        "plate": "logistics",
+        "title": "Перевозка фармацевтики",
+        "titleAccent": "Перевозка",
+        "subtitle": "Международная и внутрироссийская логистика",
+        "subtitleAccent": "",
         "ctas": [
          {
-          "label": "Рассчитать доставку",
-          "href": "/services/cold-chain/",
+          "label": "Рассчитать перевозку",
+          "href": "/services/pharma-logistics/",
           "variant": "primary",
           "icon": "arrow"
          },
@@ -136,14 +125,7 @@
           "variant": "secondary",
           "icon": "dot"
          }
-        ],
-        "imageMode": "object",
-        "image": {
-         "src": "/images/home/hero-3.png",
-         "alt": "Грузовик для перевозки фармацевтических грузов",
-         "width": 2082,
-         "height": 824
-        }
+        ]
        }
       ],
       "search": {
@@ -643,59 +625,48 @@
      "hero": {
       "slides": [
        {
-        "id": "main",
-        "title": "Reference standards, reagents and consumables for pharmaceutical laboratories",
-        "subtitle": "End-to-end supply for pharmaceutical companies",
-        "ctas": [
-         {
-          "label": "Place an order",
-          "href": "#request",
-          "variant": "primary",
-          "icon": "plus"
-         },
-         {
-          "label": "Contact us",
-          "href": "/contacts/",
-          "variant": "secondary",
-          "icon": "dot"
-         }
-        ],
-        "imageMode": "cover",
-        "image": {
-         "src": "/images/home/hero-1.jpg",
-         "alt": "Reference standard vial with a green cap",
-         "width": 2880,
-         "height": 1728
-        }
-       },
-       {
         "id": "standards",
-        "title": "Reference standards from leading manufacturers",
-        "subtitle": "EDQM, USP, LGC, Merck and other brands — supplied to order from manufacturer catalogues, with documents and controlled storage conditions",
+        "plate": "reference",
+        "title": "Reference standards and reagents",
+        "titleAccent": "",
+        "subtitle": "from leading global brands, to order",
+        "subtitleAccent": "leading global brands",
         "ctas": [
          {
           "label": "Browse the catalogue",
-          "href": "/catalog/reference-standards/",
+          "href": "/catalog/",
           "variant": "primary",
           "icon": "arrow"
          }
-        ],
-        "imageMode": "object",
-        "image": {
-         "src": "/images/home/hero-2.png",
-         "alt": "Merck reagent bottle",
-         "width": 824,
-         "height": 1478
-        }
+        ]
+       },
+       {
+        "id": "chromatography",
+        "plate": "chromatography",
+        "title": "Everything for chromatography",
+        "titleAccent": "chromatography",
+        "subtitle": "Columns, filters and fittings",
+        "subtitleAccent": "",
+        "ctas": [
+         {
+          "label": "View the section",
+          "href": "/catalog/chromatography/",
+          "variant": "primary",
+          "icon": "arrow"
+         }
+        ]
        },
        {
         "id": "logistics",
-        "title": "Cold chain logistics from 23 countries",
-        "subtitle": "Insulated shippers, coolant packs and temperature loggers, customs clearance and import permits",
+        "plate": "logistics",
+        "title": "Shipping pharmaceuticals",
+        "titleAccent": "Shipping",
+        "subtitle": "International and domestic logistics in Russia",
+        "subtitleAccent": "",
         "ctas": [
          {
-          "label": "Get a delivery quote",
-          "href": "/services/cold-chain/",
+          "label": "Get a shipping quote",
+          "href": "/services/pharma-logistics/",
           "variant": "primary",
           "icon": "arrow"
          },
@@ -705,14 +676,7 @@
           "variant": "secondary",
           "icon": "dot"
          }
-        ],
-        "imageMode": "object",
-        "image": {
-         "src": "/images/home/hero-3.png",
-         "alt": "Truck for pharmaceutical cargo",
-         "width": 2082,
-         "height": 824
-        }
+        ]
        }
       ],
       "search": {

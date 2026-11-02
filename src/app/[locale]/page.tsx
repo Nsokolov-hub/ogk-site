@@ -4,7 +4,7 @@ import type { Locale } from '@/i18n/routing';
 import { BrandsSection } from '@/components/home/BrandsSection';
 import { CapabilitiesSection } from '@/components/home/CapabilitiesSection';
 import { HeroSearch } from '@/components/home/HeroSearch';
-import { HeroSlider } from '@/components/home/HeroSlider';
+import { HeroPlates } from '@/components/home/HeroPlates';
 import { ProductsSection } from '@/components/home/ProductsSection';
 import { QualitySection } from '@/components/home/QualitySection';
 import { RequestSection } from '@/components/home/RequestSection';
@@ -35,7 +35,7 @@ export default async function HomePage({ params, searchParams }: Props) {
   return (
     <>
       <JsonLd data={[organizationLd(settings), websiteLd(settings, locale)]} />
-      <HeroSlider slides={content.hero.slides} />
+      <HeroPlates slides={content.hero.slides} />
       <HeroSearch search={content.hero.search} facts={content.hero.facts} />
       <ProductsSection content={content.products} locale={locale} />
       <BrandsSection brands={content.brands} promo={content.promo} />

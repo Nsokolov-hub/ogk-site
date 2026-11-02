@@ -61,12 +61,14 @@ class Accent(Shape):
 
 
 class HeroSlide(Shape):
+    """A plate of the home page's first screen (Figma «Hero plates», 02.11.2026): the picture is the plate's own."""
     id: str
+    plate: Literal['reference', 'chromatography', 'logistics'] = 'reference'
     title: str
+    titleAccent: str = ''
     subtitle: str = ''
+    subtitleAccent: str = ''
     ctas: list[Cta] = []
-    imageMode: Literal['cover', 'object'] = 'cover'
-    image: Image
 
 
 class Home(Shape):

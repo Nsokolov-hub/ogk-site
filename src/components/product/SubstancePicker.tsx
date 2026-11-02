@@ -154,14 +154,14 @@ export function SubstancePicker({
       {/* Панель действия: появляется, когда что-то выбрано */}
       <div aria-live="polite" className="sticky bottom-4 z-20 empty:hidden">
         {selected.size > 0 ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-pill bg-surface-raised p-2 pl-6 shadow-[0_12px_40px_rgb(0_0_0/0.45)]" /* taste-skill-ignore: панель плавает над списком */>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-pill glass-overlay p-2 pl-6 shadow-[0_12px_40px_rgb(0_0_0/0.45)]" /* taste-skill-ignore: панель плавает над списком */>
             <p className="text-body text-text">{t('selected', { count: selected.size })}</p>
             <Button size="m" onClick={addSelected} iconStart={<ShoppingCart aria-hidden size={18} strokeWidth={1.5} />}>
               {t('addSelected')}
             </Button>
           </div>
         ) : added ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-pill bg-surface-raised p-2 pl-6 shadow-[0_12px_40px_rgb(0_0_0/0.45)]" /* taste-skill-ignore: панель плавает над списком */>
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-pill glass-overlay p-2 pl-6 shadow-[0_12px_40px_rgb(0_0_0/0.45)]" /* taste-skill-ignore: панель плавает над списком */>
             <p className="text-body text-text">{t('added', { count: added })}</p>
             <Button href="/rfq/" onClick={openCartDrawer} aria-haspopup="dialog" variant="menu" size="m">
               {t('toCart')}

@@ -16,6 +16,7 @@ import { SkipLink } from '@/components/layout/SkipLink';
 import { OneClickOrderDialog } from '@/components/product/OneClickOrderDialog';
 import { getCatalogTree, getSiteSettings } from '@/lib/api';
 import { getSite } from '@/lib/content';
+import { siteMenu } from '@/lib/site-menu';
 import '../globals.css';
 
 // Временный шрифт до подключения LT Superior (ТЗ 11.1)
@@ -55,6 +56,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
     headers(),
     getSite(),
   ]);
+  const menu = await siteMenu(locale, tree);
   // Номера счётчиков (ТЗ 15.1): из настроек админки, иначе из окружения сервера — у стейджа и продакшена свои
   const ymId = Number.parseInt(process.env.YM_COUNTER_ID ?? '', 10);
   const counterIds = {
@@ -68,7 +70,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         <NextIntlClientProvider>
           <Providers />
           <SkipLink />
-          <Header settings={settings} tree={tree} />
+          <Header settings={settings} menu={menu} />
           <main id="main" tabIndex={-1} className="outline-none">
             {children}
           </main>

@@ -20,7 +20,29 @@
     "closeMenu": "Close menu",
     "menuTitle": "Site menu",
     "mainNav": "Main menu",
-    "langLabel": "Site language"
+    "langLabel": "Site language",
+    "menu": "Menu"
+  },
+  "siteMenu": {
+    "title": "Site sections",
+    "catalog": "Catalog",
+    "services": "Services",
+    "articles": "Articles",
+    "about": "About",
+    "contacts": "Contacts",
+    "brands": "Brands",
+    "substances": "Substances",
+    "allCatalog": "Full catalog",
+    "solutions": "Industry solutions",
+    "allServices": "All services",
+    "allArticles": "All articles",
+    "aboutPage": "About OGK-CHEM",
+    "delivery": "Delivery and payment",
+    "documents": "Documents",
+    "contactsPage": "Contacts and address",
+    "requisites": "Company details",
+    "order": "Send a request",
+    "openSection": "Open “{name}”"
   },
   "search": {
     "label": "Search the catalog",
@@ -39,12 +61,8 @@
       "substanceHint": "standards and impurities",
       "categories": "Catalogue sections",
       "brands": "Brands"
-    }
-  },
-  "megaMenu": {
-    "title": "Catalog sections",
-    "allInSection": "All products in this section",
-    "allCatalog": "Full catalog"
+    },
+    "headerPlaceholder": "Product or service name, cat. no., CAS, etc."
   },
   "footer": {
     "nav": "Site sections",
@@ -170,8 +188,7 @@
       "region": "Featured offers",
       "slide": "{current} of {total}",
       "prev": "Previous slide",
-      "next": "Next slide",
-      "goTo": "Show slide {n}"
+      "next": "Next slide"
     },
     "products": {
       "allCatalog": "Full catalog",

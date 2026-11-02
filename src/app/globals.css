@@ -245,3 +245,146 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Заливка капсулы шапки по макету «Headder» (правки 02.11.2026): surface и размытие под ним */
+@utility glass {
+  background-color: var(--color-surface);
+  -webkit-backdrop-filter: blur(40px);
+  backdrop-filter: blur(40px);
+}
+/* Всплывающие окна — та же заливка; то, что под окном, ещё и притемнено: иначе светлые картинки под меню
+   размываются в светлое пятно и текст на нём не читается */
+@utility glass-overlay {
+  background-color: var(--color-surface);
+  -webkit-backdrop-filter: blur(40px) brightness(0.45);
+  backdrop-filter: blur(40px) brightness(0.45);
+}
+
+/*
+ * Первый экран — плашки по макету Figma «Hero plates» (правки 02.11.2026), components/home/HeroPlates.tsx.
+ * Все размеры картинок заданы в долях плашки 1236 × 582: --u — один пиксель макета при текущей ширине плашки.
+ * ≥1024 — как в макете: плашка уже капсулы шапки на 44 px, соседние видны по краям, стрелки на краях капсулы.
+ * <1024 — текст сверху, картинки снизу справа, стрелки в правом нижнем углу.
+ * Свойства с cqw подставляются в потомках .hero-plates — там 100cqw равно ширине ленты.
+ */
+.hero-plates {
+  container-type: inline-size;
+  --plate-w: calc(100cqw - 32px);
+  --gap: 12px;
+  --u: calc(var(--plate-w) / 1236);
+  --plate-h: calc(var(--plate-w) * 0.83 + 230px);
+  --title: 30px;
+  --lead: 16px;
+  --arrow: 48px;
+}
+@media (min-width: 640px) {
+  .hero-plates {
+    --title: 38px;
+    --lead: 18px;
+  }
+}
+@media (min-width: 768px) {
+  .hero-plates {
+    --plate-w: calc(100cqw - 48px);
+    --gap: 16px;
+    --plate-h: calc(var(--plate-w) * 0.647 + 230px);
+  }
+}
+@media (min-width: 1024px) {
+  .hero-plates {
+    --plate-w: min(1236px, calc(100cqw - 124px));
+    --gap: 44px;
+    --plate-h: calc(582 * var(--u));
+    --title: max(calc(58 * var(--u)), 36px);
+    --lead: max(calc(24 * var(--u)), 17px);
+    --arrow: clamp(56px, calc(86 * var(--u)), 86px);
+  }
+}
+
+.hero-plate-visual {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  --u: calc(var(--plate-w) / 700);
+  width: calc(1236 * var(--u));
+  height: calc(582 * var(--u));
+}
+@media (min-width: 768px) {
+  .hero-plate-visual {
+    --u: calc(var(--plate-w) / 900);
+  }
+}
+@media (min-width: 1024px) {
+  .hero-plate-visual {
+    --u: calc(var(--plate-w) / 1236);
+  }
+}
+
+.hero-plate-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 28px 24px;
+}
+.hero-plate-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.hero-plate-title {
+  font-size: var(--title);
+  line-height: 1.086;
+  letter-spacing: -0.01em;
+}
+.hero-plate-lead {
+  font-size: var(--lead);
+  line-height: 1.17;
+}
+@media (min-width: 1024px) {
+  .hero-plate-text {
+    position: absolute;
+    left: calc(80 * var(--u));
+    top: 50%;
+    width: calc(570 * var(--u));
+    transform: translateY(-50%);
+    padding: 0;
+    gap: max(calc(60 * var(--u)), 36px);
+  }
+  .hero-plate-copy {
+    gap: max(calc(28 * var(--u)), 18px);
+  }
+}
+
+.hero-arrow {
+  position: absolute;
+  z-index: 2;
+  width: var(--arrow);
+  height: var(--arrow);
+  border-radius: 9999px;
+  top: calc(var(--plate-h) - var(--arrow) - 16px);
+  transition: transform 0.3s;
+}
+.hero-arrow:active {
+  transform: scale(0.95);
+}
+.hero-arrow-next {
+  right: calc((100cqw - var(--plate-w)) / 2 + 16px);
+}
+.hero-arrow-prev {
+  right: calc((100cqw - var(--plate-w)) / 2 + 16px + var(--arrow) + 8px);
+}
+@media (min-width: 1024px) {
+  .hero-arrow {
+    top: calc((var(--plate-h) - var(--arrow)) / 2);
+  }
+  .hero-arrow-prev {
+    right: auto;
+    left: calc((100cqw - var(--plate-w)) / 2 - 22px - var(--arrow) / 2);
+  }
+  .hero-arrow-next {
+    right: calc((100cqw - var(--plate-w)) / 2 - 22px - var(--arrow) / 2);
+  }
+}

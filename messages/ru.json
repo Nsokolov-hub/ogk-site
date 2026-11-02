@@ -20,7 +20,29 @@
     "closeMenu": "Закрыть меню",
     "menuTitle": "Меню сайта",
     "mainNav": "Основное меню",
-    "langLabel": "Язык сайта"
+    "langLabel": "Язык сайта",
+    "menu": "Меню"
+  },
+  "siteMenu": {
+    "title": "Разделы сайта",
+    "catalog": "Каталог",
+    "services": "Услуги",
+    "articles": "Статьи",
+    "about": "О компании",
+    "contacts": "Контакты",
+    "brands": "Бренды",
+    "substances": "Субстанции",
+    "allCatalog": "Весь каталог",
+    "solutions": "Отраслевые решения",
+    "allServices": "Все услуги",
+    "allArticles": "Все статьи",
+    "aboutPage": "О компании",
+    "delivery": "Доставка и оплата",
+    "documents": "Документы",
+    "contactsPage": "Контакты и адрес",
+    "requisites": "Реквизиты",
+    "order": "Отправить запрос",
+    "openSection": "Перейти в раздел «{name}»"
   },
   "search": {
     "label": "Поиск по каталогу",
@@ -39,12 +61,8 @@
       "substanceHint": "стандарты и примеси",
       "categories": "Разделы каталога",
       "brands": "Бренды"
-    }
-  },
-  "megaMenu": {
-    "title": "Разделы каталога",
-    "allInSection": "Все товары раздела",
-    "allCatalog": "Весь каталог"
+    },
+    "headerPlaceholder": "Название товара или услуги, кат.номер, CAS и т.д."
   },
   "footer": {
     "nav": "Разделы сайта",
@@ -170,8 +188,7 @@
       "region": "Главные предложения",
       "slide": "{current} из {total}",
       "prev": "Предыдущий слайд",
-      "next": "Следующий слайд",
-      "goTo": "Показать слайд {n}"
+      "next": "Следующий слайд"
     },
     "products": {
       "allCatalog": "Весь каталог",

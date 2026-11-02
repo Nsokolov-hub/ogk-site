@@ -1,72 +1,57 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, LayoutGrid, Menu, Phone, Search, X } from 'lucide-react';
+import Image from 'next/image';
+import { Menu, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import type { Category } from '@/types/catalog';
 import type { SiteSettings } from '@/types/settings';
-import { Button } from '@/components/ui/Button';
-import { Container } from '@/components/ui/Container';
-import { Logo } from '@/components/ui/Logo';
-import { Link, usePathname } from '@/i18n/navigation';
+import type { MenuSection } from '@/lib/site-menu';
+import { CartDrawer } from '@/components/rfq/CartDrawer';
+import { ChevronDownIcon, ListIcon, PhoneOutgoingIcon, SearchIcon } from '@/components/ui/DesignIcons';
+import { Link } from '@/i18n/navigation';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
-import { CartDrawer } from '@/components/rfq/CartDrawer';
 import { CartButton } from './CartButton';
 import { HeaderSearch } from './HeaderSearch';
-import { LangSwitcher } from './LangSwitcher';
-import { MegaMenu } from './MegaMenu';
 import { MobileMenu } from './MobileMenu';
-import { MAIN_NAV, isActivePath } from './navigation';
+import { SiteMenu } from './SiteMenu';
 
 const iconBtn =
   'inline-grid size-11 shrink-0 place-items-center rounded-full text-text transition-colors hover:text-accent';
 
 /**
- * Шапка (ТЗ 11.2). ≥1024: капсула (логотип, каталог, поиск, телефон, язык, корзина, «Заказать»)
- * и вторая строка меню, которая прячется при прокрутке вниз. <1024: логотип, поиск, корзина, бургер.
+ * Шапка по макету Figma «Headder» (правки 02.11.2026): одна капсула с заливкой surface — логотип, «Меню», поиск,
+ * телефон, корзина, «Заказать». «Меню» открывает направления сайта (SiteMenu); язык переключается в подвале.
+ * <1024: логотип, поиск, корзина, бургер.
  */
-export function Header({ settings, tree }: { settings: SiteSettings; tree: Category[] }) {
+export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuSection[] }) {
   const t = useTranslations('header');
-  const pathname = usePathname();
-  const [megaOpen, setMegaOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [navHidden, setNavHidden] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
-  const catalogBtnRef = useRef<HTMLButtonElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Вторая строка меню уезжает при прокрутке вниз и возвращается при прокрутке вверх
+  // В макете капсула стоит в 40 px от верха; при прокрутке она поднимается, чтобы не занимать экран
   useEffect(() => {
-    let lastY = window.scrollY;
-    let ticking = false;
-    const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(() => {
-        const y = window.scrollY;
-        if (Math.abs(y - lastY) > 8) {
-          setNavHidden(y > 160 && y > lastY);
-          lastY = y;
-        }
-        ticking = false;
-      });
-    };
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Мегаменю закрывается по Esc и по клику вне шапки
+  // Меню закрывается по Esc и по клику вне шапки
   useEffect(() => {
-    if (!megaOpen) return;
+    if (!menuOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setMegaOpen(false);
-        catalogBtnRef.current?.focus();
+        setMenuOpen(false);
+        menuBtnRef.current?.focus();
       }
     };
     const onPointer = (e: PointerEvent) => {
-      if (!wrapRef.current?.contains(e.target as Node)) setMegaOpen(false);
+      if (!wrapRef.current?.contains(e.target as Node)) setMenuOpen(false);
     };
     document.addEventListener('keydown', onKey);
     document.addEventListener('pointerdown', onPointer);
@@ -74,61 +59,61 @@ export function Header({ settings, tree }: { settings: SiteSettings; tree: Categ
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('pointerdown', onPointer);
     };
-  }, [megaOpen]);
-
-  const closeMega = () => setMegaOpen(false);
+  }, [menuOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-3 z-[100]">
-      <Container>
-        <div
-          ref={wrapRef}
-          className="relative"
-          onBlur={(e) => {
-            if (megaOpen && !e.currentTarget.contains(e.relatedTarget as Node | null)) setMegaOpen(false);
-          }}
-        >
-          {/* Капсула */}
-          <div className="relative flex h-16 items-center gap-1.5 rounded-pill border border-border/60 bg-surface-raised/92 px-3 backdrop-blur-xl sm:gap-2 sm:px-4 lg:h-[72px] lg:gap-3 lg:px-5 xl:gap-4">
+    <header
+      className={cn(
+        'fixed inset-x-0 top-3 z-[100] px-4 transition-[top] duration-300 md:px-6 lg:px-10',
+        scrolled ? 'lg:top-3' : 'lg:top-10',
+      )}
+    >
+      <div
+        ref={wrapRef}
+        className="relative mx-auto max-w-[1280px]"
+        onBlur={(e) => {
+          if (menuOpen && !e.currentTarget.contains(e.relatedTarget as Node | null)) setMenuOpen(false);
+        }}
+      >
+        {/* Капсула */}
+        <div className="relative isolate flex h-16 items-center justify-between gap-3 rounded-pill pl-4 pr-2 sm:pr-3 lg:h-[72px] lg:gap-8 lg:px-[22px]">
+          {/* Стекло — отдельным слоем: размытие на самой капсуле не дало бы подсказкам поиска размыть страницу под собой */}
+          <div aria-hidden className="glass absolute inset-0 -z-10 rounded-pill" />
+          <div className="flex min-w-0 items-center gap-8 xl:gap-12">
             <Link href="/" aria-label={t('home')} className="shrink-0 rounded-sm">
-              <Logo alt="" className="h-8 lg:h-10" />
+              <Image src="/images/brand/logo-eng.svg" alt="" width={132} height={46} unoptimized priority className="h-8 w-auto lg:h-[37px]" />
             </Link>
 
-            <button
-              ref={catalogBtnRef}
-              type="button"
-              aria-expanded={megaOpen}
-              aria-controls="mega-menu"
-              onClick={() => setMegaOpen((o) => !o)}
-              className={cn(
-                'ml-2 hidden h-10 shrink-0 items-center gap-2 rounded-pill border border-accent px-4 text-body font-medium transition-colors lg:inline-flex xl:ml-4',
-                megaOpen ? 'bg-accent text-text-on-accent' : 'text-accent hover:bg-accent hover:text-text-on-accent',
-              )}
-            >
-              <LayoutGrid aria-hidden size={18} strokeWidth={1.5} />
-              {t('catalog')}
-              <ChevronDown aria-hidden size={16} strokeWidth={1.5} className={cn('transition-transform', megaOpen && 'rotate-180')} />
-            </button>
-
-            {/* На главной поиск в шапке прячется, пока на экране большой поиск первого экрана (HeroSearch) */}
-            <div className="hidden min-w-0 flex-1 lg:block">
-              <div className="[html[data-hero-search=in]_&]:hidden">
-                <HeaderSearch />
-              </div>
+            <div className="hidden min-w-0 items-center gap-4 lg:flex">
+              <button
+                ref={menuBtnRef}
+                type="button"
+                aria-expanded={menuOpen}
+                aria-controls="site-menu"
+                onClick={() => setMenuOpen((o) => !o)}
+                className={cn(
+                  'inline-flex h-10 shrink-0 items-center gap-2 rounded-pill border border-accent px-[14px] text-body font-medium transition-colors',
+                  menuOpen ? 'bg-accent text-text-on-accent' : 'text-accent hover:bg-accent/10',
+                )}
+              >
+                <ListIcon size={24} />
+                {t('menu')}
+                <ChevronDownIcon size={16} className={cn('transition-transform duration-300', menuOpen && 'rotate-180')} />
+              </button>
+              <HeaderSearch variant="header" className="w-[430px] min-w-[180px] shrink" />
             </div>
-            <div className="flex-1 lg:hidden" />
+          </div>
 
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-6 xl:gap-12">
             <a
               href={settings.phone.href}
               onClick={() => track('click_phone', { place: 'header' })}
               aria-label={t('phoneLabel', { phone: settings.phone.display })}
-              className="hidden shrink-0 items-center gap-2 rounded-pill text-body font-medium text-text transition-colors hover:text-accent lg:inline-flex"
+              className="hidden shrink-0 items-center gap-2.5 text-body font-medium text-text transition-colors hover:text-accent lg:inline-flex"
             >
-              <Phone aria-hidden size={20} strokeWidth={1.5} className="text-accent" />
-              <span className="hidden whitespace-nowrap 2xl:inline">{settings.phone.display}</span>
+              <PhoneOutgoingIcon size={24} className="text-accent" />
+              <span className="hidden whitespace-nowrap xl:inline">{settings.phone.display}</span>
             </a>
-
-            <LangSwitcher className="hidden lg:flex" />
 
             <button
               type="button"
@@ -138,66 +123,41 @@ export function Header({ settings, tree }: { settings: SiteSettings; tree: Categ
               aria-controls="mobile-search"
               onClick={() => setSearchOpen((o) => !o)}
             >
-              {searchOpen ? <X aria-hidden size={22} strokeWidth={1.5} /> : <Search aria-hidden size={22} strokeWidth={1.5} />}
+              {searchOpen ? <X aria-hidden size={22} strokeWidth={1.5} /> : <SearchIcon size={22} />}
             </button>
 
-            <CartButton />
-
-            <Button href="/rfq/" size="s" className="hidden lg:inline-flex">
-              {t('order')}
-            </Button>
+            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
+              <CartButton />
+              <Link
+                href="/rfq/"
+                className="hidden h-10 shrink-0 items-center rounded-pill bg-accent pl-[31px] pr-[30px] text-body font-medium text-text-on-accent transition-colors hover:bg-accent-hover lg:inline-flex"
+              >
+                {t('order')}
+              </Link>
+            </div>
 
             <button
               type="button"
               className={cn(iconBtn, 'lg:hidden')}
               aria-label={t('openMenu')}
               aria-haspopup="dialog"
-              onClick={() => setMenuOpen(true)}
+              onClick={() => setMobileOpen(true)}
             >
               <Menu aria-hidden size={24} strokeWidth={1.5} />
             </button>
           </div>
-
-          {megaOpen ? <MegaMenu id="mega-menu" tree={tree} onNavigate={closeMega} /> : null}
-
-          {searchOpen ? (
-            <div id="mobile-search" className="mt-2 animate-fade-in rounded-pill bg-surface-raised p-1.5 lg:hidden">
-              <HeaderSearch autoFocus />
-            </div>
-          ) : null}
         </div>
 
-        {/* Вторая строка меню */}
-        <nav
-          aria-label={t('mainNav')}
-          className={cn(
-            'mt-2 hidden justify-center transition-[transform,opacity,visibility] duration-300 lg:flex',
-            (navHidden || megaOpen) && 'invisible -translate-y-3 opacity-0',
-          )}
-        >
-          <ul className="flex items-center gap-1 rounded-pill bg-surface-raised/95 p-1">
-            {MAIN_NAV.map((item) => {
-              const active = isActivePath(pathname, item.href);
-              return (
-                <li key={item.key}>
-                  <Link
-                    href={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    className={cn(
-                      'inline-flex h-9 items-center rounded-pill px-4 text-small font-medium transition-colors',
-                      active ? 'bg-accent text-text-on-accent' : 'text-text hover:text-accent',
-                    )}
-                  >
-                    {t(item.key)}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-        </nav>
-      </Container>
+        {menuOpen ? <SiteMenu id="site-menu" menu={menu} settings={settings} onNavigate={() => setMenuOpen(false)} /> : null}
 
-      <MobileMenu open={menuOpen} onOpenChange={setMenuOpen} tree={tree} settings={settings} />
+        {searchOpen ? (
+          <div id="mobile-search" className="glass-overlay mt-2 animate-fade-in rounded-pill p-1.5 lg:hidden">
+            <HeaderSearch autoFocus />
+          </div>
+        ) : null}
+      </div>
+
+      <MobileMenu open={mobileOpen} onOpenChange={setMobileOpen} menu={menu} settings={settings} />
       <CartDrawer />
     </header>
   );

@@ -24,7 +24,7 @@ export function CookieBanner({ privacyHref }: { privacyHref: string }) {
   return (
     <section
       aria-label={t('label')}
-      className="fixed inset-x-3 bottom-3 z-[90] animate-sheet-up rounded-card bg-surface-raised p-4 shadow-[0_8px_24px_rgb(0_0_0/0.3)] md:inset-x-auto md:bottom-6 md:right-6 md:max-w-[480px] md:p-5" // taste-skill-ignore: плавающий баннер поверх страницы
+      className="fixed inset-x-3 bottom-3 z-[90] animate-sheet-up rounded-card glass-overlay p-4 shadow-[0_8px_24px_rgb(0_0_0/0.3)] md:inset-x-auto md:bottom-6 md:right-6 md:max-w-[480px] md:p-5" // taste-skill-ignore: плавающий баннер поверх страницы
     >
       <p className="text-small text-text">
         {t('text')}{' '}

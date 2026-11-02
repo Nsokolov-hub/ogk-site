@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 
 import { Search } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Formula } from '@/components/content/Formula';
+import { SearchIcon } from '@/components/ui/DesignIcons';
 import { useFieldIds } from '@/components/ui/Field';
 import { Link } from '@/i18n/navigation';
 import { routing } from '@/i18n/routing';
@@ -44,7 +45,8 @@ export function SearchBox({
   className,
   inputClassName,
 }: {
-  size?: 'md' | 'lg';
+  /** header — поле капсулы шапки по макету: зелёная обводка, без кнопки «Найти» (отправка по Enter) */
+  size?: 'md' | 'lg' | 'header';
   value?: string;
   /** Начальное значение, например запрос со страницы результатов */
   defaultValue?: string;
@@ -71,6 +73,7 @@ export function SearchBox({
   const action = locale === routing.defaultLocale ? '/search/' : `/${locale}/search/`;
   const listId = `${fieldId}-suggest`;
   const lg = size === 'lg';
+  const header = size === 'header';
 
   // Запрос подсказок с задержкой 180 мс; предыдущий запрос отменяется
   useEffect(() => {
@@ -285,12 +288,16 @@ export function SearchBox({
       <label htmlFor={fieldId} className="sr-only">
         {t('label')}
       </label>
-      <Search
-        aria-hidden
-        size={lg ? 22 : 18}
-        strokeWidth={1.5}
-        className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2 text-text-secondary', lg ? 'left-5' : 'left-4')}
-      />
+      {header ? (
+        <SearchIcon size={24} className="pointer-events-none absolute left-[14px] top-1/2 -translate-y-1/2 text-accent/40" />
+      ) : (
+        <Search
+          aria-hidden
+          size={lg ? 22 : 18}
+          strokeWidth={1.5}
+          className={cn('pointer-events-none absolute top-1/2 -translate-y-1/2 text-text-secondary', lg ? 'left-5' : 'left-4')}
+        />
+      )}
       <input
         ref={inputRef}
         id={fieldId}
@@ -308,10 +315,14 @@ export function SearchBox({
         autoFocus={autoFocus}
         enterKeyHint="search"
         spellCheck={false}
-        placeholder={t('placeholder')}
+        placeholder={header ? t('headerPlaceholder') : t('placeholder')}
         className={cn(
           'ym-disable-keys w-full rounded-pill border bg-base text-text outline-offset-0 transition-colors placeholder:text-text-placeholder hover:border-text-secondary focus-visible:border-accent',
-          lg ? 'h-16 border-border pl-14 pr-[7.5rem] text-lead' : 'h-11 border-border bg-base/50 pl-11 pr-[5.5rem] text-body',
+          header
+            ? 'h-10 truncate border-accent/40 bg-transparent pl-[46px] pr-4 text-body placeholder:text-accent/40 hover:border-accent/70'
+            : lg
+              ? 'h-16 border-border pl-14 pr-[7.5rem] text-lead'
+              : 'h-11 border-border bg-base/50 pl-11 pr-[5.5rem] text-body',
           inputClassName,
         )}
       />
@@ -319,7 +330,7 @@ export function SearchBox({
         type="submit"
         className={cn(
           'absolute rounded-pill bg-accent font-medium text-text-on-accent transition-colors hover:bg-accent-hover',
-          lg ? 'right-2 top-2 h-12 px-6 text-body' : 'right-1 top-1 h-9 px-4 text-small',
+          header ? 'sr-only' : lg ? 'right-2 top-2 h-12 px-6 text-body' : 'right-1 top-1 h-9 px-4 text-small',
         )}
       >
         {t('submit')}
@@ -333,7 +344,7 @@ export function SearchBox({
         id={listId}
         onKeyDown={onListKey}
         hidden={!showPanel}
-        className="absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-field bg-surface-raised shadow-[0_8px_24px_rgb(0_0_0/0.35)]" // taste-skill-ignore: выпадающие подсказки поверх страницы
+        className="glass-overlay absolute inset-x-0 top-full z-50 mt-2 overflow-hidden rounded-field" // taste-skill-ignore: выпадающие подсказки поверх страницы
       >
         {panel}
       </div>

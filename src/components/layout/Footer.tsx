@@ -5,6 +5,7 @@ import type { SiteSettings } from '@/types/settings';
 import { Container } from '@/components/ui/Container';
 import { Logo } from '@/components/ui/Logo';
 import { Link } from '@/i18n/navigation';
+import { LangSwitcher } from './LangSwitcher';
 import { FOOTER_NAV } from './navigation';
 import { TrackedLink } from './TrackedLink';
 
@@ -18,9 +19,13 @@ export async function Footer({ settings }: { settings: SiteSettings }) {
   return (
     <footer className="mt-24 bg-base-deep pb-10 pt-14 md:mt-32 lg:mt-40 lg:pt-20">
       <Container>
-        <Link href="/" aria-label={th('home')} className="inline-block rounded-sm">
-          <Logo alt="" className="h-12 md:h-16 lg:h-20" />
-        </Link>
+        <div className="flex items-center justify-between gap-6">
+          <Link href="/" aria-label={th('home')} className="inline-block rounded-sm">
+            <Logo alt="" className="h-12 md:h-16 lg:h-20" />
+          </Link>
+          {/* Язык сайта — в подвале (правки дизайна 02.11.2026) */}
+          <LangSwitcher />
+        </div>
 
         <div className="mt-10 grid gap-10 lg:mt-14 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-12">
           <nav aria-label={t('nav')}>

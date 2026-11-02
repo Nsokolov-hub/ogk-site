@@ -35,7 +35,7 @@ export function CartDrawer() {
       <RD.Portal>
         <RD.Overlay className="fixed inset-0 z-[200] bg-base-deep/70 backdrop-blur-sm data-[state=open]:animate-fade-in" />
         <RD.Content
-          className="fixed inset-y-0 right-0 z-[201] flex w-full max-w-[460px] flex-col bg-surface-raised text-text shadow-[0_24px_80px_rgb(0_0_0/0.5)] outline-none data-[state=open]:animate-drawer-in sm:rounded-l-block" // taste-skill-ignore: панель поверх страницы
+          className="glass-overlay fixed inset-y-0 right-0 z-[201] flex w-full max-w-[460px] flex-col text-text shadow-[0_24px_80px_rgb(0_0_0/0.5)] outline-none data-[state=open]:animate-drawer-in sm:rounded-l-block" // taste-skill-ignore: панель поверх страницы
         >
           <div className="flex items-start justify-between gap-4 px-5 pb-3 pt-5 md:px-7 md:pt-7">
             <div className="min-w-0">

@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ShoppingCart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { ShoppingBagIcon } from '@/components/ui/DesignIcons';
 import { Link, usePathname } from '@/i18n/navigation';
 import { openCartDrawer } from '@/lib/cart-drawer';
 import { cn } from '@/lib/cn';
@@ -39,7 +39,7 @@ export function CartButton({ className }: { className?: string }) {
       aria-label={t('cartLabel', { count: visibleCount })}
       className={cn('relative inline-grid size-11 shrink-0 place-items-center rounded-full text-text transition-colors hover:text-accent', className)}
     >
-      <ShoppingCart aria-hidden size={22} strokeWidth={1.5} />
+      <ShoppingBagIcon size={24} />
       {visibleCount > 0 ? (
         <span
           aria-hidden

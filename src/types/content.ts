@@ -71,12 +71,15 @@ export interface Cta {
 
 export interface HeroSlide {
   id: string;
+  /** Оформление плашки первого экрана из макета «Hero plates»: СО и реактивы, хроматография, перевозка */
+  plate: 'reference' | 'chromatography' | 'logistics';
   title: string;
+  /** Часть заголовка, выделенная зелёным */
+  titleAccent?: string;
   subtitle: string;
+  /** Часть подзаголовка, выделенная зелёным */
+  subtitleAccent?: string;
   ctas: Cta[];
-  /** cover — фон на весь экран; object — предмет справа на тёмном фоне */
-  imageMode: 'cover' | 'object';
-  image: ImageRef;
 }
 
 /** icon — имя иконки из components/ui/Icon */
