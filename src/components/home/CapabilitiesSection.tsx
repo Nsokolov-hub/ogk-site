@@ -1,19 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { Pause, Play } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { HomeContent } from '@/types/content';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
+import { BlurryLogo } from './BlurryLogo';
 import { cn } from '@/lib/cn';
 import { usePrefersReducedMotion } from '@/lib/hooks';
 
 const INTERVAL_MS = 3000;
 
 /**
- * «У нас вы сможете»: строки сменяются каждые 3 с, есть пауза (WCAG 2.2.2).
+ * «У нас вы сможете»: строки сменяются каждые 3 с, есть пауза (WCAG 2.2.2). Вместе со строкой меняется состояние
+ * логотипа справа (макет «Blurry logo»): размытие переходит с одной части знака на другую.
  * Все 12 строк — ссылки и все есть в HTML: это внутренняя перелинковка на разделы и услуги.
  */
 export function CapabilitiesSection({ capabilities }: { capabilities: HomeContent['capabilities'] }) {
@@ -95,7 +96,7 @@ export function CapabilitiesSection({ capabilities }: { capabilities: HomeConten
         </div>
 
         <div aria-hidden className="relative">
-          <Image src="/images/home/logo-blur.png" alt="" width={1284} height={548} sizes="(min-width: 1024px) 45vw, 90vw" className="h-auto w-full" />
+          <BlurryLogo state={reducedMotion ? 0 : index % 4} />
         </div>
       </Container>
     </section>

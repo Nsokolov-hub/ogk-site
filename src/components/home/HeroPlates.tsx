@@ -22,8 +22,9 @@ function ReferenceVisual({ priority }: { priority: boolean }) {
         <Image src={`${DIR}/circles.svg`} alt="" fill unoptimized />
       </div>
       <div className="absolute grid place-items-center" style={box({ right: -165, top: -51, width: 822.896, height: 822.896 })}>
-        <div className="relative rotate-15 blur-[2px]" style={box({ width: 671.892, height: 671.892 })}>
-          <Image src={`${DIR}/merck.webp`} alt="" fill priority={priority} sizes="(min-width: 1024px) 672px, 340px" className="object-cover" />
+        {/* В макете на этом слое размытие 2 px; на сайте в натуральную величину оно заметно, бизнес попросил чётко */}
+        <div className="relative rotate-15" style={box({ width: 671.892, height: 671.892 })}>
+          <Image quality={90} src={`${DIR}/merck.webp`} alt="" fill priority={priority} sizes="(min-width: 1024px) 672px, 340px" className="object-cover" />
         </div>
       </div>
       <div className="absolute grid place-items-center" style={box({ right: 171.85, top: 61.17, width: 564.15, height: 564.15 })}>
@@ -31,7 +32,7 @@ function ReferenceVisual({ priority }: { priority: boolean }) {
           className="relative -rotate-15 [filter:drop-shadow(15px_8px_16.7px_rgb(0_0_0/0.25))]"
           style={box({ width: 460.627, height: 460.627 })}
         >
-          <Image src={`${DIR}/usp.webp`} alt="" fill priority={priority} sizes="(min-width: 1024px) 461px, 240px" className="object-cover" />
+          <Image quality={90} src={`${DIR}/usp.webp`} alt="" fill priority={priority} sizes="(min-width: 1024px) 461px, 240px" className="object-cover" />
         </div>
       </div>
     </>
@@ -46,7 +47,7 @@ function ChromatographyVisual() {
       </div>
       <div className="absolute grid place-items-center" style={box({ right: -152.78, top: -187.1, width: 946.038, height: 1228.515 })}>
         <div className="relative -rotate-30" style={box({ width: 410.072, height: 1181.812 })}>
-          <Image src={`${DIR}/column.webp`} alt="" fill sizes="(min-width: 1024px) 410px, 210px" className="object-fill" />
+          <Image quality={90} src={`${DIR}/column.webp`} alt="" fill sizes="(min-width: 1024px) 410px, 210px" className="object-fill" />
         </div>
       </div>
     </>
@@ -64,7 +65,7 @@ function LogisticsVisual() {
       </div>
       <div className="absolute grid place-items-center" style={box({ left: 55.19, top: 36.91, width: 1170.262, height: 1170.262 })}>
         <div className="relative -rotate-135" style={box({ width: 461, height: 1194 })}>
-          <Image src={`${DIR}/transport.webp`} alt="" fill sizes="(min-width: 1024px) 461px, 240px" className="object-fill" />
+          <Image quality={90} src={`${DIR}/transport.webp`} alt="" fill sizes="(min-width: 1024px) 461px, 240px" className="object-fill" />
         </div>
       </div>
       <div className="absolute grid place-items-center" style={box({ left: 873.5, top: -360.07, width: 724.006, height: 720.149 })}>

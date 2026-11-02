@@ -19,6 +19,8 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ['image/avif', 'image/webp'],
+    // 90 — картинки плашек первого экрана: на 75 рендеры баночек заметно мылятся
+    qualities: [75, 90],
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
