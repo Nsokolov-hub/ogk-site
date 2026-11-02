@@ -335,7 +335,12 @@ def webmaster_host(api: Api) -> tuple[int, str, str, str]:
         if urlsplit(host.get('ascii_host_url') or '').hostname == wanted:
             if not host.get('verified'):
                 raise Refused('NOT_VERIFIED', f'Права на {wanted} в Вебмастере не подтверждены')
-            return uid, host['host_id'], host.get('ascii_host_url') or '', str(host.get('host_data_status') or '')
+            # The list of sites has no state of their data; the site's own card has it.
+            try:
+                card = api.get(f'{WEBMASTER}/user/{uid}/hosts/{host["host_id"]}')
+            except Refused:
+                card = {}
+            return uid, host['host_id'], host.get('ascii_host_url') or '', str(card.get('host_data_status') or '')
     raise Refused('NO_HOST', f'Сайта {wanted} нет в Вебмастере этого аккаунта')
 
 

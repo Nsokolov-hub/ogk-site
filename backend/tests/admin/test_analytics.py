@@ -86,6 +86,9 @@ class FakeYandex:
             return httpx.Response(200, json={'hosts': [
                 {'host_id': 'https:ogk-chem.ru:443', 'ascii_host_url': 'https://ogk-chem.ru/', 'verified': True},
                 {'host_id': HOST, 'ascii_host_url': 'https://www.ogk-chem.ru/', 'verified': True}]})
+        if path == base:
+            return httpx.Response(200, json={'host_id': HOST, 'verified': True, 'host_data_status': 'OK',
+                                             'ascii_host_url': 'https://www.ogk-chem.ru/'})
         if path == f'{base}/summary':
             return httpx.Response(200, json={'sqi': 0, 'excluded_pages_count': 31, 'searchable_pages_count': 9,
                                              'site_problems': {'FATAL': 0, 'CRITICAL': 1, 'RECOMMENDATION': 2}})
@@ -360,10 +363,9 @@ def test_no_sitemap_before_webmaster_has_loaded_the_site_then_it_is_added_by_its
     real, state = fake.handle, {'loaded': False}
 
     def handle(request: httpx.Request) -> httpx.Response:
-        if request.url.path == '/v4/user/42/hosts':
-            return httpx.Response(200, json={'hosts': [
-                {'host_id': HOST, 'ascii_host_url': 'https://www.ogk-chem.ru/', 'verified': True,
-                 'host_data_status': 'OK' if state['loaded'] else 'NOT_LOADED'}]})
+        if request.url.path == f'/v4/user/42/hosts/{HOST}':  # the list of sites has no state, the card has it
+            return httpx.Response(200, json={'host_id': HOST, 'verified': True, 'ascii_host_url': 'https://www.ogk-chem.ru/',
+                                             'host_data_status': 'OK' if state['loaded'] else 'NOT_LOADED'})
         if not state['loaded'] and request.url.path.startswith(f'/v4/user/42/hosts/{HOST}/'):
             if request.url.path.endswith('/user-added-sitemaps') and request.method == 'POST':
                 return httpx.Response(504)
