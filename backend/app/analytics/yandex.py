@@ -13,8 +13,11 @@ import base64
 import hashlib
 import logging
 import re
+import threading
+import time
 from collections.abc import Callable, Hashable
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import nullcontext
 from datetime import date, datetime, timedelta
 from typing import Any
 from urllib.parse import urlsplit
@@ -38,6 +41,9 @@ PERIODS = (7, 30, 90)
 EVERY = timedelta(hours=1)
 TOP = 20
 QUERIES = 50
+# Metrica serves at most three requests of one user at a time and answers 429 to the rest.
+METRIKA_PARALLEL = 2
+RETRIES = 3
 TOKEN_SHAPE = re.compile(r'[A-Za-z0-9_.\-]{20,300}')
 
 # Events the site sends (src/lib/analytics.ts) and the stages of the CRM (app.crm.conversions.METRIKA_TARGETS):
@@ -181,16 +187,29 @@ def _refusal(response: httpx.Response) -> Refused:
     return Refused(f'HTTP_{status_code}', f'Яндекс ответил ошибкой {status_code}' + (f': {detail}' if detail else ''))
 
 
+def pause(seconds: float) -> None:
+    """Replaced in tests: a 429 is retried without waiting."""
+    time.sleep(seconds)
+
+
 class Api:
     def __init__(self, oauth: str, client: httpx.Client):
         self.client = client
         self.headers = {'Authorization': f'OAuth {oauth}'}
+        self.metrika_slots = threading.BoundedSemaphore(METRIKA_PARALLEL)
 
     def call(self, method: str, url: str, **kwargs: Any) -> Any:
-        try:
-            response = self.client.request(method, url, headers=self.headers, **kwargs)
-        except httpx.HTTPError:
-            raise Refused('UNREACHABLE', 'Сервис Яндекса не отвечает') from None
+        for attempt in range(RETRIES):
+            try:
+                with self.metrika_slots if url.startswith(METRIKA) else nullcontext():
+                    response = self.client.request(method, url, headers=self.headers, **kwargs)
+            except httpx.HTTPError:
+                raise Refused('UNREACHABLE', 'Сервис Яндекса не отвечает') from None
+            # «Too many requests»: a moment later it is answered.
+            if response.status_code == 429 and attempt < RETRIES - 1:
+                pause(1.0 + attempt)
+                continue
+            break
         if response.status_code >= 300:
             raise _refusal(response)
         return response.json() if response.content else {}

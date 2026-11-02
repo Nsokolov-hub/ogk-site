@@ -316,3 +316,38 @@ def test_a_token_without_metrica_and_a_site_webmaster_has_not_loaded_yet(fake, s
     assert report['webmaster']['errors'] == ['Вебмастер ещё собирает данные о сайте: после добавления это занимает '
                                              'несколько дней. Отчёт появится сам']
     assert report['metrika']['errors'][0].startswith('Нет доступа к Метрике')
+
+
+def test_metrica_gets_at_most_two_requests_at_a_time_and_a_429_is_retried(fake, signed_in, monkeypatch):
+    """02.11.2026 in production: six requests at once got «429 too many requests» for some blocks."""
+    import threading
+    import time
+
+    real, lock = fake.handle, threading.Lock()
+    state = {'now': 0, 'most': 0, 'refused': set()}
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        if request.url.host != 'api-metrika.yandex.net' or request.url.path != '/stat/v1/data':
+            return real(request)
+        with lock:
+            state['now'] += 1
+            state['most'] = max(state['most'], state['now'])
+        try:
+            time.sleep(0.01)
+            key = str(request.url)
+            if key not in state['refused']:  # every report is refused once, then answered
+                state['refused'].add(key)
+                return httpx.Response(429, json={'message': 'Too many requests'})
+            return real(request)
+        finally:
+            with lock:
+                state['now'] -= 1
+
+    fake.handle = handle  # type: ignore[method-assign]
+    waits: list[float] = []
+    monkeypatch.setattr(yandex, 'pause', waits.append)
+    admin = signed_in('admin')
+    admin.ok(admin.put('/analytics/token', {'token': TOKEN}))
+    report = admin.ok(admin.post('/analytics/refresh', params={'period': 7}))
+    assert report['metrika']['errors'] == [] and report['metrika']['sources'] and report['metrika']['engines']
+    assert state['most'] <= yandex.METRIKA_PARALLEL and waits and set(waits) == {1.0}
