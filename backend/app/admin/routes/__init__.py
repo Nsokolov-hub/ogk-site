@@ -7,6 +7,7 @@ from fastapi import APIRouter
 
 from app.admin.routes import (
     access,
+    analytics,
     catalog,
     content,
     dictionaries,
@@ -22,5 +23,5 @@ from app.admin.routes import (
 
 router = APIRouter(prefix='/admin', include_in_schema=False)
 for module in (access, content, catalog, products, media, seo, requests, imports, queues, dictionaries, site,
-               journal):
+               journal, analytics):
     router.include_router(module.router)

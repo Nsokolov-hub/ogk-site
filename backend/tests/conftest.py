@@ -4,6 +4,7 @@ import os
 from collections.abc import Iterator
 from uuid import uuid4
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, create_engine, text
@@ -58,6 +59,11 @@ def isolated_settings(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, 'crm_signing_secret', 'test-signing-secret')
     monkeypatch.setattr(settings, 'crm_delivery_enabled', True)
     monkeypatch.setattr(settings, 'check_email_domains', False)
+    # No test reaches Yandex: Metrica and Webmaster answer «unavailable» unless a test gives its own answers.
+    from app.analytics import yandex
+
+    monkeypatch.setattr(yandex, 'http_client',
+                        lambda: httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(503))))
 
 
 @pytest.fixture

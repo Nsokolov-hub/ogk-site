@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, errorText } from '../api';
 import { useAuth } from '../auth';
 import { ShapeForm } from '../shape';
+import { YandexPanel } from '../yandex';
 import type { Json, JsonObject } from '../types';
 import { Badge, Button, Checkbox, Field, formatDate, Loading, PageHeader, Panel, Tabs, TextArea, TextInput, useToast } from '../ui';
 
@@ -62,6 +63,7 @@ export function Settings() {
             <p className="muted small">Счётчики загружаются только после согласия посетителя на аналитические cookies (NFR-06).</p>
           </div>
         </Panel>
+        <YandexPanel admin={admin} />
         <Panel title="Письма (ADM-09)" actions={admin ? <Button size="sm" variant="primary" onClick={() => save.mutate({ key: 'mail', value: local.mail })}>Сохранить</Button> : null}>
           <div className="stack">
             <Field label="Отдел продаж (копии заявок)" hint={`Пусто — ${local.server.salesEmail}`}>

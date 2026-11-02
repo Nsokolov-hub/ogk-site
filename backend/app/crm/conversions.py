@@ -6,7 +6,7 @@ request: ``qualified`` — the CRM started collecting quotes, ``proposal`` — a
 ``sale`` — a confirmed sale, with its revenue. Only the identifiers of the counters leave the site, never contacts.
 
 Metrica: goals «JavaScript-событие» with the identifiers of METRIKA_TARGETS and offline conversions turned on in the
-counter's settings; the upload needs METRIKA_OAUTH_TOKEN. GA4: events of GA_EVENTS through the Measurement Protocol
+counter's settings; the upload needs the Yandex token (pasted in the admin panel, else METRIKA_OAUTH_TOKEN). GA4: events of GA_EVENTS through the Measurement Protocol
 with GA_API_SECRET. Without the token or the secret that system is skipped.
 """
 
@@ -17,6 +17,7 @@ import httpx
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.analytics import yandex
 from app.catalog.settings import get_setting
 from app.core.config import settings
 from app.core.db import utcnow
@@ -53,7 +54,7 @@ def queue(db: Session, row: SiteRequest, goal: str) -> int:
     ym, ga = counters(db)
     ids = identities(row)
     systems = []
-    if ym and settings.metrika_oauth_token and (ids['ym_uid'] or ids['yclid']):
+    if ym and yandex.token(db) and (ids['ym_uid'] or ids['yclid']):
         systems.append('metrika')
     if ga and settings.ga_api_secret and ids['ga_client_id']:
         systems.append('ga4')
@@ -93,7 +94,8 @@ def send(db: Session, kind: str, payload: dict[str, Any]) -> None:
     ym, ga = counters(db)
     ids = identities(row)
     if kind == 'conversion.metrika':
-        if not (ym and settings.metrika_oauth_token):
+        oauth = yandex.token(db)
+        if not (ym and oauth):
             return
         if ids['ym_uid']:
             id_type, column, value = 'CLIENT_ID', 'ClientId', ids['ym_uid']
@@ -108,7 +110,7 @@ def send(db: Session, kind: str, payload: dict[str, Any]) -> None:
             line += [str(payload['value']), str(payload.get('currency') or 'RUB')]
         body = (','.join(header) + '\n' + ','.join(line) + '\n').encode()
         post('METRIKA', METRIKA_URL.format(counter=ym), params={'client_id_type': id_type},
-             headers={'Authorization': f'OAuth {settings.metrika_oauth_token}'},
+             headers={'Authorization': f'OAuth {oauth}'},
              files={'file': ('conversions.csv', body, 'text/csv')})
     elif kind == 'conversion.ga4':
         if not (ga and settings.ga_api_secret and ids['ga_client_id']):

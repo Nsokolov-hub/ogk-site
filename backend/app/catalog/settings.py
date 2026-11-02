@@ -101,6 +101,11 @@ DEFAULTS: dict[str, Any] = {
     'site': SITE,
     # ADM-10: counters (TZ 15.1); empty — the numbers from YM_COUNTER_ID and GA_MEASUREMENT_ID of the server.
     'counters': {'ym': None, 'ga': None},
+    # Yandex Metrica and Webmaster in the admin panel (app.analytics.yandex): the OAuth token, encrypted with
+    # SECRET_KEY and never sent back; the reports of 7, 30 and 90 days and when they were fetched.
+    'yandex_token': None,
+    'yandex_reports': {},
+    'yandex_reports_at': None,
     # SEO-02: meta templates of cards and substances; empty — the storefront's own (messages/*.json).
     # Placeholders: {name} {brand} {number} {cas} {ids} {logistics}; substances {name} {count} {brands}.
     'meta_templates': {'product': {'ru': {}, 'en': {}}, 'substance': {'ru': {}, 'en': {}}},

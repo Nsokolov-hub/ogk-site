@@ -361,6 +361,25 @@ def build_cas_pages_if_due() -> None:
         event(logger, 'cas_pages_failed', logging.WARNING, error=str(exc)[:300])
 
 
+
+def refresh_yandex_if_due() -> None:
+    """Reports of Yandex Metrica and Webmaster for the admin panel, once an hour (app.analytics.yandex)."""
+    from app.analytics import yandex
+
+    with SessionLocal() as db:
+        if not yandex.due(db):
+            return
+    try:
+        with SessionLocal.begin() as db:
+            yandex.refresh(db)
+    except Exception as exc:  # the next hour tries again
+        event(logger, 'yandex_reports_failed', logging.WARNING, error=str(exc)[:300])
+        with SessionLocal.begin() as db:
+            from app.catalog.settings import set_setting
+
+            set_setting(db, 'yandex_reports_at', utcnow().isoformat())
+
+
 _index_ready = False
 
 
@@ -420,6 +439,7 @@ def run_once(*, housekeeping: bool = True) -> dict[str, int]:
             prune_carts(db)
         sync_brands_if_due()
         build_cas_pages_if_due()
+        refresh_yandex_if_due()
         admin_housekeeping()
     with SessionLocal.begin() as db:
         counts = process_events(db)
