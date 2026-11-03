@@ -7,7 +7,7 @@ the search engine (app.catalog.search.query).
 from collections import defaultdict
 from typing import Any
 
-from sqlalchemy import Select, and_, func, literal, or_, select, tuple_
+from sqlalchemy import Select, and_, func, literal, literal_column, or_, select, tuple_
 from sqlalchemy.orm import Session
 
 from app.catalog import cas_pages as cas_build
@@ -167,8 +167,14 @@ def popular_cas(db: Session, limit: int = cas_build.LINKS) -> list[dict[str, Any
                                                      .limit(limit))]
 
 
+def _first_letter() -> Any:
+    # Literal arguments: PostgreSQL groups by an expression only when it is the same text as in the select list,
+    # and bound parameters ($1, $3) would make the two differ.
+    return func.substr(CasPage.sort_key, literal_column('1'), literal_column('1'))
+
+
 def _letter_condition(letter: str) -> Any:
-    first = func.substr(CasPage.sort_key, 1, 1)
+    first = _first_letter()
     if letter == '0':
         return or_(CasPage.sort_key.is_(None), first < 'a', first > 'z')
     return first == letter
@@ -177,8 +183,8 @@ def _letter_condition(letter: str) -> Any:
 def cas_index(db: Session) -> dict[str, Any]:
     """The index /cas/: how many pages each letter has, and the pages with the most offers."""
     counts: dict[str, int] = defaultdict(int)
-    for key, n in db.execute(select(func.substr(CasPage.sort_key, 1, 1), func.count())
-                             .group_by(func.substr(CasPage.sort_key, 1, 1))):
+    first = _first_letter()
+    for key, n in db.execute(select(first, func.count()).group_by(first)):
         counts[cas_build.letter(key)] += n
     letters = [{'letter': letter, 'count': counts[letter],
                 'pageCount': max(1, -(-counts[letter] // INDEX_PAGE))} for letter in sorted(counts)]
