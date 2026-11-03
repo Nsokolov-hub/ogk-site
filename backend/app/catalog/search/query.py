@@ -15,8 +15,18 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.catalog.models import Brand, Category, Packaging, SearchMiss, Substance
-from app.catalog.normalize import compact, hill_key, looks_like_number, normalize_query, switch_layout
+from app.catalog.models import Brand, CasPage, Category, Packaging, SearchMiss, Substance
+from app.catalog.normalize import (
+    cas_check_ok,
+    cas_fragment,
+    cas_typo,
+    compact,
+    hill_key,
+    looks_like_number,
+    normalize_query,
+    parse_cas,
+    switch_layout,
+)
 from app.catalog.search.documents import FACET_FIELDS, NUMBER_FIELDS
 from app.catalog.search.engine import Query, Result, SearchEngine, any_of, quote
 from app.core.config import settings
@@ -90,11 +100,20 @@ def _find_once(engine: SearchEngine, q: str, *, base: str | None, offset: int, l
     qn, qc = normalize_query(q), compact(q)
     number = looks_like_number(q)
     formula = hill_key(q)
+    # The beginning of a CAS typed with hyphens: products whose CAS starts so go before catalog numbers that
+    # merely share the digits («67-56» is methanol, not a part number 6756…).
+    fragment = cas_fragment(q) if number else None
+    if fragment and cas_check_ok(fragment):
+        fragment = None
     queries: list[Query] = []
-    exact_at = formula_at = -1
+    exact_at = formula_at = cas_at = -1
     if number:
         exact_at = len(queries)
         queries.append(Query(filter=_and(base, f'numbers = {quote(qc)} OR cas_numbers = {quote(qc)}'),
+                             limit=EXACT_LIMIT, sort=['in_stock:desc', 'completeness:desc', 'popularity:desc']))
+    if fragment:
+        cas_at = len(queries)
+        queries.append(Query(q=qc, attributes=['cas_numbers'], matching_strategy='all', filter=base,
                              limit=EXACT_LIMIT, sort=['in_stock:desc', 'completeness:desc', 'popularity:desc']))
     if formula:
         formula_at = len(queries)
@@ -109,6 +128,10 @@ def _find_once(engine: SearchEngine, q: str, *, base: str | None, offset: int, l
         first.append(hit)
         matches[hit['id']] = 'cas' if qc in (hit.get('cas_numbers') or []) and qc not in hit.get('numbers', []) \
             else 'catalogNumber'
+    for hit in results[cas_at].hits if cas_at >= 0 else []:
+        if hit['id'] not in matches and (hit.get('cas') or '').startswith(fragment or '-'):
+            first.append(hit)
+            matches[hit['id']] = 'cas'
     for hit in by_formula:
         if hit['id'] not in matches:
             first.append(hit)
@@ -207,10 +230,26 @@ def suggest_groups(db: Session, q: str, lang: str) -> dict[str, Any]:
     return {'substances': subs, 'categories': categories[:3], 'brands': brands}
 
 
+def cas_pages_for(db: Session, query: str, limit: int = 3) -> list[dict[str, Any]]:
+    """Substance pages (/cas/<cas>/) for a CAS or its beginning: every variant of the substance on one page.
+
+    Business remark of 3 November 2026: buyers search by CAS to see all variants of a substance."""
+    full = parse_cas(query)[0] if re.fullmatch(r'[\d\s\-–—]{5,14}', query.strip()) else None
+    fragment = cas_fragment(query)
+    if full:
+        stmt = select(CasPage).where(CasPage.cas == full)
+    elif fragment and len(re.sub(r'\D', '', fragment)) >= 3:
+        stmt = select(CasPage).where(CasPage.cas.like(fragment + '%')).order_by(CasPage.offers.desc(), CasPage.cas)
+    else:
+        return []
+    return [{'cas': row.cas, 'name': row.name, 'offers': row.offers} for row in db.scalars(stmt.limit(limit))]
+
+
 def suggest(db: Session, engine: SearchEngine, query: str, lang: str, limit: int = SUGGEST_LIMIT) -> dict[str, Any]:
     q = normalize_query(query)
     if len(q) < SUGGEST_MIN:
-        return {'query': query, 'items': [], 'total': 0, 'substances': [], 'categories': [], 'brands': []}
+        return {'query': query, 'items': [], 'total': 0, 'substances': [], 'categories': [], 'brands': [],
+                'casPages': [], 'casTypo': False}
     found = find(engine, q, limit=limit)
     items = []
     for hit in found.hits:
@@ -222,6 +261,7 @@ def suggest(db: Session, engine: SearchEngine, query: str, lang: str, limit: int
             item['formula'] = hit.get('formula_hill')
         items.append(item)
     return {'query': query, 'corrected': found.corrected, 'total': found.total, 'items': items,
+            'casPages': cas_pages_for(db, q), 'casTypo': cas_typo(q) and not found.total,
             **suggest_groups(db, found.corrected or q, lang)}
 
 
@@ -333,7 +373,7 @@ def search_page(db: Session, engine: SearchEngine, *, query: str, brand: str | N
                 page: int, lang: str) -> dict[str, Any]:
     q = normalize_query(query)
     empty = {'query': query, 'items': [], 'total': 0, 'page': 1, 'pageCount': 1,
-             'facets': {'brand': [], 'category': []}}
+             'facets': {'brand': [], 'category': []}, 'casPages': [], 'casTypo': False}
     if len(q) < SUGGEST_MIN:
         return empty
     page = max(1, min(page, settings.search_max_page))
@@ -370,6 +410,8 @@ def search_page(db: Session, engine: SearchEngine, *, query: str, brand: str | N
         'corrected': found.corrected,
         'items': [preview(hit, lang) for hit in found.hits],
         'total': found.total,
+        'casPages': cas_pages_for(db, q),
+        'casTypo': cas_typo(q) and not found.total,
         'page': page,
         'pageCount': max(1, min(math.ceil(found.total / SEARCH_PAGE_SIZE), settings.search_max_page)),
         'facets': {'brand': _facet_values(db, 'brand', by_brand.facets.get('brand_slug', {}),

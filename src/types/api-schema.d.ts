@@ -673,6 +673,18 @@ export interface components {
             /** Updatedat */
             updatedAt?: string | null;
         };
+        /**
+         * CasPageLink
+         * @description A substance page by CAS (/cas/<cas>/) offered in the search: all variants of the substance.
+         */
+        CasPageLink: {
+            /** Cas */
+            cas: string;
+            /** Name */
+            name: string;
+            /** Offers */
+            offers: number;
+        };
         /** CasPageOut */
         CasPageOut: {
             /** Cas */
@@ -1108,6 +1120,16 @@ export interface components {
             /** Pagecount */
             pageCount: number;
             facets: components["schemas"]["SearchFacets"];
+            /**
+             * Caspages
+             * @default []
+             */
+            casPages: components["schemas"]["CasPageLink"][];
+            /**
+             * Castypo
+             * @default false
+             */
+            casTypo: boolean;
         };
         /** SitemapEntry */
         SitemapEntry: {
@@ -1274,6 +1296,16 @@ export interface components {
             categories: components["schemas"]["LinkOut"][];
             /** Brands */
             brands: components["schemas"]["SuggestBrand"][];
+            /**
+             * Caspages
+             * @default []
+             */
+            casPages: components["schemas"]["CasPageLink"][];
+            /**
+             * Castypo
+             * @default false
+             */
+            casTypo: boolean;
         };
         /** SuggestSubstance */
         SuggestSubstance: {

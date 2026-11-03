@@ -1970,6 +1970,30 @@
         ],
         "title": "CartOut"
       },
+      "CasPageLink": {
+        "properties": {
+          "cas": {
+            "type": "string",
+            "title": "Cas"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "offers": {
+            "type": "integer",
+            "title": "Offers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cas",
+          "name",
+          "offers"
+        ],
+        "title": "CasPageLink",
+        "description": "A substance page by CAS (/cas/<cas>/) offered in the search: all variants of the substance."
+      },
       "CasPageOut": {
         "properties": {
           "cas": {
@@ -3265,6 +3289,19 @@
           },
           "facets": {
             "$ref": "#/components/schemas/SearchFacets"
+          },
+          "casPages": {
+            "items": {
+              "$ref": "#/components/schemas/CasPageLink"
+            },
+            "type": "array",
+            "title": "Caspages",
+            "default": []
+          },
+          "casTypo": {
+            "type": "boolean",
+            "title": "Castypo",
+            "default": false
           }
         },
         "type": "object",
@@ -3733,6 +3770,19 @@
             },
             "type": "array",
             "title": "Brands"
+          },
+          "casPages": {
+            "items": {
+              "$ref": "#/components/schemas/CasPageLink"
+            },
+            "type": "array",
+            "title": "Caspages",
+            "default": []
+          },
+          "casTypo": {
+            "type": "boolean",
+            "title": "Castypo",
+            "default": false
           }
         },
         "type": "object",

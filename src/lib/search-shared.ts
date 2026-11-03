@@ -27,6 +27,16 @@ export interface SuggestResult {
   substances: { slug: string; name: string; nameEn: string }[];
   categories: { name: string; href: string }[];
   brands: { slug: string; name: string }[];
+  /** Страницы веществ по CAS (/cas/<cas>/) для CAS или его начала — все варианты вещества */
+  casPages?: CasPageLink[];
+  /** Целый CAS с неверной контрольной цифрой и ничего не найдено — просим проверить номер */
+  casTypo?: boolean;
+}
+
+export interface CasPageLink {
+  cas: string;
+  name: string;
+  offers: number;
 }
 
 export const SUGGEST_MIN = 2;

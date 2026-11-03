@@ -56,6 +56,23 @@ def cas_or_none(raw: str | None) -> str | None:
     return parse_cas(raw)[0]
 
 
+_CAS_FRAGMENT = re.compile(r'\d{2,7}-\d{0,2}(?:-\d?)?')
+
+
+def cas_fragment(query: str | None) -> str | None:
+    """A CAS number or its beginning typed with hyphens («67-56», «7664-38-», «67-56-1»), else None.
+
+    Business remark of 3 November 2026: most buyers know only the CAS of what they need and look for variants by it."""
+    value = clean_spaces(query).replace('–', '-').replace('—', '-')
+    return value if _CAS_FRAGMENT.fullmatch(value) else None
+
+
+def cas_typo(query: str | None) -> bool:
+    """A whole CAS number with a wrong check digit («7664-93-8»): the buyer mistyped it."""
+    value = clean_spaces(query).replace('–', '-').replace('—', '-')
+    return bool(re.fullmatch(r'\d{2,7}-\d{2}-\d', value)) and not cas_check_ok(value)
+
+
 # ── gross formula (SRCH-10) ──
 
 _TWO_LETTER = {'Cl', 'Br', 'Na', 'Ca', 'Mg', 'Li', 'Si', 'Se', 'Zn', 'Fe', 'Al', 'Pt', 'Ag', 'Au', 'Mn', 'Cu',

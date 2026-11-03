@@ -6,6 +6,8 @@ import pytest
 
 from app.catalog.normalize import (
     brand_key,
+    cas_fragment,
+    cas_typo,
     compact,
     hill_key,
     looks_like_number,
@@ -104,3 +106,13 @@ def test_only_formula_and_molecular_weight_are_taken_from_characteristics():
     assert chemical_facts('Формула: C6H12O6·H2O') == {'formula': 'C6H12O6·H2O'}
     assert chemical_facts('Формула: None; Молекулярный вес: None; Вес: 200 г') == {}
     assert chemical_facts('Альтернативное название: ГАМК; Хост: Мышь') == {}
+
+
+def test_cas_fragments_and_typos():
+    """Business remark of 3 November 2026: buyers type a CAS or its beginning; a wrong check digit is a typo."""
+    for value in ('67-56', '67-56-', '67-56-1', '7664-38', '7664-', ' 7664–93 '):
+        assert cas_fragment(value), value
+    for value in ('67', 'C18', '1.00030', '5182-0716-01', 'Y0001897', '67561', 'метанол'):
+        assert cas_fragment(value) is None, value
+    assert cas_typo('7664-93-8') and cas_typo('67-56-2')
+    assert not cas_typo('7664-93-9') and not cas_typo('67-56') and not cas_typo('67561')

@@ -89,6 +89,23 @@ export default async function SearchPage({ params, searchParams }: Props) {
       {result.corrected ? (
         <p className="mt-4 text-body text-text-secondary">{t('corrected', { q: result.corrected })}</p>
       ) : null}
+      {result.casTypo ? <p className="mt-4 text-body text-text-secondary">{t('casTypo')}</p> : null}
+      {result.casPages?.length ? (
+        <div className="mt-8">
+          <h2 className="text-small text-text-secondary">{t('casPages')}</h2>
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {result.casPages.map((c) => (
+              <li key={c.cas}>
+                <Link href={`/cas/${c.cas}/`} className={cn(chip, 'bg-surface-strong text-text hover:text-accent')}>
+                  <span className="chem-wrap">{c.name}</span>
+                  <span className="tabular-nums text-text-secondary">CAS {c.cas}</span>
+                  <span className="text-text-secondary">{c.offers}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {substanceHits.length || brandHits.length ? (
         <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4">

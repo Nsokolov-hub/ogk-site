@@ -130,3 +130,21 @@ def test_the_build_runs_once_a_night(seeded):
     with seeded() as db:
         assert not cas_pages.due(db, night)
         assert cas_pages.due(db, night.replace(day=3))
+
+
+def test_search_offers_the_substance_page_for_a_cas_or_its_beginning(sessions):
+    """Business remark of 3 November 2026: «Большинство знает только CAS и ищут по нему варианты»."""
+    from app.catalog.search.query import cas_pages_for
+
+    with sessions.begin() as db:
+        db.add_all([CasPage(cas='67-56-1', name='Methanol', offers=509, brands=['Merck']),
+                    CasPage(cas='67-52-7', name='Barbituric acid', offers=12, brands=['Merck']),
+                    CasPage(cas='675-20-7', name='2-Piperidinone', offers=40, brands=['Merck'])])
+    with sessions() as db:
+        assert [row['cas'] for row in cas_pages_for(db, '67-56-1')] == ['67-56-1']
+        assert cas_pages_for(db, '67561') == [{'cas': '67-56-1', 'name': 'Methanol', 'offers': 509}]
+        # The beginning with its hyphens: «67-5» is not «675-…».
+        assert [row['cas'] for row in cas_pages_for(db, '67-5')] == ['67-56-1', '67-52-7']
+        assert [row['cas'] for row in cas_pages_for(db, '675-')] == ['675-20-7']
+        assert cas_pages_for(db, '7664-35') == [] and cas_pages_for(db, '67') == []
+        assert cas_pages_for(db, 'methanol') == [] and cas_pages_for(db, '67-56-2') == []

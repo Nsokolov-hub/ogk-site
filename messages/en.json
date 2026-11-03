@@ -60,8 +60,11 @@
       "substances": "Substances",
       "substanceHint": "standards and impurities",
       "categories": "Catalogue sections",
-      "brands": "Brands"
+      "brands": "Brands",
+      "cas": "Substance by CAS — all variants",
+      "casOffers": "{n, plural, one {# offer} other {# offers}}"
     },
+    "casTypo": "This looks like a CAS number with a typo: the last (check) digit does not match. Please check the number.",
     "headerPlaceholder": "Product or service name, cat. no., CAS, etc."
   },
   "footer": {
@@ -774,7 +777,9 @@
     "requestTitleEmpty": "We'll source it to order",
     "requestText": "Your query is already in the request — add quantity and contacts. We'll find the item and reply within 2 business hours.",
     "requestMessage": "Looking for: {q}. Quantity and pack size: ",
-    "corrected": "Keyboard layout corrected: showing results for “{q}”"
+    "corrected": "Keyboard layout corrected: showing results for “{q}”",
+    "casPages": "All variants by CAS",
+    "casTypo": "This looks like a CAS number with a typo: the last (check) digit does not match. Please check the number."
   },
   "cartDrawer": {
     "title": "Quote cart",

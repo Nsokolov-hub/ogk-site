@@ -138,6 +138,13 @@ class SuggestBrand(Out):
     name: str
 
 
+class CasPageLink(Out):
+    """A substance page by CAS (/cas/<cas>/) offered in the search: all variants of the substance."""
+    cas: str
+    name: str
+    offers: int
+
+
 class SuggestResult(Out):
     query: str
     corrected: str | None = None
@@ -146,6 +153,9 @@ class SuggestResult(Out):
     substances: list[SuggestSubstance]
     categories: list[LinkOut]
     brands: list[SuggestBrand]
+    casPages: list[CasPageLink] = []
+    # A whole CAS with a wrong check digit and nothing found: the buyer is told to check the number.
+    casTypo: bool = False
 
 
 class SearchFacets(Out):
@@ -161,6 +171,8 @@ class SearchPageResult(Out):
     page: int
     pageCount: int
     facets: SearchFacets
+    casPages: list[CasPageLink] = []
+    casTypo: bool = False
 
 
 class BatchCandidate(Out):

@@ -5,9 +5,9 @@
  */
 import type { ProductPreview } from '@/types/catalog';
 import { api } from './backend';
-import type { SuggestResult } from './search-shared';
+import type { CasPageLink, SuggestResult } from './search-shared';
 
-export type { SuggestItem, SuggestResult } from './search-shared';
+export type { CasPageLink, SuggestItem, SuggestResult } from './search-shared';
 
 /** Подсказки строки поиска; visitor — адрес посетителя для его лимита запросов (NFR-05) */
 export async function suggest(query: string, lang: string, visitor?: string | null): Promise<SuggestResult> {
@@ -32,6 +32,8 @@ export interface SearchPageResult {
   page: number;
   pageCount: number;
   facets: { brand: SearchFacetValue[]; category: SearchFacetValue[] };
+  casPages?: CasPageLink[];
+  casTypo?: boolean;
 }
 
 export const SEARCH_PAGE_SIZE = 24;

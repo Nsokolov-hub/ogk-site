@@ -24,6 +24,16 @@ def test_exact_number_and_cas_come_first(client, meili):
     assert suggest(client, '28721-07-5')['substances'][0]['slug'] == 'oxcarbazepine'
 
 
+def test_beginning_of_a_cas_and_a_mistyped_cas(client, meili):
+    """Business remark of 3 November 2026: «28721-07» finds the CAS 28721-07-5 first, as CAS; a wrong check digit is
+    reported as a typo."""
+    first = suggest(client, '28721-07')['items'][0]
+    assert (first['cas'], first['match']) == ('28721-07-5', 'cas')
+    typo = suggest(client, '28721-07-4')
+    assert typo['total'] == 0 and typo['casTypo'] is True
+    assert suggest(client, '28721-07-5')['casTypo'] is False
+
+
 def test_names_russian_synonyms_layout_and_formula(client, meili):
     assert suggest(client, 'oxcarb')['items'][0]['name'].startswith('Oxcarbazepine')
     russian = suggest(client, 'окскарбазепин')

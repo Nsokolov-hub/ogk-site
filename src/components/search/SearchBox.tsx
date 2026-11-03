@@ -150,8 +150,8 @@ export function SearchBox({
     } else if (state.status === 'error') {
       panel = <p className="px-5 py-4 text-small text-text-secondary">{t('error')}</p>;
     } else if (state.status === 'done') {
-      const { items, total, corrected, substances = [], categories = [], brands = [] } = state.result;
-      const hasGroups = substances.length + categories.length + brands.length > 0;
+      const { items, total, corrected, substances = [], categories = [], brands = [], casPages = [], casTypo } = state.result;
+      const hasGroups = substances.length + categories.length + brands.length + casPages.length > 0;
       const hl = corrected ?? query;
       const groupLink = 'block px-5 py-2 text-body text-text outline-offset-[-2px] transition-colors hover:bg-surface-strong focus-visible:bg-surface-strong';
       const group = (title: string, children: ReactNode) => (
@@ -168,6 +168,7 @@ export function SearchBox({
           {total === 0 ? (
             <div className="px-5 pt-4">
               <p className="text-body text-text">{t('empty', { q: query.trim() })}</p>
+              {casTypo ? <p className="mt-1 text-small text-text-secondary">{t('casTypo')}</p> : null}
               {requestHref.startsWith('#') ? (
                 <a href={requestHref} onClick={() => setOpen(false)} className="mt-2 inline-block text-body font-medium text-accent hover:text-accent-hover">
                   {t('emptyAction')}
@@ -180,6 +181,23 @@ export function SearchBox({
             </div>
           ) : null}
           <ul ref={listRef} className={cn('py-2', total === 0 && !hasGroups && 'hidden')}>
+            {/* Покупатели чаще знают только CAS: страница вещества собирает все его варианты */}
+            {casPages.length
+              ? group(
+                  t('groups.cas'),
+                  casPages.map((g) => (
+                    <li key={g.cas}>
+                      <Link data-suggest href={`/cas/${g.cas}/`} onClick={() => setOpen(false)} className={groupLink}>
+                        <span className="chem-wrap">{g.name}</span>
+                        <span className="tabular-nums text-text-secondary">
+                          {' '}
+                          · CAS <Highlight text={g.cas} query={hl} /> · {t('groups.casOffers', { n: g.offers })}
+                        </span>
+                      </Link>
+                    </li>
+                  )),
+                )
+              : null}
             {items.map((it) => (
               <li key={it.id}>
                 <Link
