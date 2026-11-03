@@ -234,7 +234,10 @@ def cas_pages_for(db: Session, query: str, limit: int = 3) -> list[dict[str, Any
     """Substance pages (/cas/<cas>/) for a CAS or its beginning: every variant of the substance on one page.
 
     Business remark of 3 November 2026: buyers search by CAS to see all variants of a substance."""
-    full = parse_cas(query)[0] if re.fullmatch(r'[\d\s\-–—]{5,14}', query.strip()) else None
+    value = query.strip()
+    # Digits alone are read as a CAS; typed hyphens stay where they are («7664-38» is not 766-43-8).
+    full = (parse_cas(value)[0] if re.fullmatch(r'\d{5,10}', value)
+            else value if re.fullmatch(r'\d{2,7}-\d{2}-\d', value) and cas_check_ok(value) else None)
     fragment = cas_fragment(query)
     if full:
         stmt = select(CasPage).where(CasPage.cas == full)
