@@ -1,30 +1,26 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Pause, Play } from 'lucide-react';
-import { useTranslations } from 'next-intl';
 import type { HomeContent } from '@/types/content';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
-import { BlurryLogo } from './BlurryLogo';
+import { CapabilitiesLogo } from './CapabilitiesLogo';
 import { cn } from '@/lib/cn';
 import { usePrefersReducedMotion } from '@/lib/hooks';
 
 const INTERVAL_MS = 3000;
 
 /**
- * «У нас вы сможете»: строки сменяются каждые 3 с, есть пауза (WCAG 2.2.2). Вместе со строкой меняется состояние
- * логотипа справа (макет «Blurry logo»): размытие переходит с одной части знака на другую.
+ * «У нас вы сможете»: строки сменяются каждые 3 с и замирают, пока на них мышь или фокус; при «меньше движения»
+ * в настройках системы показаны списком. Справа — чёткий логотип без эффектов.
  * Все 12 строк — ссылки и все есть в HTML: это внутренняя перелинковка на разделы и услуги.
  */
 export function CapabilitiesSection({ capabilities }: { capabilities: HomeContent['capabilities'] }) {
-  const t = useTranslations('home.capabilities');
   const reducedMotion = usePrefersReducedMotion();
   const { items } = capabilities;
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
-  const running = !paused && !hovered && !reducedMotion;
+  const running = !hovered && !reducedMotion;
 
   useEffect(() => {
     if (!running) return;
@@ -82,22 +78,9 @@ export function CapabilitiesSection({ capabilities }: { capabilities: HomeConten
               })}
             </ul>
           )}
-
-          {!reducedMotion ? (
-            <button
-              type="button"
-              onClick={() => setPaused((p) => !p)}
-              aria-label={paused ? t('play') : t('pause')}
-              className="mt-8 inline-grid size-11 place-items-center rounded-full border border-border text-text-secondary transition-colors hover:border-accent hover:text-accent"
-            >
-              {paused ? <Play aria-hidden size={18} strokeWidth={1.5} /> : <Pause aria-hidden size={18} strokeWidth={1.5} />}
-            </button>
-          ) : null}
         </div>
 
-        <div aria-hidden className="relative">
-          <BlurryLogo state={reducedMotion ? 0 : index % 4} />
-        </div>
+        <CapabilitiesLogo />
       </Container>
     </section>
   );

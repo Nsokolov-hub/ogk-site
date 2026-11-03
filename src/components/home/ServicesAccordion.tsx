@@ -10,12 +10,13 @@ import { Chip } from '@/components/ui/Chip';
 import { cn } from '@/lib/cn';
 
 /**
- * Аккордеон услуг как на лендинге: всегда открыт ровно один пункт.
- * Текст закрытых пунктов остаётся в HTML (для поисковиков), но недоступен для фокуса.
+ * Аккордеон услуг: сначала открыт первый пункт, открытый пункт сворачивается повторным нажатием,
+ * при открытии другого предыдущий сворачивается. Текст закрытых пунктов остаётся в HTML (для поисковиков),
+ * но недоступен для фокуса.
  */
 export function ServicesAccordion({ items }: { items: ServiceItem[] }) {
   const t = useTranslations('home.services');
-  const [open, setOpen] = useState(items[0]?.id);
+  const [open, setOpen] = useState<string | undefined>(items[0]?.id);
 
   return (
     <ul className="flex flex-col gap-3 md:gap-4">
@@ -31,12 +32,8 @@ export function ServicesAccordion({ items }: { items: ServiceItem[] }) {
                 type="button"
                 aria-expanded={isOpen}
                 aria-controls={panelId}
-                aria-disabled={isOpen || undefined}
-                onClick={() => setOpen(s.id)}
-                className={cn(
-                  'flex w-full items-center justify-between gap-6 p-5 text-left text-h3 font-medium text-text transition-colors md:p-8',
-                  !isOpen && 'hover:text-accent',
-                )}
+                onClick={() => setOpen(isOpen ? undefined : s.id)}
+                className="flex w-full items-center justify-between gap-6 p-5 text-left text-h3 font-medium text-text transition-colors hover:text-accent md:p-8"
               >
                 {s.title}
                 <ChevronDown

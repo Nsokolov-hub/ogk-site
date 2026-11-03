@@ -214,10 +214,6 @@
       "more": "About the service",
       "order": "Order the service"
     },
-    "capabilities": {
-      "pause": "Pause rotating lines",
-      "play": "Resume rotating lines"
-    },
     "request": {
       "toContacts": "Go to contacts"
     },
