@@ -9,6 +9,7 @@ query is retried in the other keyboard layout (SRCH-05).
 import math
 import re
 import time
+from collections.abc import Collection
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -42,14 +43,16 @@ TRANSLATED_FACETS = ('storage', 'purpose', 'type')
 
 # ── documents → storefront shapes ──
 
-def preview(hit: dict[str, Any], lang: str) -> dict[str, Any]:
-    """A product preview in the storefront's shape (ProductPreview)."""
+def preview(hit: dict[str, Any], lang: str, brand_pages: Collection[str] = frozenset()) -> dict[str, Any]:
+    """A product preview in the storefront's shape (ProductPreview); brand_pages — slugs of brands with a published
+    page: only those brands are links (the others would answer 404)."""
     ru = lang != 'en'
     attributes = {key: hit.get(key) or [] for key in ('storage', 'purpose', 'type', 'phase', 'length', 'diameter',
                                                        'particle', 'ph') if hit.get(key)}
     attributes['brand'] = [hit['brand_slug']]
     attributes['pack'] = hit.get('packs') or []
-    brand = {'slug': hit['brand_slug'], 'name': hit['brand'], 'logo': hit.get('brand_logo')}
+    brand = {'slug': hit['brand_slug'], 'name': hit['brand'], 'logo': hit.get('brand_logo'),
+             'page': hit['brand_slug'] in brand_pages}
     if not ru and hit['brand_slug'] == 'various':
         brand['name'] = 'Various manufacturers'
     return {
@@ -205,6 +208,11 @@ def reset_directory() -> None:
     _DIRECTORY['at'] = 0.0
 
 
+def brand_pages(db: Session) -> frozenset[str]:
+    """Slugs of the brands with a published page (cached for a minute with the suggestions' directory)."""
+    return frozenset(slug for slug, _ in _directory(db)['brands'])
+
+
 def _starts_word(text: str | None, q: str) -> bool:
     lowered = (text or '').casefold()
     return lowered.startswith(q) or any(w.startswith(q) for w in re.split(r'[\s,;()\[\]/«»"-]+', lowered) if w)
@@ -343,7 +351,7 @@ def listing(db: Session, engine: SearchEngine, *, path: str, filters: dict[str, 
         facet_counts[key] = result.facets.get(FACET_FIELDS[key], {})
     page_count = max(1, min(math.ceil(total / page_size), settings.search_max_page))
     return {
-        'items': [preview(hit, lang) for hit in main.hits],
+        'items': [preview(hit, lang, brand_pages(db)) for hit in main.hits],
         'total': total,
         'page': page,
         'pageSize': page_size,
@@ -365,7 +373,8 @@ def brands_in(db: Session, engine: SearchEngine, path: str, preset: dict[str, li
     result = engine.search(settings.meili_index, [Query(filter=base, limit=0, facets=['brand_slug'])])[0]
     counts = result.facets.get('brand_slug', {})
     rows = {b.slug: b for b in db.scalars(select(Brand).where(Brand.slug.in_(list(counts))))}
-    out = [{'slug': slug, 'name': rows[slug].name, 'logo': rows[slug].logo, 'count': n}
+    out = [{'slug': slug, 'name': rows[slug].name, 'logo': rows[slug].logo, 'count': n,
+            'page': rows[slug].page_published and not rows[slug].merged_into_id}
            for slug, n in counts.items() if slug in rows]
     return sorted(out, key=lambda b: -b['count'])
 
@@ -411,7 +420,7 @@ def search_page(db: Session, engine: SearchEngine, *, query: str, brand: str | N
     return {
         'query': query,
         'corrected': found.corrected,
-        'items': [preview(hit, lang) for hit in found.hits],
+        'items': [preview(hit, lang, brand_pages(db)) for hit in found.hits],
         'total': found.total,
         'casPages': cas_pages_for(db, q),
         'casTypo': cas_typo(q) and not found.total,

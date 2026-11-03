@@ -19,6 +19,8 @@ class BrandRef(Out):
     slug: str
     name: str
     logo: str | None = None
+    # The brand has a published page /brands/<slug>/: the storefront links only those (03.11.2026).
+    page: bool = False
 
 
 class PackagingOut(Out):
@@ -98,6 +100,15 @@ class CategoryNode(Out):
     children: list['CategoryNode'] = Field(default_factory=list)
 
 
+class CasRef(Out):
+    """A substance page by CAS number (/cas/<cas>/), as a link."""
+    cas: str
+    name: str
+    offers: int
+    # Our own Russian name (setting cas_names_ru), when there is one.
+    nameRu: str | None = None
+
+
 class CategoryOut(Out):
     path: str
     nameRu: str
@@ -108,6 +119,8 @@ class CategoryOut(Out):
     # CategoryContent of the storefront, per language; «en» is absent until translated (EN-05).
     content: dict[str, Any]
     updatedAt: str
+    # CAS pages of the category's substances with the most offers (the «Вещества» block).
+    casPages: list[CasRef] = Field(default_factory=list)
 
 
 class SuggestItem(Out):
@@ -256,13 +269,6 @@ class SubstanceOut(Out):
     content: dict[str, Any] = Field(default_factory=dict)
 
 
-class CasRef(Out):
-    """A substance page by CAS number (/cas/<cas>/), as a link."""
-    cas: str
-    name: str
-    offers: int
-
-
 class ProductPage(Out):
     # Set instead of the page when the address changed (URL-03): the storefront answers 301.
     moved: str | None = None
@@ -283,6 +289,8 @@ class CasPageOut(CasRef):
     molecularWeight: str | None = None
     brands: list[str] = Field(default_factory=list)
     updatedAt: str
+    # The letter of the index /cas/ the page is listed under («0» — digits and other scripts).
+    letter: str = '0'
 
 
 class CasSection(Out):
@@ -298,6 +306,29 @@ class CasPageResponse(Out):
     # Top-level catalog sections of the offers, most offers first.
     sections: list[CasSection] = Field(default_factory=list)
     items: list[ProductPreview] = Field(default_factory=list)
+    # The names next to this one in the index /cas/.
+    neighbours: list[CasRef] = Field(default_factory=list)
+
+
+class CasLetter(Out):
+    letter: str
+    count: int
+    pageCount: int
+
+
+class CasIndexOut(Out):
+    """The index /cas/: the letters with their page counts and the substances with the most offers."""
+    letters: list[CasLetter]
+    total: int
+    popular: list[CasRef]
+
+
+class CasLetterOut(Out):
+    letter: str
+    page: int
+    pageCount: int
+    total: int
+    items: list[CasRef]
 
 
 class CasSitemapEntry(Out):
@@ -345,6 +376,8 @@ class BrandPage(Out):
     brand: BrandOut | None = None
     products: list[ProductPreview] = Field(default_factory=list)
     categories: list[CountedPath] = Field(default_factory=list)
+    # CAS pages of the brand's substances with the most offers.
+    casPages: list[CasRef] = Field(default_factory=list)
 
 
 class ProductsPage(Out):

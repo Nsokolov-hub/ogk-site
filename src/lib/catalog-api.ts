@@ -42,7 +42,7 @@ export async function countInScope(path: string[], preset?: CatalogFilters): Pro
 
 /** Производители, представленные в разделе (блок «Производители» под сеткой) */
 export async function getCategoryBrands(path: string[], preset?: CatalogFilters) {
-  return api<{ slug: string; name: string; logo?: string | null; count: number }[]>(
+  return api<{ slug: string; name: string; logo?: string | null; count: number; page?: boolean }[]>(
     '/public/catalog/brands',
     { path: path.join('/'), ...facetParams('p', preset) },
     { tags: ['catalog'] },

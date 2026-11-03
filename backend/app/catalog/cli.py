@@ -12,6 +12,9 @@
     python -m app.catalog.cli sync-brands                  — manufacturer registry from the CRM (flow F5)
     python -m app.catalog.cli misses [--days 30]           — top queries without results (SRCH-12)
     python -m app.catalog.cli setting KEY [JSON]           — read or change a catalog setting
+    python -m app.catalog.cli indexnow-sitemap             — queue every Russian address of the Sitemap for IndexNow
+    python -m app.catalog.cli cas-names FILE.json [--replace] — Russian names of CAS pages ({cas: name})
+    python -m app.catalog.cli index-pilot --brands a,b [--limit N] [--undo] — open cards of these brands for indexing
 """
 
 import argparse
@@ -161,6 +164,50 @@ def _cas_pages(_args: argparse.Namespace) -> None:
     _refresh_storefront()
 
 
+def _indexnow_sitemap(_args: argparse.Namespace) -> None:
+    import httpx
+
+    from app.catalog import indexnow
+
+    base = (settings.web_url or settings.site_url).rstrip('/')
+    with httpx.Client(timeout=120) as client:
+        paths = indexnow.sitemap_paths(client, f'{base}/sitemap.xml')
+    with SessionLocal.begin() as db:
+        added = indexnow.queue(db, paths)
+    state = 'отправит воркер' if indexnow.enabled() else 'не отправляются: не production или нет ключа'
+    print(f'В Sitemap {len(paths)} русских адресов, в очередь IndexNow добавлено {added} ({state}).')
+
+
+def _cas_names(args: argparse.Namespace) -> None:
+    from app.catalog.settings import get_setting, set_setting
+
+    names = json.loads(Path(args.file).read_text(encoding='utf-8'))
+    if not isinstance(names, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in names.items()):
+        raise SystemExit('Нужен JSON-объект {"CAS": "Русское название"}')
+    clean = {cas.strip(): name.strip() for cas, name in names.items() if cas.strip() and name.strip()}
+    with SessionLocal.begin() as db:
+        current = {} if args.replace else dict(get_setting(db, 'cas_names_ru') or {})
+        current.update(clean)
+        set_setting(db, 'cas_names_ru', current)
+    print(f'Русских названий: {len(current)} (из файла {len(clean)}).')
+    _refresh_storefront()
+
+
+def _index_pilot(args: argparse.Namespace) -> None:
+    from app.catalog import pilot
+
+    slugs = [b.strip() for b in args.brands.split(',') if b.strip()]
+    with SessionLocal.begin() as db:
+        try:
+            counts, queued = pilot.undo(db, slugs) if args.undo else pilot.open_cards(db, slugs, args.limit)
+        except pilot.UnknownBrands as exc:
+            raise SystemExit(str(exc)) from None
+    action = 'Возвращено решению по полноте' if args.undo else 'Открыто для индексации'
+    print(f'{action}: {sum(counts.values())} ' + json.dumps(counts, ensure_ascii=False) + f'; в очередь IndexNow: {queued}')
+    _index(argparse.Namespace())
+    _refresh_storefront()
+
+
 def _misses(args: argparse.Namespace) -> None:
     from app.catalog.models import SearchMiss
 
@@ -230,10 +277,19 @@ def main() -> None:
     command = commands.add_parser('setting', help='настройка каталога')
     command.add_argument('key')
     command.add_argument('value', nargs='?')
+    commands.add_parser('indexnow-sitemap', help='все русские адреса Sitemap — в очередь IndexNow')
+    command = commands.add_parser('cas-names', help='русские названия страниц CAS из JSON {cas: название}')
+    command.add_argument('file')
+    command.add_argument('--replace', action='store_true', help='заменить все, а не дополнить')
+    command = commands.add_parser('index-pilot', help='открыть карточки брендов для индексации')
+    command.add_argument('--brands', required=True, help='слаги брендов через запятую')
+    command.add_argument('--limit', type=int, default=10000)
+    command.add_argument('--undo', action='store_true', help='вернуть решение полноте карточки')
     args = parser.parse_args()
     handlers = {'seed': _seed, 'recategorize': _recategorize, 'index': _index, 'reindex': _reindex, 'import': _import, 'batches': _batches,
                 'issues': _issues, 'rollback': _rollback, 'controlled': _controlled, 'sync-brands': _sync_brands,
-                'cas-pages': _cas_pages,
+                'cas-pages': _cas_pages, 'indexnow-sitemap': _indexnow_sitemap, 'cas-names': _cas_names,
+                'index-pilot': _index_pilot,
                 'misses': _misses, 'setting': _setting}
     handlers[args.command](args)
 

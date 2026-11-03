@@ -32,6 +32,7 @@
     "contacts": "Contacts",
     "brands": "Brands",
     "substances": "Substances",
+    "cas": "Substances by CAS",
     "allCatalog": "Full catalog",
     "solutions": "Industry solutions",
     "allServices": "All services",
@@ -79,6 +80,7 @@
       "home": "Home",
       "catalog": "Catalog",
       "brands": "Brands",
+      "cas": "Substances by CAS",
       "services": "Services",
       "articles": "Articles",
       "about": "About",
@@ -326,7 +328,9 @@
       "faq": "FAQ",
       "related": "See also",
       "requestTitle": "Could not find the item?",
-      "requestText": "Describe your request or attach a list of items: we will order from the manufacturer catalogs. We reply within 2 business hours."
+      "requestText": "Describe your request or attach a list of items: we will order from the manufacturer catalogs. We reply within 2 business hours.",
+      "substances": "Substances of the section by CAS",
+      "substancesAll": "All substances by CAS"
     },
     "landings": "Popular selections"
   },
@@ -474,7 +478,7 @@
     },
     "h1": "{name}, CAS {cas}",
     "lead": "The catalogue lists {count, plural, one {# product} other {# products}} of {name} (CAS {cas}) from {brandsCount, plural, one {# manufacturer} other {# manufacturers}}: {brands}. Supplied to order — we will send the price, lead time and documents in a quotation within 2 business hours.",
-    "breadcrumb": "Catalogue",
+    "breadcrumb": "Substances by CAS",
     "facts": {
       "name": "Name",
       "formula": "Molecular formula",
@@ -482,7 +486,8 @@
       "mwValue": "{value} g/mol",
       "items": "Products in the catalogue",
       "brands": "Manufacturers",
-      "more": "and {count} more"
+      "more": "and {count} more",
+      "nameRu": "Russian name"
     },
     "other": "Other",
     "synonyms": "Other names",
@@ -490,7 +495,10 @@
     "search": "All products in search",
     "requestTitle": "Need another pack size or grade?",
     "requestText": "Tell us the grade, pack size and quantity — we will find it at the manufacturers and send a quotation within 2 business hours.",
-    "requestMessage": "Substance: {name}, CAS {cas}. Needed: "
+    "requestMessage": "Substance: {name}, CAS {cas}. Needed: ",
+    "neighbours": "Next in the index",
+    "letterAll": "All substances under {letter}",
+    "letterOther": "Substances under digits and other signs"
   },
   "services": {
     "list": {
@@ -586,7 +594,9 @@
       "requestTitle": "Request {brand} items",
       "requestText": "Send catalog numbers or attach a list — we reply within 2 business hours.",
       "requestMessage": "Manufacturer: {brand}. Items needed (cat. no., pack size, quantity): ",
-      "others": "Other manufacturers"
+      "others": "Other manufacturers",
+      "substances": "{brand} substances by CAS",
+      "substancesAll": "All substances by CAS"
     }
   },
   "articles": {
@@ -846,5 +856,27 @@
     "missingText": "Open the whole link from the letter or write to info@ogk-chem.ru and we will unsubscribe you by hand.",
     "errorTitle": "Something went wrong",
     "errorText": "Try again in a minute or write to info@ogk-chem.ru and we will unsubscribe you by hand."
+  },
+  "casIndex": {
+    "meta": {
+      "title": "Substances by CAS number: A to Z index | OGK-CHEM",
+      "description": "An index of {count, plural, one {# substance} other {# substances}} by CAS number: reagents, reference standards and biochemicals of many manufacturers on one page each. Compare packagings and request a quotation.",
+      "letterTitle": "Substances under {letter} — CAS numbers and manufacturers ({count})",
+      "letterDescription": "Substances under {letter} with CAS numbers: {count, plural, one {# substance} other {# substances}} of the OGK-CHEM catalog, starting with {first}. Every packaging of every manufacturer on the substance page.",
+      "page": ", page {page}",
+      "brand": "OGK-CHEM"
+    },
+    "breadcrumb": "Substances by CAS",
+    "h1": "Substances by CAS number",
+    "lead": "{count, plural, one {# substance} other {# substances}} of the catalog, each with a page of all packagings and manufacturers. Pick a letter or search for a CAS number.",
+    "letters": "Index letters",
+    "other": "0–9",
+    "popular": "Most offered",
+    "offers": "{count, plural, one {# product} other {# products}}",
+    "hint": "Reference standards and impurities of drug substances are listed separately —",
+    "substances": "the substance index",
+    "letterH1": "Substances under {letter}",
+    "letterLead": "{count, plural, one {# substance} other {# substances}} in alphabetical order, prefixes such as DL-, N,N- and locants aside. Page {page} of {pages}.",
+    "pages": "Index pages"
   }
 }

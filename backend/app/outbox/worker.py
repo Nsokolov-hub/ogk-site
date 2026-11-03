@@ -362,6 +362,21 @@ def build_cas_pages_if_due() -> None:
 
 
 
+def send_indexnow_if_due() -> None:
+    """Changed pages to Yandex through IndexNow, at most every ten minutes, only in production."""
+    from app.catalog import indexnow
+
+    if not indexnow.enabled():
+        return
+    with SessionLocal() as db:
+        if not indexnow.due(db):
+            return
+    try:
+        indexnow.send(SessionLocal)
+    except Exception as exc:  # the next turn tries again
+        event(logger, 'indexnow_failed', logging.WARNING, error=str(exc)[:300])
+
+
 def refresh_yandex_if_due() -> None:
     """Reports of Yandex Metrica and Webmaster for the admin panel, once an hour (app.analytics.yandex)."""
     from app.analytics import yandex
@@ -440,6 +455,7 @@ def run_once(*, housekeeping: bool = True) -> dict[str, int]:
         sync_brands_if_due()
         build_cas_pages_if_due()
         refresh_yandex_if_due()
+        send_indexnow_if_due()
         admin_housekeeping()
     with SessionLocal.begin() as db:
         counts = process_events(db)

@@ -114,8 +114,19 @@ class CasPage(Base):
     # Brand names and top-level category paths, most offers first.
     brands: Mapped[list[str]] = mapped_column(JSON, default=list)
     sections: Mapped[list[str]] = mapped_column(JSON, default=list)
+    # The name as the index /cas/ sorts it: lower case, locants and stereo prefixes off («DL-Lactic acid» → «lactic
+    # acid»); its first letter is the page's letter of the index (app.catalog.cas_pages.sort_key).
+    sort_key: Mapped[str | None] = mapped_column(String(300), index=True)
     # Changes only when the page's content does: the Sitemap's lastmod.
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class IndexNowUrl(Base):
+    """A page whose change search engines should learn about now (IndexNow, app.catalog.indexnow)."""
+
+    __tablename__ = 'indexnow_queue'
+    path: Mapped[str] = mapped_column(String(500), primary_key=True)
+    queued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
 
 
 class Substance(Entity):

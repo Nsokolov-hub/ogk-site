@@ -49,6 +49,8 @@ export interface CategoryPageData {
   nav: { title: string; parent?: { label: string; href: string }; items: { label: string; href: string; active: boolean }[] };
   /** Производители раздела с числом позиций */
   brands: (BrandRef & { count: number })[];
+  /** Вещества раздела по CAS: ссылки на страницы /cas/<cas>/ */
+  casPages: { cas: string; name: string; offers: number; nameRu?: string | null }[];
   /** Посадочная из среза фильтров: фиксированные фильтры (URL-07) */
   preset?: CatalogFilters;
   /** Подборки раздела: посадочные этой категории или соседние посадочные */

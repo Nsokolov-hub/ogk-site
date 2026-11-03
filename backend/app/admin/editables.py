@@ -352,8 +352,21 @@ def publish(db: Session, actor: Any, entity: str, entity_id: str, data: dict[str
     if draft is not None:
         db.delete(draft)
     queue_revalidate(db, kind.tags(row))
+    _announce(db, kind, row)
     db.flush()
     return after
+
+
+def _announce(db: Session, kind: Any, row: Any) -> None:
+    """A published page goes to IndexNow (app.catalog.indexnow): search engines learn about it at once."""
+    from app.catalog import indexnow
+
+    try:
+        path = kind.path(row)
+    except Exception:  # an editable without a page of its own
+        return
+    if isinstance(path, str) and path:
+        indexnow.queue(db, [path])
 
 
 def publish_due(db: Session) -> int:

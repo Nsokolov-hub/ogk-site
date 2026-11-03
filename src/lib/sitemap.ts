@@ -12,7 +12,7 @@ import { isLandingIndexable } from './category-page';
 import { pageList } from './content';
 import { brandsFor, getArticles, getAuthors, getServices, getSolutions } from './content-api';
 import { allLandings, landingFor, landingHref } from './landings';
-import { getCasSitemap, getSubstanceList } from './product-api';
+import { getCasIndex, getCasSitemap, getSubstanceList } from './product-api';
 import { absoluteUrl, SITE_URL } from './seo';
 
 /** Карточек в одном файле: столько отдаёт API за страницу (SEO-04) */
@@ -33,7 +33,7 @@ const max = (dates: string[]) => dates.reduce((a, b) => (a > b ? a : b), '1970-0
 
 /** Все разделы, кроме карточек товаров: карточки идут отдельными файлами products-N */
 async function sections(): Promise<Record<string, Entry[]>> {
-  const [tree, root, substancesAll, brands, services, solutions, articles, authors, trust, home, landings] = await Promise.all([
+  const [tree, root, substancesAll, brands, services, solutions, articles, authors, trust, home, landings, casIndex] = await Promise.all([
     api<ApiCategoryEntry[]>('/public/catalog/tree', undefined, { revalidate: 3600, tags: ['catalog'] }),
     api<Schemas['CategoryOut']>('/public/catalog/category', { path: '' }, { revalidate: 3600, tags: ['catalog'] }),
     getSubstanceList(),
@@ -45,6 +45,8 @@ async function sections(): Promise<Record<string, Entry[]>> {
     pageList<SeoFields & { slug: string }>('trust', 'ru'),
     pageList<{ updatedAt?: string }>('home', 'ru'),
     allLandings(),
+    // Указатель не должен ронять всю карту сайта: без него остаются страницы самих веществ
+    getCasIndex().catch(() => ({ letters: [], total: 0, popular: [] })),
   ]);
   const categories = tree.flatMap((c) => [c, ...(c.children ?? [])]);
   const catalogUpdated = max(categories.map((c) => c.updatedAt ?? '').filter(Boolean));
@@ -63,6 +65,19 @@ async function sections(): Promise<Record<string, Entry[]>> {
       { path: '/solutions/', lastmod: max(solutions.map((s) => s.updatedAt)) },
       { path: '/articles/', lastmod: max(articles.map((a) => a.updatedAt)) },
       { path: '/substances/', lastmod: catalogUpdated, hasEn: true },
+      // Указатель веществ по CAS и его буквы со всеми страницами (?page=N — свой canonical, URL-08)
+      ...(casIndex.total
+        ? [
+            { path: '/cas/', lastmod: catalogUpdated, hasEn: true },
+            ...casIndex.letters.flatMap((l) =>
+              Array.from({ length: l.pageCount }, (_, i) => ({
+                path: `/cas/letter/${l.letter}/${i ? `?page=${i + 1}` : ''}`,
+                lastmod: catalogUpdated,
+                hasEn: true,
+              })),
+            ),
+          ]
+        : []),
       ...indexableAuthors.map((a) => ({ path: `/authors/${a.slug}/`, lastmod: max(articles.filter((x) => x.authorSlug === a.slug).map((x) => x.updatedAt)) })),
     ],
     catalog: [

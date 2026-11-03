@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
 import type { BreadcrumbItem } from '@/types/content';
+import { CasLinks } from '@/components/content/CasLinks';
 import { FaqSection } from '@/components/content/FaqSection';
 import { LinkChips } from '@/components/content/LinkChips';
 import { PageHeader } from '@/components/content/PageHeader';
@@ -15,7 +16,7 @@ import { TrackView } from '@/components/seo/TrackView';
 import { Button } from '@/components/ui/Button';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
-import { getSiteSettings } from '@/lib/api';
+import { getCatalogTree, getSiteSettings } from '@/lib/api';
 import { previewParam } from '@/lib/content';
 import { getBrandPage, getBrands } from '@/lib/content-api';
 import { pageMetadata, SITE_URL } from '@/lib/seo';
@@ -33,7 +34,12 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function BrandPage({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const [data, brands, settings] = await Promise.all([getBrandPage(slug, locale, previewParam((await searchParams).preview)), getBrands(locale), getSiteSettings(locale)]);
+  const [data, brands, settings, tree] = await Promise.all([
+    getBrandPage(slug, locale, previewParam((await searchParams).preview)),
+    getBrands(locale),
+    getSiteSettings(locale),
+    getCatalogTree(locale),
+  ]);
   if (!data) notFound();
   const t = await getTranslations('brands');
   const tc = await getTranslations('catalog');
@@ -55,6 +61,18 @@ export default async function BrandPage({ params, searchParams }: Props) {
   ];
 
   const otherBrands = brands.filter((x) => x.slug !== b.slug && x.wave === 1).map((x) => ({ label: x.name, href: `/brands/${x.slug}/` }));
+
+  // Разделы с товарами бренда: из текста страницы, но без пустых (раздел могли убрать из каталога);
+  // нет своих — самые большие разделы бренда по каталогу
+  const countIn = (href: string) => data.categories.filter((c) => `/catalog/${c.slug}/`.startsWith(href)).reduce((n, c) => n + c.count, 0);
+  const names = new Map(tree.flatMap((c) => [c, ...(c.children ?? [])]).map((c) => [c.href, c.name]));
+  const written = b.groups.filter((g) => !g.href.startsWith('/catalog/') || !data.categories.length || countIn(g.href) > 0);
+  const groups = written.length
+    ? written
+    : data.categories
+        .map((c) => ({ label: names.get(`/catalog/${c.slug}/`) ?? '', href: `/catalog/${c.slug}/` }))
+        .filter((g) => g.label)
+        .slice(0, 8);
   const h2 = 'text-h3 font-medium text-text';
 
   return (
@@ -93,10 +111,8 @@ export default async function BrandPage({ params, searchParams }: Props) {
               {t('page.groups', { brand: b.name })}
             </h2>
             <ul className="mt-6 flex flex-wrap gap-2">
-              {b.groups.map((g) => {
-                const count = data.categories
-                  .filter((c) => `/catalog/${c.slug}/`.startsWith(g.href))
-                  .reduce((n, c) => n + c.count, 0);
+              {groups.map((g) => {
+                const count = countIn(g.href);
                 return (
                   <li key={g.href}>
                     <Link
@@ -145,6 +161,22 @@ export default async function BrandPage({ params, searchParams }: Props) {
               </Button>
             </section>
           )}
+
+          {data.casPages.length ? (
+            <section aria-labelledby="brand-substances">
+              <div className="flex flex-wrap items-end justify-between gap-4">
+                <h2 id="brand-substances" className={h2}>
+                  {t('page.substances', { brand: b.name })}
+                </h2>
+                <Link href="/cas/" className="text-body font-medium text-accent transition-colors hover:text-accent-hover">
+                  {t('page.substancesAll')}
+                </Link>
+              </div>
+              <div className="mt-6">
+                <CasLinks items={data.casPages} locale={locale} />
+              </div>
+            </section>
+          ) : null}
 
           <section aria-labelledby="brand-about" className="max-w-[72ch]">
             <h2 id="brand-about" className={h2}>

@@ -15,6 +15,8 @@ export interface BrandRef {
   slug: string;
   name: string;
   logo?: string;
+  /** У бренда есть опубликованная страница /brands/{slug}/: ссылку ставим только на такие (иначе 404) */
+  page?: boolean;
 }
 
 export interface ProductPreview {

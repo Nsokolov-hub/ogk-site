@@ -90,6 +90,14 @@ DEFAULTS: dict[str, Any] = {
     'hidden_categories': [],
     # The last nightly build of the substance pages by CAS number (app.catalog.cas_pages).
     'cas_pages_built_at': None,
+    # Written by that build: CAS numbers of the pages linked from category and brand pages, most offers first
+    # ({"categories": {path: [cas]}, "brands": {slug: [cas]}}) — indexable pages that lead to the CAS pages.
+    'cas_links': {},
+    # IndexNow (app.catalog.indexnow): when the queue was last sent.
+    'indexnow_sent_at': None,
+    # Russian names of the CAS pages, {cas: name}: our own translations (03.11.2026), never the price list's source
+    # names (NFR-09). Loaded with `cli cas-names FILE.json`.
+    'cas_names_ru': {},
     # Products of the home page block, by slug, in order.
     'home_products': [],
     # Flow F5: the newest change of the CRM registry already loaded, and when the last load ran.

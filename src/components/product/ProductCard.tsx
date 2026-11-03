@@ -46,8 +46,8 @@ export function ProductCard({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col sm:mt-4">
-        {/* У «Разных производителей» нет страницы бренда — без ссылки, чтобы не было битых URL */}
-        {product.brand.slug === 'various' ? (
+        {/* Ссылка — только на опубликованную страницу бренда: у остальных брендов её нет, ссылка дала бы 404 */}
+        {!product.brand.page ? (
           <span className="mb-1 w-fit text-[12px] uppercase text-card-muted">{product.brand.name}</span>
         ) : (
           <Link

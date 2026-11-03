@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     metrika_oauth_token: str = ''
     # GA4 → Admin → Data streams → Measurement Protocol API secrets.
     ga_api_secret: str = ''
+    # IndexNow (app.catalog.indexnow): the key is public by design — the storefront serves public/<key>.txt with it.
+    # Sent only in production; empty — off.
+    indexnow_key: str = '41433030a76ad83ad9dfc8ac27a3604e'
 
     # ── search (TZ 6): Meilisearch behind app.catalog.search, rebuilt from PostgreSQL ──
     meili_url: str = 'http://127.0.0.1:7700'

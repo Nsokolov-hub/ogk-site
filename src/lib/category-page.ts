@@ -9,6 +9,7 @@ import { getCatalogTree } from './api';
 import { apiOrNull } from './backend';
 import { countInScope, getCategoryBrands } from './catalog-api';
 import { allLandings, findLanding, LANDING_MIN_ITEMS, landingFor, landingHref } from './landings';
+import type { CasRef } from './product-api';
 
 interface ApiCategory {
   path: string;
@@ -18,6 +19,8 @@ interface ApiCategory {
   isIndexed: boolean;
   content: { ru?: CategoryContent; en?: CategoryContent };
   updatedAt: string;
+  /** Страницы CAS веществ раздела с наибольшим числом позиций (блок «Вещества раздела») */
+  casPages?: CasRef[];
 }
 
 /** preview — черновик раздела из админки по подписанной ссылке (без кэша) */
@@ -111,6 +114,7 @@ export async function getCategoryPage(
     breadcrumbs,
     nav,
     brands,
+    casPages: data.casPages ?? [],
     preset: landing?.preset,
     landings: landingLinks,
     landing,

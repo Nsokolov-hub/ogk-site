@@ -42,6 +42,7 @@ export async function siteMenu(locale: string, tree: Category[]): Promise<MenuSe
         ...tree.map((c) => ({ label: c.name, href: c.href })),
         { label: t('brands'), href: '/brands/' },
         { label: t('substances'), href: '/substances/' },
+        { label: t('cas'), href: '/cas/' },
       ],
       all: { label: t('allCatalog'), href: '/catalog/' },
     },

@@ -1,10 +1,11 @@
 import Image from 'next/image';
 import { ChevronDown, CircleCheck, FileText } from 'lucide-react';
-import { getTranslations } from 'next-intl/server';
+import { getLocale, getTranslations } from 'next-intl/server';
 import type { CategoryPageData } from '@/types/content';
 import type { SiteSettings } from '@/types/settings';
 import { RequestForm } from '@/components/forms/RequestForm';
 import { Chip } from '@/components/ui/Chip';
+import { CasLinks } from '@/components/content/CasLinks';
 import { Link } from '@/i18n/navigation';
 
 /**
@@ -13,6 +14,7 @@ import { Link } from '@/i18n/navigation';
  */
 export async function CategorySections({ data, docs }: { data: CategoryPageData; docs: SiteSettings['docs'] }) {
   const t = await getTranslations('catalog.sections');
+  const locale = await getLocale();
   const { content, brands } = data;
   const h2 = 'text-h3 font-medium text-text';
 
@@ -26,8 +28,9 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
           <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
             {brands.map((b) => (
               <li key={b.slug}>
+                {/* Страница есть не у каждого бренда: остальные ведут на этот раздел с фильтром по бренду */}
                 <Link
-                  href={`/brands/${b.slug}/`}
+                  href={b.page ? `/brands/${b.slug}/` : `${data.href}?brand=${encodeURIComponent(b.slug)}`}
                   className="flex h-32 flex-col items-center justify-center gap-1 overflow-hidden rounded-card bg-surface p-3 text-center transition-colors hover:bg-surface-strong"
                 >
                   {b.logo ? (
@@ -40,6 +43,22 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
               </li>
             ))}
           </ul>
+        </section>
+      ) : null}
+
+      {data.casPages.length ? (
+        <section aria-labelledby="cat-substances">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <h2 id="cat-substances" className={h2}>
+              {t('substances')}
+            </h2>
+            <Link href="/cas/" className="text-body font-medium text-accent transition-colors hover:text-accent-hover">
+              {t('substancesAll')}
+            </Link>
+          </div>
+          <div className="mt-6">
+            <CasLinks items={data.casPages} locale={locale} />
+          </div>
         </section>
       ) : null}
 

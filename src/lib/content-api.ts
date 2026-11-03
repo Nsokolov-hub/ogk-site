@@ -9,6 +9,7 @@ import type { Schemas } from './api-types';
 import { api, apiOrNull } from './backend';
 import { getCatalogListing, countInScope } from './catalog-api';
 import { pageContent, pageList, type PageResult } from './content';
+import type { CasRef } from './product-api';
 
 // ── бренды ──
 
@@ -48,6 +49,8 @@ export interface BrandPageData {
   products: ProductPreview[];
   /** Подкатегории каталога, где представлен бренд, с числом позиций */
   categories: { slug: string; count: number }[];
+  /** Вещества бренда по CAS: ссылки на страницы /cas/<cas>/ */
+  casPages: CasRef[];
 }
 
 /** preview — черновик страницы бренда из админки по подписанной ссылке (без кэша) */
@@ -60,7 +63,7 @@ export async function getBrandPage(slug: string, locale: Locale, preview?: strin
   if (!data?.brand) return null;
   const brand = brandContentFor(data.brand, locale);
   if (!brand) return null;
-  return { brand, count: data.brand.count, products: data.products, categories: data.categories ?? [] };
+  return { brand, count: data.brand.count, products: data.products, categories: data.categories ?? [], casPages: data.casPages ?? [] };
 }
 
 // ── услуги ──

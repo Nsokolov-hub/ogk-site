@@ -8,11 +8,12 @@ with the CAS on the lists) and substances with their own written page (Substance
 
 import logging
 import re
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from typing import Any
 
-from sqlalchemy import and_, delete, select
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.catalog.controlled import DESCRIPTORS, QUANTITY, _descriptive, _untruncated, core_name
@@ -37,6 +38,13 @@ GRADES = DESCRIPTORS | frozenset('bioxtra bioultra sigmaultra certipur vetranal 
 CODE = re.compile(r'^unii-|^[a-z]{1,4}\d{3,}\b|(?:^|\s)[a-z]*\d{5,}', re.I)
 # A big page names its synonyms only after names two brands share: one brand's odd name is noise there.
 STRICT_OFFERS = 20
+# CAS pages a category or brand page links to (the «Вещества» block): indexable pages lead to the CAS pages.
+LINKS = 24
+# Locants, stereo descriptors and similar prefixes a chemist skips when looking a name up in an index:
+# «DL-», «N,N-», «(S)-», «(±)-», «tert-», «1H-», «α-».
+PREFIX = re.compile(r"^(?:\((?:[rsezdl+±−-]|\d+[rsez]?)(?:,\s*\d*[rsez])*\)|\d+(?:,\d+)*[hαβγδω]|dl|d|l|n|o|s|r|e|z|p|m|tert|"
+                    r"sec|cis|trans|iso|rac|meso|exo|endo|alpha|beta|gamma|delta|omega|α|β|γ|δ|ω)(?:,[nos\d]+'*)*-",
+                    re.I)
 
 
 def tidy(name: str) -> str:
@@ -95,6 +103,26 @@ def stand_in(name: str, brand: str, number_norm: str) -> bool:
     return not rest or rest == number_norm or number_norm.startswith(rest) or rest.startswith(number_norm)
 
 
+def sort_key(name: str) -> str:
+    """The name as the index /cas/ sorts it: «DL-Lactic acid» → «lactic acid», «4-Acetamidophenol» →
+    «acetamidophenol», «N,N-Dimethylformamide» → «dimethylformamide»."""
+    key = name.casefold().strip()
+    for _ in range(8):
+        stripped = PREFIX.sub('', key, count=1)
+        if stripped == key:
+            stripped = re.sub(r'^[^\w]+|^\d+(?=[^\w]|$)', '', key).lstrip("',_ ")
+        if stripped == key:
+            break
+        key = stripped
+    return (key or name.casefold())[:300]
+
+
+def letter(key: str | None) -> str:
+    """The letter of the index a sort key belongs to; «0» — digits and other scripts."""
+    first = (key or '')[:1]
+    return first if 'a' <= first <= 'z' else '0'
+
+
 @dataclass
 class Group:
     """The rows of one CAS number while it is read."""
@@ -148,7 +176,7 @@ def page_of(cas: str, group: Group) -> dict[str, object] | None:
         return None
     name, synonyms = chosen
     return {
-        'cas': cas, 'name': name[:300], 'synonyms': synonyms, 'offers': group.offers,
+        'cas': cas, 'name': name[:300], 'sort_key': sort_key(name), 'synonyms': synonyms, 'offers': group.offers,
         'formula': group.formulas.most_common(1)[0][0] if group.formulas else None,
         'molecular_weight': group.weights.most_common(1)[0][0] if group.weights else None,
         'brands': [b for b, _ in group.brands.most_common()],
@@ -196,12 +224,49 @@ def pages(db: Session) -> dict[str, dict[str, object]]:
     return out
 
 
+def links(db: Session) -> dict[str, dict[str, list[str]]]:
+    """CAS pages each category (with its parents) and each brand links to: the CAS numbers with the most visible
+    offers there. Category and brand pages are indexable, so every CAS page they name is a link away from them."""
+    pages_condition = and_(Product.status == 'published', Product.controlled.is_(None))
+    by_path: dict[str, Counter[str]] = defaultdict(Counter)
+    rows = db.execute(select(Category.path, Product.cas, func.count()).select_from(Product)
+                      .join(ProductCategory, and_(ProductCategory.product_id == Product.id,
+                                                  ProductCategory.is_primary.is_(True)))
+                      .join(Category, Category.id == ProductCategory.category_id)
+                      .join(CasPage, CasPage.cas == Product.cas)
+                      .where(pages_condition).group_by(Category.path, Product.cas))
+    for path, cas, count in rows:
+        if not cas:
+            continue
+        parts = path.split('/')
+        for depth in range(1, len(parts) + 1):
+            by_path['/'.join(parts[:depth])][cas] += count
+    by_brand: dict[str, Counter[str]] = defaultdict(Counter)
+    rows = db.execute(select(Brand.slug, Product.cas, func.count()).select_from(Product)
+                      .join(Brand, Brand.id == Product.brand_id)
+                      .join(CasPage, CasPage.cas == Product.cas)
+                      .where(pages_condition).group_by(Brand.slug, Product.cas))
+    for slug, cas, count in rows:
+        if cas:
+            by_brand[slug][cas] += count
+
+    def top(counter: Counter[str]) -> list[str]:
+        return [cas for cas, _ in sorted(counter.items(), key=lambda item: (-item[1], item[0]))[:LINKS]]
+
+    return {'categories': {path: top(c) for path, c in by_path.items()},
+            'brands': {slug: top(c) for slug, c in by_brand.items()}}
+
+
 def build(session_factory: sessionmaker[Session]) -> dict[str, int]:
-    """Write the pages: new ones added, changed ones updated (with a new lastmod), gone ones deleted."""
+    """Write the pages: new ones added, changed ones updated (with a new lastmod), gone ones deleted; then the links
+    of category and brand pages, and the changed addresses go to IndexNow."""
+    from app.catalog import indexnow
+
     with session_factory() as db:
         fresh = pages(db)
     counts = {'pages': len(fresh), 'added': 0, 'changed': 0, 'removed': 0}
-    fields = ('name', 'synonyms', 'formula', 'molecular_weight', 'offers', 'brands', 'sections')
+    fields = ('name', 'sort_key', 'synonyms', 'formula', 'molecular_weight', 'offers', 'brands', 'sections')
+    touched: list[str] = []
     with session_factory.begin() as db:
         now = utcnow()
         existing = {row.cas: row for row in db.scalars(select(CasPage))}
@@ -210,16 +275,23 @@ def build(session_factory: sessionmaker[Session]) -> dict[str, int]:
             if row is None:
                 db.add(CasPage(**data, updated_at=now))
                 counts['added'] += 1
+                touched.append(cas)
             elif any(getattr(row, f) != data[f] for f in fields):
+                # The sort key alone is not news for the Sitemap: it is ours, not the page's content.
+                if any(getattr(row, f) != data[f] for f in fields if f != 'sort_key'):
+                    row.updated_at = now
+                    touched.append(cas)
                 for f in fields:
                     setattr(row, f, data[f])
-                row.updated_at = now
                 counts['changed'] += 1
         gone = [cas for cas in existing if cas not in fresh]
         for start in range(0, len(gone), 1000):
             db.execute(delete(CasPage).where(CasPage.cas.in_(gone[start:start + 1000])))
         counts['removed'] = len(gone)
         set_setting(db, 'cas_pages_built_at', now.isoformat())
+    with session_factory.begin() as db:
+        set_setting(db, 'cas_links', links(db))
+        counts['queued'] = indexnow.queue(db, [f'/cas/{cas}/' for cas in [*touched, *gone]])
     event(logger, 'cas_pages_built', **counts)
     return counts
 
@@ -231,3 +303,16 @@ def due(db: Session, now: datetime | None = None) -> bool:
         return False
     last = get_setting(db, 'cas_pages_built_at')
     return not last or now - datetime.fromisoformat(last) >= timedelta(hours=20)
+
+
+# ── Russian names (03.11.2026) ──
+# Our own translations of the substances' names, by CAS number (setting cas_names_ru): never the price list's
+# source names, which stay internal (NFR-09).
+
+def ru_name(db: Session, cas: str) -> str | None:
+    return (get_setting(db, 'cas_names_ru') or {}).get(cas) or None
+
+
+def with_ru(db: Session, refs: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    names = get_setting(db, 'cas_names_ru') or {}
+    return [{**ref, 'nameRu': names.get(ref['cas']) or None} for ref in refs]

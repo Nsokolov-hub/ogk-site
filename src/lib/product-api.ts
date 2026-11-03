@@ -212,20 +212,53 @@ export interface CasRef {
   cas: string;
   name: string;
   offers: number;
+  /** Наше русское название (настройка cas_names_ru), если есть */
+  nameRu?: string | null;
 }
+
+/** Название вещества для подписи ссылки: русское и латинское, если русское есть */
+export const casLabel = (ref: CasRef, locale: string) => (locale === 'ru' && ref.nameRu ? `${ref.nameRu} (${ref.name})` : ref.name);
 
 interface ApiCasPage {
   substance?: string | null;
-  page?: (CasRef & { synonyms: string[]; formula?: string | null; molecularWeight?: string | null; brands: string[]; updatedAt: string }) | null;
+  page?: (CasRef & { synonyms: string[]; formula?: string | null; molecularWeight?: string | null; brands: string[]; updatedAt: string; letter?: string }) | null;
   sections: { path: string; nameRu: string; nameEn?: string | null }[];
   items: ProductPreview[];
+  neighbours?: CasRef[];
 }
 
 export interface CasPageData {
-  page: CasRef & { synonyms: string[]; formula?: string; molecularWeight?: string; brands: string[] };
+  page: CasRef & { synonyms: string[]; formula?: string; molecularWeight?: string; brands: string[]; letter: string };
   items: ProductPreview[];
   /** Позиции по разделам каталога верхнего уровня, самый большой раздел первым */
   groups: { key: string; title: string; items: ProductPreview[] }[];
+  /** Соседние названия в указателе /cas/ */
+  neighbours: CasRef[];
+}
+
+// ── указатель веществ по CAS: /cas/ и /cas/letter/<буква>/ ──
+
+export interface CasIndex {
+  letters: { letter: string; count: number; pageCount: number }[];
+  total: number;
+  popular: CasRef[];
+}
+
+export interface CasLetterPage {
+  letter: string;
+  page: number;
+  pageCount: number;
+  total: number;
+  items: CasRef[];
+}
+
+export async function getCasIndex(): Promise<CasIndex> {
+  return api<CasIndex>('/public/cas/index', undefined, { revalidate: 3600, tags: ['catalog'] });
+}
+
+/** null — такой буквы или страницы нет */
+export async function getCasLetter(letter: string, page: number): Promise<CasLetterPage | null> {
+  return apiOrNull<CasLetterPage>(`/public/cas/index/${encodeURIComponent(letter)}`, { page }, { revalidate: 3600, tags: ['catalog'] });
 }
 
 /** null — страницы нет; { substance } — у вещества своя страница, ответ 301 на /substances/<slug>/ */
@@ -243,9 +276,10 @@ export async function getCasPage(cas: string, locale: string, otherTitle: string
   if (rest.length) groups.push({ key: 'other', title: otherTitle, items: rest });
   const { page } = data;
   return {
-    page: { ...page, formula: undef(page.formula), molecularWeight: undef(page.molecularWeight) },
+    page: { ...page, formula: undef(page.formula), molecularWeight: undef(page.molecularWeight), letter: page.letter ?? '0' },
     items: data.items,
     groups,
+    neighbours: data.neighbours ?? [],
   };
 }
 

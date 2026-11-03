@@ -237,6 +237,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/public/cas/index": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cas Index
+         * @description The index /cas/: letters with their page counts and the substances with the most offers.
+         */
+        get: operations["cas_index_api_v1_public_cas_index_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/public/cas/index/{letter}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cas Letter
+         * @description One letter of the index, pages.INDEX_PAGE names per page.
+         */
+        get: operations["cas_letter_api_v1_public_cas_index__letter__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/cas/{cas}": {
         parameters: {
             query?: never;
@@ -638,6 +678,8 @@ export interface components {
             products?: components["schemas"]["ProductPreview"][];
             /** Categories */
             categories?: components["schemas"]["CountedPath"][];
+            /** Caspages */
+            casPages?: components["schemas"]["CasRef"][];
         };
         /** BrandRef */
         BrandRef: {
@@ -647,6 +689,11 @@ export interface components {
             name: string;
             /** Logo */
             logo?: string | null;
+            /**
+             * Page
+             * @default false
+             */
+            page: boolean;
         };
         /** BreadcrumbCategory */
         BreadcrumbCategory: {
@@ -674,6 +721,40 @@ export interface components {
             updatedAt?: string | null;
         };
         /**
+         * CasIndexOut
+         * @description The index /cas/: the letters with their page counts and the substances with the most offers.
+         */
+        CasIndexOut: {
+            /** Letters */
+            letters: components["schemas"]["CasLetter"][];
+            /** Total */
+            total: number;
+            /** Popular */
+            popular: components["schemas"]["CasRef"][];
+        };
+        /** CasLetter */
+        CasLetter: {
+            /** Letter */
+            letter: string;
+            /** Count */
+            count: number;
+            /** Pagecount */
+            pageCount: number;
+        };
+        /** CasLetterOut */
+        CasLetterOut: {
+            /** Letter */
+            letter: string;
+            /** Page */
+            page: number;
+            /** Pagecount */
+            pageCount: number;
+            /** Total */
+            total: number;
+            /** Items */
+            items: components["schemas"]["CasRef"][];
+        };
+        /**
          * CasPageLink
          * @description A substance page by CAS (/cas/<cas>/) offered in the search: all variants of the substance.
          */
@@ -693,6 +774,8 @@ export interface components {
             name: string;
             /** Offers */
             offers: number;
+            /** Nameru */
+            nameRu?: string | null;
             /** Synonyms */
             synonyms?: string[];
             /** Formula */
@@ -703,6 +786,11 @@ export interface components {
             brands?: string[];
             /** Updatedat */
             updatedAt: string;
+            /**
+             * Letter
+             * @default 0
+             */
+            letter: string;
         };
         /** CasPageResponse */
         CasPageResponse: {
@@ -713,6 +801,8 @@ export interface components {
             sections?: components["schemas"]["CasSection"][];
             /** Items */
             items?: components["schemas"]["ProductPreview"][];
+            /** Neighbours */
+            neighbours?: components["schemas"]["CasRef"][];
         };
         /**
          * CasRef
@@ -725,6 +815,8 @@ export interface components {
             name: string;
             /** Offers */
             offers: number;
+            /** Nameru */
+            nameRu?: string | null;
         };
         /** CasSection */
         CasSection: {
@@ -776,6 +868,11 @@ export interface components {
             name: string;
             /** Logo */
             logo?: string | null;
+            /**
+             * Page
+             * @default false
+             */
+            page: boolean;
             /** Count */
             count: number;
         };
@@ -829,6 +926,8 @@ export interface components {
             };
             /** Updatedat */
             updatedAt: string;
+            /** Caspages */
+            casPages?: components["schemas"]["CasRef"][];
         };
         /** CountOut */
         CountOut: {
@@ -1750,6 +1849,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CasSitemapPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cas_index_api_v1_public_cas_index_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CasIndexOut"];
+                };
+            };
+        };
+    };
+    cas_letter_api_v1_public_cas_index__letter__get: {
+        parameters: {
+            query?: {
+                page?: number;
+            };
+            header?: never;
+            path: {
+                letter: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CasLetterOut"];
                 };
             };
             /** @description Validation Error */

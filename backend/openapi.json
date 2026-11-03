@@ -708,6 +708,82 @@
         }
       }
     },
+    "/api/v1/public/cas/index": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Cas Index",
+        "description": "The index /cas/: letters with their page counts and the substances with the most offers.",
+        "operationId": "cas_index_api_v1_public_cas_index_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasIndexOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/cas/index/{letter}": {
+      "get": {
+        "tags": [
+          "Каталог"
+        ],
+        "summary": "Cas Letter",
+        "description": "One letter of the index, pages.INDEX_PAGE names per page.",
+        "operationId": "cas_letter_api_v1_public_cas_index__letter__get",
+        "parameters": [
+          {
+            "name": "letter",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Letter"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CasLetterOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/public/cas/{cas}": {
       "get": {
         "tags": [
@@ -1867,6 +1943,13 @@
             },
             "type": "array",
             "title": "Categories"
+          },
+          "casPages": {
+            "items": {
+              "$ref": "#/components/schemas/CasRef"
+            },
+            "type": "array",
+            "title": "Caspages"
           }
         },
         "type": "object",
@@ -1892,6 +1975,11 @@
               }
             ],
             "title": "Logo"
+          },
+          "page": {
+            "type": "boolean",
+            "title": "Page",
+            "default": false
           }
         },
         "type": "object",
@@ -1970,6 +2058,95 @@
         ],
         "title": "CartOut"
       },
+      "CasIndexOut": {
+        "properties": {
+          "letters": {
+            "items": {
+              "$ref": "#/components/schemas/CasLetter"
+            },
+            "type": "array",
+            "title": "Letters"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "popular": {
+            "items": {
+              "$ref": "#/components/schemas/CasRef"
+            },
+            "type": "array",
+            "title": "Popular"
+          }
+        },
+        "type": "object",
+        "required": [
+          "letters",
+          "total",
+          "popular"
+        ],
+        "title": "CasIndexOut",
+        "description": "The index /cas/: the letters with their page counts and the substances with the most offers."
+      },
+      "CasLetter": {
+        "properties": {
+          "letter": {
+            "type": "string",
+            "title": "Letter"
+          },
+          "count": {
+            "type": "integer",
+            "title": "Count"
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "letter",
+          "count",
+          "pageCount"
+        ],
+        "title": "CasLetter"
+      },
+      "CasLetterOut": {
+        "properties": {
+          "letter": {
+            "type": "string",
+            "title": "Letter"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageCount": {
+            "type": "integer",
+            "title": "Pagecount"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CasRef"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "letter",
+          "page",
+          "pageCount",
+          "total",
+          "items"
+        ],
+        "title": "CasLetterOut"
+      },
       "CasPageLink": {
         "properties": {
           "cas": {
@@ -2007,6 +2184,17 @@
           "offers": {
             "type": "integer",
             "title": "Offers"
+          },
+          "nameRu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nameru"
           },
           "synonyms": {
             "items": {
@@ -2047,6 +2235,11 @@
           "updatedAt": {
             "type": "string",
             "title": "Updatedat"
+          },
+          "letter": {
+            "type": "string",
+            "title": "Letter",
+            "default": "0"
           }
         },
         "type": "object",
@@ -2094,6 +2287,13 @@
             },
             "type": "array",
             "title": "Items"
+          },
+          "neighbours": {
+            "items": {
+              "$ref": "#/components/schemas/CasRef"
+            },
+            "type": "array",
+            "title": "Neighbours"
           }
         },
         "type": "object",
@@ -2112,6 +2312,17 @@
           "offers": {
             "type": "integer",
             "title": "Offers"
+          },
+          "nameRu": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nameru"
           }
         },
         "type": "object",
@@ -2266,6 +2477,11 @@
             ],
             "title": "Logo"
           },
+          "page": {
+            "type": "boolean",
+            "title": "Page",
+            "default": false
+          },
           "count": {
             "type": "integer",
             "title": "Count"
@@ -2401,6 +2617,13 @@
           "updatedAt": {
             "type": "string",
             "title": "Updatedat"
+          },
+          "casPages": {
+            "items": {
+              "$ref": "#/components/schemas/CasRef"
+            },
+            "type": "array",
+            "title": "Caspages"
           }
         },
         "type": "object",

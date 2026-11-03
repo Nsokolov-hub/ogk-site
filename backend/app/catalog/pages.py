@@ -7,9 +7,10 @@ the search engine (app.catalog.search.query).
 from collections import defaultdict
 from typing import Any
 
-from sqlalchemy import Select, and_, func, or_, select
+from sqlalchemy import Select, and_, func, literal, or_, select, tuple_
 from sqlalchemy.orm import Session
 
+from app.catalog import cas_pages as cas_build
 from app.catalog.models import (
     Brand,
     CasPage,
@@ -22,7 +23,7 @@ from app.catalog.models import (
     Substance,
 )
 from app.catalog.search import documents
-from app.catalog.search.query import preview
+from app.catalog.search.query import brand_pages, preview
 from app.catalog.settings import get_setting
 
 ROLE_ORDER = ['api', 'impurity', 'metabolite', 'labeled']
@@ -43,7 +44,8 @@ def previews(db: Session, products: list[Product], lang: str) -> list[dict[str, 
     ctx = documents.Context(db, get_setting(db, 'hide_controlled'))
     docs, _ = documents.build(db, products, ctx)
     by_id = {doc['id']: doc for doc in docs}
-    return [preview(by_id[p.id], lang) for p in products if p.id in by_id]
+    linked = brand_pages(db)
+    return [preview(by_id[p.id], lang, linked) for p in products if p.id in by_id]
 
 
 def iso(value: Any) -> str:
@@ -86,12 +88,14 @@ def category(db: Session, path: str) -> dict[str, Any] | None:
         root = get_setting(db, 'catalog_root') or {}
         facets = (root.get('ru') or {}).get('facets') or ['brand', 'pack', 'storage']
         return {'path': '', 'nameRu': 'Каталог', 'nameEn': 'Catalog', 'cardType': 'standard', 'facets': facets,
-                'isIndexed': True, 'content': root, 'updatedAt': ''}
+                'isIndexed': True, 'content': root, 'updatedAt': '', 'casPages': popular_cas(db)}
     row = db.scalar(select(Category).where(Category.path == path))
     if row is None or hidden_category(row.path, get_setting(db, 'hidden_categories')):
         return None
+    linked = ((get_setting(db, 'cas_links') or {}).get('categories') or {}).get(row.path) or []
     return {'path': row.path, 'nameRu': row.name_ru, 'nameEn': row.name_en, 'cardType': row.card_type,
-            'facets': row.facets, 'isIndexed': row.is_indexed, 'content': row.content, 'updatedAt': iso(row.updated_at)}
+            'facets': row.facets, 'isIndexed': row.is_indexed, 'content': row.content, 'updatedAt': iso(row.updated_at),
+            'casPages': cas_refs(db, linked)}
 
 
 def breadcrumb(db: Session, path: str | None, lang: str) -> list[dict[str, Any]]:
@@ -139,8 +143,78 @@ def substances(db: Session) -> list[dict[str, Any]]:
 CAS_ITEMS = 300
 
 
-def cas_ref(row: CasPage) -> dict[str, Any]:
-    return {'cas': row.cas, 'name': row.name, 'offers': row.offers}
+INDEX_PAGE = 500
+NEIGHBOURS = 6
+POPULAR = 60
+
+
+def cas_ref(row: CasPage, names_ru: dict[str, str] | None = None) -> dict[str, Any]:
+    return {'cas': row.cas, 'name': row.name, 'offers': row.offers, 'nameRu': (names_ru or {}).get(row.cas) or None}
+
+
+def cas_refs(db: Session, numbers: list[str]) -> list[dict[str, Any]]:
+    """The CAS pages of these numbers that exist now, in the given order."""
+    if not numbers:
+        return []
+    rows = {row.cas: row for row in db.scalars(select(CasPage).where(CasPage.cas.in_(numbers)))}
+    names = get_setting(db, 'cas_names_ru') or {}
+    return [cas_ref(rows[cas], names) for cas in numbers if cas in rows]
+
+
+def popular_cas(db: Session, limit: int = cas_build.LINKS) -> list[dict[str, Any]]:
+    names = get_setting(db, 'cas_names_ru') or {}
+    return [cas_ref(row, names) for row in db.scalars(select(CasPage).order_by(CasPage.offers.desc(), CasPage.cas)
+                                                     .limit(limit))]
+
+
+def _letter_condition(letter: str) -> Any:
+    first = func.substr(CasPage.sort_key, 1, 1)
+    if letter == '0':
+        return or_(CasPage.sort_key.is_(None), first < 'a', first > 'z')
+    return first == letter
+
+
+def cas_index(db: Session) -> dict[str, Any]:
+    """The index /cas/: how many pages each letter has, and the pages with the most offers."""
+    counts: dict[str, int] = defaultdict(int)
+    for key, n in db.execute(select(func.substr(CasPage.sort_key, 1, 1), func.count())
+                             .group_by(func.substr(CasPage.sort_key, 1, 1))):
+        counts[cas_build.letter(key)] += n
+    letters = [{'letter': letter, 'count': counts[letter],
+                'pageCount': max(1, -(-counts[letter] // INDEX_PAGE))} for letter in sorted(counts)]
+    return {'letters': letters, 'total': sum(counts.values()), 'popular': popular_cas(db, POPULAR)}
+
+
+def cas_letter(db: Session, letter: str, page: int) -> dict[str, Any] | None:
+    """One letter of the index, INDEX_PAGE names per page in the index's order; None — no such letter."""
+    if letter != '0' and not ('a' <= letter <= 'z' and len(letter) == 1):
+        return None
+    condition = _letter_condition(letter)
+    total = db.scalar(select(func.count()).select_from(CasPage).where(condition)) or 0
+    if not total:
+        return None
+    page_count = max(1, -(-total // INDEX_PAGE))
+    if page > page_count:
+        return None
+    names = get_setting(db, 'cas_names_ru') or {}
+    rows = db.scalars(select(CasPage).where(condition).order_by(CasPage.sort_key, CasPage.cas)
+                      .offset((page - 1) * INDEX_PAGE).limit(INDEX_PAGE))
+    return {'letter': letter, 'page': page, 'pageCount': page_count, 'total': total,
+            'items': [cas_ref(row, names) for row in rows]}
+
+
+def cas_neighbours(db: Session, row: CasPage) -> list[dict[str, Any]]:
+    """The names next to this one in the index: NEIGHBOURS before and after (every page is linked from others)."""
+    if row.sort_key is None:
+        return []
+    key = tuple_(CasPage.sort_key, CasPage.cas)
+    here = tuple_(literal(row.sort_key), literal(row.cas))
+    before = list(db.scalars(select(CasPage).where(CasPage.sort_key.is_not(None), key < here)
+                             .order_by(CasPage.sort_key.desc(), CasPage.cas.desc()).limit(NEIGHBOURS)))
+    after = list(db.scalars(select(CasPage).where(CasPage.sort_key.is_not(None), key > here)
+                            .order_by(CasPage.sort_key, CasPage.cas).limit(NEIGHBOURS)))
+    names = get_setting(db, 'cas_names_ru') or {}
+    return [cas_ref(r, names) for r in [*reversed(before), *after]]
 
 
 def cas_page(db: Session, cas: str, lang: str) -> dict[str, Any] | None:
@@ -159,9 +233,11 @@ def cas_page(db: Session, cas: str, lang: str) -> dict[str, Any] | None:
                 for c in db.scalars(select(Category).where(Category.path.in_(paths)))]
     order = {path: i for i, path in enumerate(row.sections)}
     sections.sort(key=lambda s: order.get(s['path'], len(order)))
-    return {'page': {**cas_ref(row), 'synonyms': row.synonyms, 'formula': row.formula,
-                     'molecularWeight': row.molecular_weight, 'brands': row.brands, 'updatedAt': iso(row.updated_at)},
-            'sections': sections, 'items': out}
+    names = get_setting(db, 'cas_names_ru') or {}
+    return {'page': {**cas_ref(row, names), 'synonyms': row.synonyms, 'formula': row.formula,
+                     'molecularWeight': row.molecular_weight, 'brands': row.brands, 'updatedAt': iso(row.updated_at),
+                     'letter': cas_build.letter(row.sort_key)},
+            'sections': sections, 'items': out, 'neighbours': cas_neighbours(db, row)}
 
 
 def cas_sitemap(db: Session, page: int) -> dict[str, Any]:
@@ -192,7 +268,7 @@ def product_page(db: Session, slug: str, lang: str) -> dict[str, Any]:
         return {'moved': moved(db, 'product', slug, Product)}
     ctx = documents.Context(db, get_setting(db, 'hide_controlled'))
     docs, _ = documents.build(db, [product], ctx)
-    base = preview(docs[0], lang)
+    base = preview(docs[0], lang, brand_pages(db))
     substance = db.get(Substance, product.substance_id) if product.substance_id else None
     primary = docs[0]['category']
 
@@ -255,7 +331,8 @@ def product_page(db: Session, slug: str, lang: str) -> dict[str, Any]:
         'sameSubstanceTotal': same_total,
         'analogues': previews(db, analogues, lang),
         'accessories': previews(db, accessories, lang),
-        'casPage': cas_ref(found) if product.cas and (found := db.get(CasPage, product.cas)) else None,
+        'casPage': cas_ref(found, get_setting(db, 'cas_names_ru')) if product.cas and (found := db.get(CasPage, product.cas))
+        else None,
     }
 
 
@@ -288,8 +365,9 @@ def brand_page(db: Session, slug: str, lang: str, *, include_hidden: bool = Fals
                          .join(Product, Product.id == ProductCategory.product_id)
                          .where(Product.brand_id == row.id, ProductCategory.is_primary.is_(True), visible(db))
                          .group_by(Category.path).order_by(func.count().desc())).all()
+    linked = ((get_setting(db, 'cas_links') or {}).get('brands') or {}).get(row.slug) or []
     return {'brand': brand_out(db, row), 'products': previews(db, top, lang),
-            'categories': [{'slug': path, 'count': n} for path, n in counted]}
+            'categories': [{'slug': path, 'count': n} for path, n in counted], 'casPages': cas_refs(db, linked)}
 
 
 # ── Sitemap (SEO-04, SEO-07) and the feed (TZ 15.4) ──

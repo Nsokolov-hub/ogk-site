@@ -153,6 +153,11 @@ export default async function ProductPage({ params }: Props) {
     ...(p.attributes?.purpose?.length
       ? [{ label: t('ids.purpose'), value: p.attributes.purpose.map((v) => tc(`values.purpose.${v}`)).join(', ') }]
       : []),
+    // Параметры колонки ВЭЖХ из значений фильтров — у импортированных карточек, где своих характеристик нет:
+    // по ним закупщик сверяет позицию с методикой (у описанных карточек они уже в p.specs)
+    ...(['phase', 'length', 'diameter', 'particle', 'ph'] as const)
+      .filter((key) => !p.specs?.length && p.attributes?.[key]?.length)
+      .map((key) => ({ label: tc(`facets.${key}`), value: (p.attributes?.[key] ?? []).join(', ') })),
     ...(p.specs ?? []),
     ...(p.packagings.length ? [{ label: t('ids.packagings'), value: p.packagings.map((x) => x.label).join(', ') }] : []),
     ...(p.customPackaging ? [{ label: t('ids.customPackaging'), value: t('ids.customPackagingValue') }] : []),
@@ -196,7 +201,7 @@ export default async function ProductPage({ params }: Props) {
         <div className="mt-6 max-w-[1100px]">
           <h1 className="chem-wrap text-title font-medium text-text">{p.name}</h1>
           <p className="mt-3 text-lead text-text-secondary">
-            {p.brand.slug === 'various' ? (
+            {!p.brand.page ? (
               p.brand.name
             ) : (
               <Link href={`/brands/${p.brand.slug}/`} className="text-text underline-offset-4 transition-colors hover:text-accent hover:underline">

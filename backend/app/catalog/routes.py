@@ -188,6 +188,23 @@ def cas_sitemap(db: DB, response: Response, page: Annotated[int, Query(ge=1)] = 
     return pages.cas_sitemap(db, page)
 
 
+@router.get('/cas/index', response_model=s.CasIndexOut)
+def cas_index(db: DB, response: Response):
+    """The index /cas/: letters with their page counts and the substances with the most offers."""
+    cached(response)
+    return pages.cas_index(db)
+
+
+@router.get('/cas/index/{letter}', response_model=s.CasLetterOut)
+def cas_letter(letter: str, db: DB, response: Response, page: Annotated[int, Query(ge=1)] = 1):
+    """One letter of the index, pages.INDEX_PAGE names per page."""
+    found = pages.cas_letter(db, letter.lower(), page)
+    if found is None:
+        raise DomainError('NOT_FOUND', 'Такой страницы указателя нет', 404)
+    cached(response)
+    return found
+
+
 @router.get('/cas/{cas}', response_model=s.CasPageResponse)
 def cas_page(cas: str, db: DB, response: Response, lang: Lang = 'ru'):
     """Every offer of one CAS number (app.catalog.cas_pages); a substance with its own page answers its slug."""

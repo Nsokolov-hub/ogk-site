@@ -45,18 +45,21 @@ def test_stand_in_names_are_known():
 
 
 def test_the_name_most_brands_use_wins_and_the_others_are_synonyms():
-    name, synonyms = choose([('Paracetamol', 'EDQM'), ('Paracetamol', 'USP'), ('Paracetamol', 'Merck'),
-                             ('Acetaminophen', 'Sigma-Aldrich'), ('Acetaminophen', 'Sigma-Aldrich'),
-                             ('4-Acetamidophenol', 'ABCR')])
+    chosen = choose([('Paracetamol', 'EDQM'), ('Paracetamol', 'USP'), ('Paracetamol', 'Merck'),
+                     ('Acetaminophen', 'Sigma-Aldrich'), ('Acetaminophen', 'Sigma-Aldrich'),
+                     ('4-Acetamidophenol', 'ABCR')])
+    assert chosen is not None
+    name, synonyms = chosen
     assert name == 'Paracetamol' and synonyms == ['Acetaminophen', '4-Acetamidophenol']
     # Mixed case is preferred to capitals within the same substance.
     assert choose([('CAFFEINE', 'Sigma-Aldrich'), ('Caffeine', 'Merck')]) == ('Caffeine', [])
     # A big page takes only the names two brands share as synonyms.
     noisy = [('Water', 'Merck'), ('Water', 'Honeywell'), ('Cm-moisture tester', 'Merck')]
-    assert choose(noisy, strict=True) == ('Water', []) and choose(noisy)[1] == ['Cm-moisture tester']
+    loose = choose(noisy)
+    assert choose(noisy, strict=True) == ('Water', []) and loose is not None and loose[1] == ['Cm-moisture tester']
 
 
-def add(db, brand: str, number: str, name: str, cas: str, path: str = 'reagents', **extra) -> Product:
+def add(db, brand: str, number: str, name: str, cas: str | None, path: str = 'reagents', **extra) -> Product:
     brand_row = db.scalar(select(Brand).where(Brand.slug == brand))
     product = Product(brand_id=brand_row.id, catalog_number=number, catalog_number_norm=number.lower().replace('-', ''),
                       slug=f'{brand}-{number.lower()}', name_en=name, cas=cas, status='published', **extra)
@@ -111,7 +114,7 @@ def test_the_page_its_link_from_the_card_and_the_sitemap(client, seeded):
     # A substance with its own page sends the storefront there.
     assert client.get(f'{URL}/cas/58-08-2').json()['substance'] == 'caffeine'
     card = client.get(f'{URL}/products/aozeal-a-1').json()
-    assert card['casPage'] == {'cas': ANILINE, 'name': '5-tert-Butyl-2-methoxyaniline', 'offers': 3}
+    assert card['casPage'] == {'cas': ANILINE, 'name': '5-tert-Butyl-2-methoxyaniline', 'offers': 3, 'nameRu': None}
     sitemap = client.get(f'{URL}/cas/sitemap').json()
     assert ANILINE in {i['cas'] for i in sitemap['items']} and sitemap['pageCount'] == 1
     # A hidden category takes its offers off the page at the next build.
