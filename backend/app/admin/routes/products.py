@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from app.admin.audit import changed_fields, history, record
 from app.admin.models import AuditEntry, ProductDemand
 from app.admin.security import StaffDep, requires
+from app.catalog import competitors
 from app.catalog.models import (
     CARD_TYPES,
     PRODUCT_STATUSES,
@@ -199,6 +200,8 @@ def editor(db: Session, product: Product) -> dict[str, Any]:
             'controlled': product.controlled, 'manualFields': product.manual_fields or [],
             'url': f'{settings.site_url.rstrip("/")}/product/{product.slug}/',
             'demand': {'views': int(demand[0]), 'requests': int(demand[1])},
+            # Where a supplier keeps it in stock: for the manager's purchase and margin (app.catalog.competitors).
+            'supplierStock': product.supplier_stock, 'supplierOffers': competitors.offers_of(db, product.id),
             'history': history(db, 'product', product.id, limit=30)}
 
 

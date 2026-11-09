@@ -53,6 +53,8 @@ class ProductPreview(Out):
     customPackaging: bool
     image: ImageOut | None = None
     discontinued: bool = False
+    # «В наличии» — our stock or a supplier's we buy from (app.catalog.competitors); «Под заказ» — the rest.
+    availability: Literal['on_order', 'in_stock'] = 'on_order'
     substance: SubstanceLink | None = None
     attributes: dict[str, list[str]] = Field(default_factory=dict)
     popularity: int = 0
@@ -245,7 +247,7 @@ class ProductDetailOut(ProductPreview):
     documents: list[DocumentOut]
     completeness: int
     indexable: bool
-    availability: str
+    availability: Literal['on_order', 'in_stock']
     # Title and Description written by hand in the admin panel (SEO-02): {"ru": {"title", "description"}, "en": …}.
     seo: dict[str, Any] = Field(default_factory=dict)
     updatedAt: str

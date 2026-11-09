@@ -382,6 +382,7 @@ export function Analytics() {
             )}
           </Empty>
         </Panel>
+        <SupplierCheck admin={admin} />
       </>
     );
   }
@@ -397,6 +398,102 @@ export function Analytics() {
       {!d.fetchedAt ? <Loading text="Загружаем отчёты из Яндекса — обычно это меньше минуты…" /> : null}
       {d.metrika ? <Metrika m={d.metrika} admin={admin} period={Number(period)} /> : null}
       {d.webmaster ? <Webmaster w={d.webmaster} admin={admin} /> : null}
+      <SupplierCheck admin={admin} />
     </>
+  );
+}
+
+interface SupplierStats {
+  pages: number;
+  offers: number;
+  matched: number;
+  errors: number;
+  truncated: number;
+  refused: string | null;
+  products?: number;
+  complete?: boolean;
+}
+interface SupplierState {
+  enabled: boolean;
+  settings: { every_days: number; sources: string[] };
+  last: { startedAt: string; finishedAt: string | null; left: number; sources: Record<string, SupplierStats> } | null;
+  running: { startedAt: string; left: number; stats: Record<string, SupplierStats> } | null;
+  productsInStock: number;
+  names: Record<string, string>;
+}
+
+/** Склады Химмеда и Скайклада: что у них в наличии — у нас «В наличии» (app.catalog.competitors на сервере) */
+function SupplierCheck({ admin }: { admin: boolean }) {
+  const toast = useToast();
+  const client = useQueryClient();
+  const state = useQuery({
+    queryKey: ['competitors'],
+    queryFn: () => api.get<SupplierState>('/competitors'),
+    refetchInterval: (q) => (q.state.data?.running ? 30_000 : false),
+  });
+  const check = useMutation({
+    mutationFn: () => api.post<SupplierState>('/competitors/check'),
+    onSuccess: (r) => {
+      client.setQueryData(['competitors'], r);
+      toast('Проверка начнётся в течение минуты и займёт около часа');
+    },
+    onError: (e) => toast(errorText(e), 'bad'),
+  });
+  const s = state.data;
+  if (!s) return null;
+  const stats = s.running?.stats ?? s.last?.sources ?? {};
+  return (
+    <Panel
+      title="Наличие на складах поставщиков"
+      actions={admin && s.enabled && !s.running ? <Button size="sm" busy={check.isPending} onClick={() => check.mutate()}>Проверить сейчас</Button> : null}
+    >
+      <p className="muted">
+        {!s.enabled
+          ? 'Проверка выключена: она работает на продакшене или с COMPETITOR_STOCK_ENABLED=true.'
+          : s.running
+            ? `Идёт проверка с ${formatDate(s.running.startedAt)} · осталось страниц: ${s.running.left}`
+            : s.last?.finishedAt
+              ? `Последняя проверка ${formatDate(s.last.finishedAt)} · следующая через ${s.settings.every_days} дн. после неё`
+              : 'Проверок ещё не было.'}{' '}
+        На сайте «В наличии» по складам поставщиков: {s.productsInStock} товаров.
+      </p>
+      {Object.keys(stats).length ? (
+        <table className="table">
+          <thead>
+            <tr>
+              <th>Поставщик</th>
+              <th>Страниц</th>
+              <th>Позиций наших брендов</th>
+              <th>Совпало с нашими</th>
+              <th>Состояние</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(stats).map(([source, st]) => (
+              <tr key={source}>
+                <td>{s.names[source] ?? source}</td>
+                <td>{st.pages}</td>
+                <td>{st.offers}</td>
+                <td>{st.matched}</td>
+                <td>
+                  {st.refused ? (
+                    <Badge tone="bad">сайт отказал ({st.refused}) — старые данные действуют до 10 дней</Badge>
+                  ) : st.errors ? (
+                    <Badge tone="warn">не открылось страниц: {st.errors}</Badge>
+                  ) : st.complete === false ? (
+                    <Badge tone="warn">проверен не полностью</Badge>
+                  ) : s.running ? (
+                    <Badge tone="info">идёт</Badge>
+                  ) : (
+                    <Badge tone="good">проверен полностью</Badge>
+                  )}
+                  {st.truncated ? <span className="muted small"> · сайт показал не всё: {st.truncated} запросов</span> : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : null}
+    </Panel>
   );
 }

@@ -164,6 +164,25 @@ def _cas_pages(_args: argparse.Namespace) -> None:
     _refresh_storefront()
 
 
+def _competitors(args: argparse.Namespace) -> None:
+    from app.catalog import competitors
+
+    if args.status:
+        with SessionLocal() as db:
+            print(json.dumps(competitors.status(db), ensure_ascii=False, default=str))
+        return
+    if not competitors.enabled():
+        raise SystemExit('Проверка складов поставщиков выключена: COMPETITOR_STOCK_ENABLED=true в .env или продакшен')
+    with SessionLocal.begin() as db:
+        from app.catalog.settings import get_setting, set_setting
+
+        if args.now and not get_setting(db, 'competitor_run'):
+            results = get_setting(db, 'competitor_results') or {}
+            set_setting(db, 'competitor_results', {**results, 'finishedAt': None})
+    print(json.dumps(competitors.run_all(SessionLocal), ensure_ascii=False, default=str))
+    _refresh_storefront()
+
+
 def _indexnow_sitemap(_args: argparse.Namespace) -> None:
     import httpx
 
@@ -281,6 +300,9 @@ def main() -> None:
     command = commands.add_parser('cas-names', help='русские названия страниц CAS из JSON {cas: название}')
     command.add_argument('file')
     command.add_argument('--replace', action='store_true', help='заменить все, а не дополнить')
+    command = commands.add_parser('competitors', help='наличие на складах Химмеда и Скайклада')
+    command.add_argument('--now', action='store_true', help='не ждать срока, проверить сейчас')
+    command.add_argument('--status', action='store_true', help='только показать последнюю проверку')
     command = commands.add_parser('index-pilot', help='открыть карточки брендов для индексации')
     command.add_argument('--brands', required=True, help='слаги брендов через запятую')
     command.add_argument('--limit', type=int, default=10000)
@@ -289,7 +311,7 @@ def main() -> None:
     handlers = {'seed': _seed, 'recategorize': _recategorize, 'index': _index, 'reindex': _reindex, 'import': _import, 'batches': _batches,
                 'issues': _issues, 'rollback': _rollback, 'controlled': _controlled, 'sync-brands': _sync_brands,
                 'cas-pages': _cas_pages, 'indexnow-sitemap': _indexnow_sitemap, 'cas-names': _cas_names,
-                'index-pilot': _index_pilot,
+                'index-pilot': _index_pilot, 'competitors': _competitors,
                 'misses': _misses, 'setting': _setting}
     handlers[args.command](args)
 

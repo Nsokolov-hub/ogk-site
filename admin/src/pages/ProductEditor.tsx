@@ -51,7 +51,22 @@ interface EditorData {
   manualFields: string[];
   url: string;
   demand: { views: number; requests: number };
+  /** Есть на складе у поставщика: на витрине «В наличии» (проверка складов Химмеда и Скайклада раз в несколько дней) */
+  supplierStock: boolean;
+  supplierOffers: SupplierOffer[];
   history: HistoryEntry[];
+}
+
+interface SupplierOffer {
+  source: string;
+  sourceName: string;
+  name: string;
+  catalogNumber: string;
+  pack: string | null;
+  quantity: number | null;
+  price: string | null;
+  url: string;
+  seenAt: string;
 }
 
 interface Picture {
@@ -184,6 +199,7 @@ export function ProductEditor() {
         {dirty ? <span className="muted small">Есть несохранённые изменения</span> : null}
       </div>
       {e.manualFields.length ? <div className="note">Изменены вручную и защищены от импорта: {e.manualFields.join(', ')}</div> : null}
+      {e.supplierOffers.length ? <SupplierStock offers={e.supplierOffers} /> : null}
       <Tabs
         value={tab}
         onChange={setTab}
@@ -465,5 +481,41 @@ function Links({ data, related, writable, set }: { data: ProductData; related: R
         ) : null}
       </Panel>
     </div>
+  );
+}
+
+/** Где товар лежит у поставщиков: по этим позициям витрина пишет «В наличии»; цена — для закупки и своей наценки */
+function SupplierStock({ offers }: { offers: SupplierOffer[] }) {
+  return (
+    <Panel title="На складах поставщиков — на сайте «В наличии»">
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Поставщик</th>
+            <th>Кат. №</th>
+            <th>Фасовка</th>
+            <th>Остаток</th>
+            <th>Цена у них</th>
+            <th>Проверено</th>
+          </tr>
+        </thead>
+        <tbody>
+          {offers.map((o) => (
+            <tr key={`${o.source}-${o.url}`}>
+              <td>
+                <a href={o.url} target="_blank" rel="noreferrer noopener">
+                  {o.sourceName} <ExternalLink size={12} />
+                </a>
+              </td>
+              <td>{o.catalogNumber}</td>
+              <td>{o.pack ?? '—'}</td>
+              <td>{o.quantity === null ? 'есть' : o.quantity}</td>
+              <td>{o.price ?? '—'}</td>
+              <td>{formatDate(o.seenAt)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Panel>
   );
 }

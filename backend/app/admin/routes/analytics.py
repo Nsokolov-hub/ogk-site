@@ -13,6 +13,8 @@ from pydantic import BaseModel
 from app.admin.audit import record
 from app.admin.security import StaffDep, requires
 from app.analytics import yandex
+from app.catalog import competitors
+from app.catalog.settings import get_setting, set_setting
 from app.core.db import DB
 from app.core.errors import DomainError
 
@@ -79,3 +81,20 @@ def sitemap(staff: StaffDep, db: DB) -> dict[str, Any]:
     if result['state'] == 'added':
         record(db, staff, 'setting', 'webmaster_sitemap', 'create', f'Sitemap в Вебмастере: {result["url"]}')
     return result
+
+
+# ── stock of suppliers (app.catalog.competitors) ──
+
+@router.get('/competitors', dependencies=[requires('dashboard')])
+def suppliers(db: DB) -> dict[str, Any]:
+    return competitors.status(db)
+
+
+@router.post('/competitors/check', dependencies=[requires('settings.write')])
+def check_suppliers(staff: StaffDep, db: DB) -> dict[str, Any]:
+    """Check now instead of in a few days: the worker starts within its next turn."""
+    if not get_setting(db, 'competitor_run'):
+        results = get_setting(db, 'competitor_results') or {}
+        set_setting(db, 'competitor_results', {**results, 'finishedAt': None})
+        record(db, staff, 'setting', 'competitor_stock', 'update', 'проверка складов поставщиков — сейчас')
+    return {**competitors.status(db), 'due': competitors.due(db)}

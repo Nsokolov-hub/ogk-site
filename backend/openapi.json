@@ -3034,6 +3034,14 @@
             "title": "Discontinued",
             "default": false
           },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "on_order",
+              "in_stock"
+            ],
+            "title": "Availability"
+          },
           "substance": {
             "anyOf": [
               {
@@ -3185,10 +3193,6 @@
             "type": "boolean",
             "title": "Indexable"
           },
-          "availability": {
-            "type": "string",
-            "title": "Availability"
-          },
           "seo": {
             "additionalProperties": true,
             "type": "object",
@@ -3210,12 +3214,12 @@
           "categorySlug",
           "packagings",
           "customPackaging",
+          "availability",
           "texts",
           "uniqueDescription",
           "documents",
           "completeness",
           "indexable",
-          "availability",
           "updatedAt"
         ],
         "title": "ProductDetailOut"
@@ -3370,6 +3374,15 @@
             "type": "boolean",
             "title": "Discontinued",
             "default": false
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "on_order",
+              "in_stock"
+            ],
+            "title": "Availability",
+            "default": "on_order"
           },
           "substance": {
             "anyOf": [

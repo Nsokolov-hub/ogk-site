@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     # IndexNow (app.catalog.indexnow): the key is public by design — the storefront serves public/<key>.txt with it.
     # Sent only in production; empty — off.
     indexnow_key: str = '41433030a76ad83ad9dfc8ac27a3604e'
+    # Stock of suppliers (app.catalog.competitors): None — checked only in production; true / false — by hand.
+    competitor_stock_enabled: bool | None = None
+    # How the check introduces itself to the suppliers' sites: a bot, without the company's name.
+    competitor_user_agent: str = 'Mozilla/5.0 (compatible; StockCheck/1.0)'
 
     # ── search (TZ 6): Meilisearch behind app.catalog.search, rebuilt from PostgreSQL ──
     meili_url: str = 'http://127.0.0.1:7700'

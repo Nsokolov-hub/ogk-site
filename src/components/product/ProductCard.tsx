@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
 import { Link } from '@/i18n/navigation';
 import { AddToRfqButton } from './AddToRfqButton';
+import { AvailabilityBadge } from './AvailabilityBadge';
 import { OneClickButton } from './OneClickButton';
 import { PackagingSelect } from './PackagingSelect';
 import { ProductImage } from './ProductImage';
@@ -15,7 +16,7 @@ const IMAGE_SIZES = {
 };
 
 /**
- * Превью товара (ТЗ 5.3). Цен и статуса наличия нет: все товары под заказ.
+ * Превью товара (ТЗ 5.3). Цен нет; наличие — бейдж в углу окна превью (правки 05.11).
  * sm — маленькая для главной (4 в ряд), md — средняя для каталога (3 в ряд).
  */
 export function ProductCard({
@@ -43,9 +44,11 @@ export function ProductCard({
     >
       <div className="relative w-full self-start">
         <ProductImage product={product} sizes={IMAGE_SIZES[size]} priority={priority} className="rounded-xl sm:rounded-2xl" />
+        <AvailabilityBadge availability={product.availability} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col sm:mt-4">
+        <AvailabilityBadge availability={product.availability} place="inline" />
         {/* Ссылка — только на опубликованную страницу бренда: у остальных брендов её нет, ссылка дала бы 404 */}
         {!product.brand.page ? (
           <span className="mb-1 w-fit text-[12px] uppercase text-card-muted">{product.brand.name}</span>

@@ -11,6 +11,7 @@ import { FaqSection } from '@/components/content/FaqSection';
 import { Formula } from '@/components/content/Formula';
 import { RequestBlock } from '@/components/content/RequestBlock';
 import { Breadcrumbs } from '@/components/layout/Breadcrumbs';
+import { AvailabilityBadge } from '@/components/product/AvailabilityBadge';
 import { ProductCard } from '@/components/product/ProductCard';
 import { ProductImage } from '@/components/product/ProductImage';
 import { CopyButton } from '@/components/product/detail/CopyButton';
@@ -224,7 +225,10 @@ export default async function ProductPage({ params }: Props) {
 
         <div className="mt-8 grid gap-8 lg:mt-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12 2xl:gap-16">
           <div className="min-w-0">
-            <ProductImage product={preview} sizes="(min-width: 1024px) 40vw, 90vw" priority className="mx-auto w-full max-w-[440px] rounded-block lg:max-w-none" />
+            <div className="relative mx-auto w-full max-w-[440px] lg:max-w-none">
+              <ProductImage product={preview} sizes="(min-width: 1024px) 40vw, 90vw" priority className="w-full rounded-block" />
+              <AvailabilityBadge availability={p.availability} place="page" />
+            </div>
           </div>
 
           <div className="flex min-w-0 flex-col gap-6">

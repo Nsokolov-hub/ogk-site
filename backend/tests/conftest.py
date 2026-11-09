@@ -64,6 +64,11 @@ def isolated_settings(tmp_path, monkeypatch):
 
     monkeypatch.setattr(yandex, 'http_client',
                         lambda: httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(503))))
+    # Nor the suppliers' sites (app.catalog.competitors), even where a test plays production.
+    from app.catalog import competitors
+
+    monkeypatch.setattr(competitors, 'http_client',
+                        lambda: httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(503))))
 
 
 @pytest.fixture

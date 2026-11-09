@@ -11,7 +11,16 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.catalog.models import Brand, BrandAlias, Category, Packaging, Product, ProductCategory, Substance
+from app.catalog.models import (
+    Brand,
+    BrandAlias,
+    Category,
+    Packaging,
+    Product,
+    ProductCategory,
+    Substance,
+    shown_availability,
+)
 from app.catalog.normalize import compact
 
 # Facet keys of the storefront → document attributes.
@@ -133,8 +142,10 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
         'categories': paths,
         'category': primary.path if primary else None,
         'category_top': primary.path.split('/')[0] if primary else None,
-        'availability': product.availability,
-        'in_stock': 1 if product.availability == 'in_stock' else 0,
+        # Our own stock or a supplier's (app.catalog.competitors): both are «В наличии» on the storefront.
+        'availability': shown_availability(product),
+        'in_stock': 1 if shown_availability(product) == 'in_stock' else 0,
+        'stock': 'own' if product.availability == 'in_stock' else 'supplier' if product.supplier_stock else None,
         'packs': [p.key for p in packs] + (['custom'] if custom else []),
         'packagings': [{'key': p.key, 'label_ru': p.label_ru, 'label_en': p.label_en,
                         'catalog_number': p.catalog_number} for p in packs],

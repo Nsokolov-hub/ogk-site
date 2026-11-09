@@ -114,6 +114,14 @@ DEFAULTS: dict[str, Any] = {
     'yandex_token': None,
     'yandex_reports': {},
     'yandex_reports_at': None,
+    # Stock of suppliers (app.catalog.competitors): which sites are checked and how often, the pause between two
+    # requests to one site, how long a position not seen again still counts as in stock, extra spellings of brands
+    # ({"their name": "our brand slug"}).
+    'competitor_stock': {'sources': ['chimmed', 'skygen'], 'every_days': 3, 'pause_seconds': 2.0,
+                         'keep_days': 10, 'brand_aliases': {}},
+    # The check in progress (its queue of pages, done in short turns of the worker) and the last result of each site.
+    'competitor_run': None,
+    'competitor_results': {},
     # SEO-02: meta templates of cards and substances; empty — the storefront's own (messages/*.json).
     # Placeholders: {name} {brand} {number} {cas} {ids} {logistics}; substances {name} {count} {brands}.
     'meta_templates': {'product': {'ru': {}, 'en': {}}, 'substance': {'ru': {}, 'en': {}}},

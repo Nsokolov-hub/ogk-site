@@ -19,6 +19,8 @@ export interface BrandRef {
   page?: boolean;
 }
 
+export type Availability = 'on_order' | 'in_stock';
+
 export interface ProductPreview {
   id: string;
   /** URL: /product/{slug}/ */
@@ -37,6 +39,8 @@ export interface ProductPreview {
   customPackaging: boolean;
   image?: { src: string; alt: string; kind: 'photo' | 'structure' };
   discontinued?: boolean;
+  /** «В наличии» — наш склад или склад поставщика; «Под заказ» — остальное */
+  availability?: Availability;
   /** Связь с субстанцией (ТЗ 5.1): страница /substances/{slug}/ и блок «Другие примеси» */
   substance?: { slug: string; role: SubstanceRole };
   /** Значения для фильтров каталога (атрибуты типа, ТЗ 5.1): ключ фильтра → значения */

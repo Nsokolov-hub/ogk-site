@@ -395,6 +395,19 @@ def refresh_yandex_if_due() -> None:
             set_setting(db, 'yandex_reports_at', utcnow().isoformat())
 
 
+def check_suppliers_if_due() -> None:
+    """Stock of suppliers (app.catalog.competitors): a short turn of the check every few days."""
+    from app.catalog import competitors
+
+    try:
+        result = competitors.turn(SessionLocal)
+    except Exception as exc:  # the next turn continues the queue
+        event(logger, 'competitor_turn_failed', logging.WARNING, error=str(exc)[:300])
+        return
+    if result and 'finishedAt' in result:
+        storefront.revalidate(['catalog'])
+
+
 _index_ready = False
 
 
@@ -455,6 +468,7 @@ def run_once(*, housekeeping: bool = True) -> dict[str, int]:
         sync_brands_if_due()
         build_cas_pages_if_due()
         refresh_yandex_if_due()
+        check_suppliers_if_due()
         send_indexnow_if_due()
         admin_housekeeping()
     with SessionLocal.begin() as db:

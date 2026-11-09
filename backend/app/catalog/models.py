@@ -151,6 +151,9 @@ class Product(Entity):
         # The indexing queue: only rows waiting for the index are in this index.
         Index('ix_products_needs_index', 'needs_index', postgresql_where=text('needs_index'),
               sqlite_where=text('needs_index')),
+        # Products seen in stock at a supplier: a few thousand of 1.5 million, so only they are in this index.
+        Index('ix_products_supplier_stock', 'supplier_stock', postgresql_where=text('supplier_stock'),
+              sqlite_where=text('supplier_stock')),
         # The queue of 2D structures to draw: only cards whose SMILES changed since the last drawing.
         Index('ix_products_structure_pending', 'id', postgresql_where=text('structure_smiles IS DISTINCT FROM smiles'),
               sqlite_where=text('structure_smiles IS NOT smiles')),
@@ -191,6 +194,9 @@ class Product(Entity):
     unique_description: Mapped[bool] = mapped_column(Boolean, default=False)
     images: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
     availability: Mapped[str] = mapped_column(String(20), default='on_order')
+    # Seen in stock at a supplier's warehouse in the last days (app.catalog.competitors): the storefront shows
+    # «В наличии» as for our own stock. Kept apart from availability, which imports and managers set.
+    supplier_stock: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
     # None — as the brand says (TZ 5.2.2).
     custom_packaging: Mapped[bool | None] = mapped_column(Boolean)
     discontinued: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -214,6 +220,39 @@ class Product(Entity):
     needs_index: Mapped[bool] = mapped_column(Boolean, default=True, server_default=true())
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+def shown_availability(product: Product) -> str:
+    """What the storefront says: our own stock, or a supplier's stock we buy from — both are «В наличии»."""
+    return 'in_stock' if product.availability == 'in_stock' or product.supplier_stock else 'on_order'
+
+
+class CompetitorOffer(Entity):
+    """A position in stock on a supplier's site, as its last check saw it (app.catalog.competitors).
+
+    Only what the site shows to everyone: brand, catalog number, packaging, quantity and price. ``product_id`` — our
+    product with the same brand and catalog number; offers without one stay for the managers' statistics.
+    """
+
+    __tablename__ = 'competitor_offers'
+    __table_args__ = (UniqueConstraint('source', 'external_id'),)
+    source: Mapped[str] = mapped_column(String(20), index=True)
+    external_id: Mapped[str] = mapped_column(String(100))
+    brand_name: Mapped[str] = mapped_column(String(250))
+    brand_id: Mapped[str | None] = mapped_column(ForeignKey('brands.id', ondelete='SET NULL'), index=True)
+    catalog_number: Mapped[str] = mapped_column(String(150))
+    catalog_number_norm: Mapped[str] = mapped_column(String(150), index=True)
+    name: Mapped[str] = mapped_column(String(500))
+    cas: Mapped[str | None] = mapped_column(String(40))
+    pack: Mapped[str | None] = mapped_column(String(120))
+    # None — the site says «in stock» without a number.
+    quantity: Mapped[int | None] = mapped_column(Integer)
+    price: Mapped[str | None] = mapped_column(String(60))
+    url: Mapped[str] = mapped_column(String(500))
+    product_id: Mapped[str | None] = mapped_column(ForeignKey('products.id', ondelete='SET NULL'), index=True)
+    packaging_id: Mapped[str | None] = mapped_column(String(36))
+    first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
 
 
 class ProductCategory(Base):

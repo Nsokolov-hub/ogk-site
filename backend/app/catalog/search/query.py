@@ -69,6 +69,7 @@ def preview(hit: dict[str, Any], lang: str, brand_pages: Collection[str] = froze
         'customPackaging': bool(hit.get('custom_packaging')),
         'image': hit.get('image'),
         'discontinued': bool(hit.get('discontinued')),
+        'availability': 'in_stock' if hit.get('availability') == 'in_stock' else 'on_order',
         'substance': {'slug': hit['substance_slug'], 'role': hit['substance_role']} if hit.get('substance_slug')
         else None,
         'attributes': attributes,

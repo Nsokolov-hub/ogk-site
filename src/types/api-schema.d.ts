@@ -1070,6 +1070,11 @@ export interface components {
              * @default false
              */
             discontinued: boolean;
+            /**
+             * Availability
+             * @enum {string}
+             */
+            availability: "on_order" | "in_stock";
             substance?: components["schemas"]["SubstanceLink"] | null;
             /** Attributes */
             attributes?: {
@@ -1112,8 +1117,6 @@ export interface components {
             completeness: number;
             /** Indexable */
             indexable: boolean;
-            /** Availability */
-            availability: string;
             /** Seo */
             seo?: {
                 [key: string]: unknown;
@@ -1172,6 +1175,12 @@ export interface components {
              * @default false
              */
             discontinued: boolean;
+            /**
+             * Availability
+             * @default on_order
+             * @enum {string}
+             */
+            availability: "on_order" | "in_stock";
             substance?: components["schemas"]["SubstanceLink"] | null;
             /** Attributes */
             attributes?: {

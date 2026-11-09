@@ -21,6 +21,7 @@ from app.catalog.models import (
     ProductRelation,
     SlugRedirect,
     Substance,
+    shown_availability,
 )
 from app.catalog.search import documents
 from app.catalog.search.query import brand_pages, preview
@@ -326,7 +327,7 @@ def product_page(db: Session, slug: str, lang: str) -> dict[str, Any]:
         'uniqueDescription': product.unique_description,
         'documents': [{'type': d.type, 'lang': d.lang, 'titleRu': d.title_ru, 'titleEn': d.title_en, 'href': d.href}
                       for d in docs_rows],
-        'completeness': product.completeness, 'indexable': product.indexable, 'availability': product.availability,
+        'completeness': product.completeness, 'indexable': product.indexable, 'availability': shown_availability(product),
         'seo': product.seo or {}, 'updatedAt': iso(product.updated_at),
     }
     return {
