@@ -108,15 +108,29 @@ def _cipher() -> Fernet:
     return Fernet(base64.urlsafe_b64encode(hashlib.sha256(f'yandex:{settings.secret_key}'.encode()).digest()))
 
 
+def _stored(db: Session) -> tuple[str | None, bool]:
+    """(the token pasted in the admin panel or None, whether a pasted token can no longer be read)."""
+    stored = get_setting(db, 'yandex_token') or {}
+    if not stored.get('cipher'):
+        return None, False
+    try:
+        return _cipher().decrypt(str(stored['cipher']).encode()).decode(), False
+    except InvalidToken:
+        return None, True
+
+
+UNREADABLE = ('Токен Яндекса из настроек больше не читается: на сервере сменился SECRET_KEY. Вставьте токен заново'
+              ' — пока отчёты идут по токену METRIKA_OAUTH_TOKEN сервера, если он задан')
+
+
 def token(db: Session) -> str:
     """The token of the admin panel, else the server's METRIKA_OAUTH_TOKEN; empty — not connected."""
-    stored = get_setting(db, 'yandex_token') or {}
-    if stored.get('cipher'):
-        try:
-            return _cipher().decrypt(str(stored['cipher']).encode()).decode()
-        except InvalidToken:
-            # SECRET_KEY changed: the token has to be pasted again.
-            event(logger, 'yandex_token_unreadable', logging.WARNING)
+    pasted, unreadable = _stored(db)
+    if pasted:
+        return pasted
+    if unreadable:
+        # SECRET_KEY changed: the token has to be pasted again.
+        event(logger, 'yandex_token_unreadable', logging.WARNING)
     return settings.metrika_oauth_token
 
 
@@ -129,11 +143,13 @@ def counter(db: Session) -> str:
 def status(db: Session) -> dict[str, Any]:
     """What the admin panel shows about the connection; never the token itself."""
     stored = get_setting(db, 'yandex_token') or {}
-    source = 'admin' if stored.get('cipher') else 'server' if settings.metrika_oauth_token else None
+    pasted, unreadable = _stored(db)
+    # A pasted token that can no longer be read is not «connected by the admin panel»: the server's token works.
+    source = 'admin' if pasted else 'server' if settings.metrika_oauth_token else None
     reports = get_setting(db, 'yandex_reports') or {}
     return {'connected': source is not None, 'source': source, 'tail': stored.get('tail') if source == 'admin' else None,
             'login': stored.get('login'), 'savedAt': stored.get('savedAt'), 'savedBy': stored.get('savedBy'),
-            'access': stored.get('access') or {}, 'counter': counter(db) or None,
+            'access': stored.get('access') or {}, 'counter': counter(db) or None, 'tokenUnreadable': unreadable,
             'refreshedAt': get_setting(db, 'yandex_reports_at'), 'tokenInvalid': bool(reports.get('tokenInvalid'))}
 
 
@@ -279,6 +295,37 @@ def metrika_goals(api: Api, ym: str) -> list[dict[str, Any]]:
         identifier = conditions[0].get('url') if goal.get('type') == 'action' and conditions else None
         out.append({'id': goal['id'], 'name': goal.get('name') or '', 'identifier': identifier})
     return out
+
+
+def explain_refusal(api: Api, ym: str, refused: Refused) -> Refused:
+    """Metrica's 403 says neither why nor for which counter. The list of the token's counters tells it: refused
+    too — the token has no metrika:read (rights added to the app after the token was issued do not reach it);
+    answered without our counter — the token belongs to an account that neither owns the counter nor was given
+    access to it, or the counter number in the settings is not the site's one."""
+    if refused.code != 'NO_ACCESS':
+        return refused
+    try:
+        data = api.get(f'{METRIKA}/management/v1/counters', per_page=100)
+    except Refused as exc:
+        if exc.code != 'NO_ACCESS':
+            return refused
+        return Refused('NO_METRIKA_SCOPE', 'Нет доступа к Метрике: у токена нет прав metrika:read и metrika:write. '
+                                           'Отметьте их в приложении на oauth.yandex.ru и получите токен заново — '
+                                           'токен, выданный до этого, новых прав не получает')
+    counters = data.get('counters') or []
+    if any(str(c.get('id')) == ym for c in counters):
+        return Refused('NO_ACCESS', f'Метрика отказала в доступе к счётчику {ym}, хотя аккаунт токена его видит. '
+                                    'Проверьте права аккаунта в настройках счётчика («Доступ») и права metrika:read '
+                                    'у приложения')
+    owners = sorted({str(c.get('owner_login')) for c in counters if c.get('owner_login')})
+    listed = ', '.join(f'{c.get("id")} ({c.get("site") or c.get("name") or "без сайта"})' for c in counters[:5])
+    return Refused('COUNTER_NOT_SHARED',
+                   f'Нет доступа к счётчику {ym}: токен выдан аккаунту'
+                   + (f' {", ".join(owners[:2])}' if owners else '')
+                   + ', которому этот счётчик не принадлежит и не открыт. '
+                   + (f'Этому аккаунту доступны: {listed}. ' if listed else 'Этому аккаунту не доступен ни один счётчик. ')
+                   + 'Получите токен под владельцем счётчика, откройте этому аккаунту доступ в настройках счётчика '
+                     'или исправьте номер счётчика в настройках сайта')
 
 
 def metrika_period(api: Api, ym: str, period: tuple[date, date],
@@ -439,6 +486,9 @@ def fetch(oauth: str, ym: str, end: date | None = None) -> dict[str, Any]:
         api = Api(oauth, client)
         first, failed = _run({'goals': (lambda: metrika_goals(api, ym)) if ym else (lambda: None),
                               'host': lambda: webmaster_host(api)})
+        if 'goals' in failed:
+            # Nothing of Metrica is fetched without its goals: say exactly why it refused.
+            failed['goals'] = explain_refusal(api, ym, failed['goals'])
         goals = first.get('goals') or []
         host = first.get('host')
         tasks: dict[Hashable, Callable[[], Any]] = {}
@@ -496,6 +546,21 @@ def refresh(db: Session) -> dict[str, Any] | None:
     if not oauth:
         return None
     data = fetch(oauth, ym)
+    pasted, unreadable = _stored(db)
+    if unreadable:
+        for part in ('metrika', 'webmaster'):
+            data[part]['errors'].insert(0, UNREADABLE)
+    if pasted:
+        # «Подключение» shows what Yandex says now, not what it said on the day the token was pasted
+        # (09.11.2026: «есть доступ» from 02.11 next to the refusals of both services).
+        stored = dict(get_setting(db, 'yandex_token') or {})
+        access = dict(stored.get('access') or {})
+        for part in ('metrika', 'webmaster'):
+            errors = data[part]['errors']
+            # The counter's name and owner from connecting stay; only the verdict changes.
+            known = {k: v for k, v in (access.get(part) or {}).items() if k not in ('ok', 'error')}
+            access[part] = {**known, 'ok': False, 'error': errors[0]} if errors else {**known, 'ok': True}
+        set_setting(db, 'yandex_token', {**stored, 'access': access, 'checkedAt': data['fetchedAt']})
     if sitemap_missing(data['webmaster']):
         # Nobody has to press «Добавить sitemap.xml»: once Webmaster has loaded the site, the hourly refresh does it.
         with http_client() as client:
@@ -555,7 +620,10 @@ def connect(db: Session, raw: str, author: str) -> dict[str, Any]:
     def metrika() -> dict[str, Any]:
         if not ym:
             raise Refused('NO_COUNTER', 'Не задан номер счётчика Метрики')
-        found = api.get(f'{METRIKA}/management/v1/counter/{ym}').get('counter') or {}
+        try:
+            found = api.get(f'{METRIKA}/management/v1/counter/{ym}').get('counter') or {}
+        except Refused as exc:
+            raise explain_refusal(api, ym, exc) from None
         return {'name': found.get('name'), 'login': found.get('owner_login'), 'permission': found.get('permission')}
 
     def webmaster() -> dict[str, Any]:

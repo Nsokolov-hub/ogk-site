@@ -45,6 +45,10 @@ class FakeYandex:
         return httpx.Response(404)
 
     def metrika(self, request: httpx.Request, path: str, params: httpx.QueryParams) -> httpx.Response:
+        if path == '/management/v1/counters':
+            return httpx.Response(200, json={'rows': 1, 'counters': [
+                {'id': 98765, 'name': 'Сайт ОГК-ХИМ', 'site': 'www.ogk-chem.ru', 'owner_login': 'ogkteam',
+                 'permission': 'own'}]})
         if path == '/management/v1/counter/98765':
             return httpx.Response(200, json={'counter': {'id': 98765, 'name': 'Сайт ОГК-ХИМ', 'owner_login': 'ogkteam',
                                                          'permission': 'own'}})
@@ -315,7 +319,9 @@ def test_a_token_without_metrica_and_a_site_webmaster_has_not_loaded_yet(fake, s
     fake.handle = handle  # type: ignore[method-assign]
     admin = signed_in('admin')
     answer = admin.ok(admin.put('/analytics/token', {'token': TOKEN}))
-    assert answer['access']['metrika']['error'].startswith('Нет доступа к Метрике: в приложении Яндекса не отмечены')
+    # The list of counters is refused too: the token has no metrika:read at all.
+    assert answer['access']['metrika']['error'].startswith('Нет доступа к Метрике: у токена нет прав metrika:read')
+    assert 'получите токен заново' in answer['access']['metrika']['error']
     assert answer['access']['webmaster']['ok'] and answer['goals'] == 'нет доступа к Метрике'
     report = admin.ok(admin.post('/analytics/refresh'))
     assert report['webmaster']['errors'] == ['Вебмастер ещё собирает данные о сайте: после добавления это занимает '
@@ -390,3 +396,61 @@ def test_no_sitemap_before_webmaster_has_loaded_the_site_then_it_is_added_by_its
     assert fake.sitemaps == ['https://www.ogk-chem.ru/sitemap.xml']
     with sessions() as db:
         assert db.scalar(select(AuditEntry).where(AuditEntry.entity_id == 'webmaster_sitemap')).actor_name == 'система'
+
+
+def test_a_counter_of_another_account_is_named_with_the_counters_the_token_does_see(fake, signed_in):
+    """09.11.2026 in the CRM: «Нет доступа к Метрике» while Metrica itself works — the 403 did not say which of the
+    two it was. The token's list of counters tells: here it sees another counter, not the site's one."""
+    real = fake.handle
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        if request.url.host == 'api-metrika.yandex.net':
+            fake.calls.append(request)
+            if request.url.path == '/management/v1/counters':
+                return httpx.Response(200, json={'rows': 1, 'counters': [
+                    {'id': 11111, 'name': 'Личный блог', 'site': 'blog.example.ru', 'owner_login': 'ivan.personal',
+                     'permission': 'own'}]})
+            return httpx.Response(403, json={'errors': [{'error_type': 'access_denied', 'message': 'Access Denied'}],
+                                             'code': 403, 'message': 'Access Denied'})
+        return real(request)
+
+    fake.handle = handle  # type: ignore[method-assign]
+    admin = signed_in('admin')
+    answer = admin.ok(admin.put('/analytics/token', {'token': TOKEN}))
+    error = answer['access']['metrika']['error']
+    assert error.startswith('Нет доступа к счётчику 98765: токен выдан аккаунту ivan.personal')
+    assert '11111 (blog.example.ru)' in error and 'под владельцем счётчика' in error
+    report = admin.ok(admin.post('/analytics/refresh'))
+    assert report['metrika']['errors'] == [error] and report['status']['counter'] == '98765'
+    # Webmaster answers as usual: one refused service leaves the other.
+    assert report['webmaster']['errors'] == [] and report['webmaster']['summary']['inSearch'] == 9
+
+
+def test_a_pasted_token_unreadable_after_a_new_secret_key_is_not_passed_off_as_connected(fake, signed_in, sessions,
+                                                                                         monkeypatch):
+    admin = signed_in('admin')
+    admin.ok(admin.put('/analytics/token', {'token': TOKEN}))
+    monkeypatch.setattr(settings, 'secret_key', settings.secret_key + '-rotated')
+    with sessions() as db:
+        state = yandex.status(db)
+        assert state['tokenUnreadable'] is True and state['connected'] is False and state['tail'] is None
+    monkeypatch.setattr(settings, 'metrika_oauth_token', TOKEN)  # the server's token keeps the reports going
+    with sessions.begin() as db:
+        assert yandex.status(db)['source'] == 'server'
+        data = yandex.refresh(db)
+    assert data is not None and data['metrika']['errors'][0] == yandex.UNREADABLE
+
+
+def test_the_connection_shows_what_yandex_says_now_not_on_the_day_of_connecting(fake, signed_in):
+    """09.11.2026 in the CRM: «Метрика: есть доступ» from 02.11 next to the refusals of both services."""
+    admin = signed_in('admin')
+    assert admin.ok(admin.put('/analytics/token', {'token': TOKEN}))['access']['metrika']['ok']
+    fake.refuse = {'api-metrika.yandex.net': 403, 'api.webmaster.yandex.net': 403}
+    status = admin.ok(admin.post('/analytics/refresh'))['status']
+    assert status['access']['metrika']['ok'] is False and 'Нет доступа' in status['access']['metrika']['error']
+    assert status['access']['webmaster']['ok'] is False
+    fake.refuse = {}
+    status = admin.ok(admin.post('/analytics/refresh'))['status']
+    # Back to normal: the details from connecting stay.
+    assert status['access']['metrika'] == {'ok': True, 'name': 'Сайт ОГК-ХИМ', 'login': 'ogkteam', 'permission': 'own'}
+    assert status['access']['webmaster']['ok'] is True
