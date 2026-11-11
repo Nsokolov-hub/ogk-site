@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     // 90 — картинки плашек первого экрана: на 75 рендеры баночек заметно мылятся
     qualities: [75, 90],
+    // Оптимизированные картинки (/_next/image) браузер держит сутки, а не минуту по умолчанию: исходники меняются редко
+    minimumCacheTTL: 86400,
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",

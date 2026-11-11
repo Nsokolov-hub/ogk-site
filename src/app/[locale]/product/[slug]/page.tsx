@@ -17,6 +17,7 @@ import { ProductImage } from '@/components/product/ProductImage';
 import { CopyButton } from '@/components/product/detail/CopyButton';
 import { DocumentList } from '@/components/product/detail/DocumentList';
 import { ProductOrderPanel } from '@/components/product/detail/ProductOrderPanel';
+import { ProductStickyBar } from '@/components/product/detail/ProductStickyBar';
 import { ProductTabs } from '@/components/product/detail/ProductTabs';
 import { breadcrumbsLd, faqLd, JsonLd, productLd } from '@/components/seo/JsonLd';
 import { TrackView } from '@/components/seo/TrackView';
@@ -24,7 +25,7 @@ import { Container } from '@/components/ui/Container';
 import { Link, permanentRedirect } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
 import { cn } from '@/lib/cn';
-import { getProductPage, toPreview } from '@/lib/product-api';
+import { getProductPage, toPreview, type ProductPageData } from '@/lib/product-api';
 import { absoluteUrl, pageMetadata, SITE_URL } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale; slug: string }> };
@@ -37,6 +38,21 @@ function shortName(name: string, max = 70) {
 }
 
 const COLD = new Set(['2-8', '-20', '-80']);
+
+/** Русское название длиннее — в Title не ставим: каталожный номер и CAS должны остаться в начале заголовка */
+const RU_NAME_IN_TITLE = 40;
+
+/**
+ * Русское название позиции (аудит 11.11.2026): в Яндексе вещество ищут и по-русски, а название производителя
+ * латинское. Берём название самой карточки, иначе — страницы вещества по CAS; у стандарта субстанции — МНН.
+ * Примеси и метаболиты по МНН не называем: «Atorvastatin impurity A (аторвастатин)» читалось бы как перевод.
+ */
+function russianName(data: ProductPageData, locale: Locale): string | null {
+  if (locale !== 'ru') return null;
+  const { product: p, substance, casPage } = data;
+  const own = p.nameRu ?? casPage?.nameRu ?? (substance && p.substance?.role === 'api' ? substance.name.toLowerCase() : null);
+  return own && own.toLowerCase() !== p.name.toLowerCase() ? own : null;
+}
 
 /** Метатеги по шаблону ТЗ 10.2 */
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -53,7 +69,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Порядок (SEO-02): ручные Title и Description карточки → шаблон из админки → шаблон ТЗ 10.2 из messages
   const own = p.seo?.[locale];
   const template = site.metaTemplates?.product?.[locale] ?? {};
-  const values = { name: shortName(p.name), brand: p.brand.name, number: p.catalogNumber, cas: p.cas, ids, logistics, numberLabel };
+  const ru = russianName(data, locale);
+  const withRu = (name: string, max = Infinity) => (ru && ru.length <= max ? `${name} (${ru})` : name);
+  const values = { name: withRu(shortName(p.name, ru ? 60 : 70), RU_NAME_IN_TITLE), brand: p.brand.name, number: p.catalogNumber, cas: p.cas, ids, logistics, numberLabel };
   const titleTemplate = p.cas ? template.title : (template.titleNoCas ?? template.title);
   const title =
     own?.title ||
@@ -65,8 +83,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description =
     own?.description ||
     (template.description
-      ? fillTemplate(template.description, { ...values, name: shortName(p.name, 90) })
-      : t('description', { name: shortName(p.name, 90), ids, logistics }));
+      ? fillTemplate(template.description, { ...values, name: withRu(shortName(p.name, 90)) })
+      : t('description', { name: withRu(shortName(p.name, 90)), ids, logistics }));
 
   return pageMetadata({ locale, path: `/product/${p.slug}/`, title, description, index: p.indexable, hasEn: p.hasEn });
 }
@@ -82,6 +100,7 @@ export default async function ProductPage({ params }: Props) {
   const t = await getTranslations('productPage');
   const tc = await getTranslations('catalog');
   const { product: p, categories, substance } = data;
+  const ruName = russianName(data, locale);
   const preview = toPreview(p);
   const path = `/product/${p.slug}/`;
 
@@ -107,6 +126,7 @@ export default async function ProductPage({ params }: Props) {
     productLd({
       url: absoluteUrl(locale, path),
       name: p.name,
+      alternateName: ruName ?? undefined,
       sku: p.catalogNumber,
       brand: p.brand.name,
       description: p.description[0],
@@ -210,7 +230,7 @@ export default async function ProductPage({ params }: Props) {
               </Link>
             )}
             {' · '}
-            {p.nameRu ?? kindLabel}
+            {p.nameRu ?? data.casPage?.nameRu ?? kindLabel}
           </p>
         </div>
 
@@ -225,7 +245,8 @@ export default async function ProductPage({ params }: Props) {
 
         <div className="mt-8 grid gap-8 lg:mt-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12 2xl:gap-16">
           <div className="min-w-0">
-            <div className="relative mx-auto w-full max-w-[440px] lg:max-w-none">
+            {/* Нарисованная заглушка на телефоне меньше фото: она ничего не сообщает, а номер, CAS и кнопки ниже */}
+            <div className={cn('relative mx-auto w-full lg:max-w-none', p.image ? 'max-w-[440px]' : 'max-w-[240px] sm:max-w-[440px]')}>
               <ProductImage product={preview} sizes="(min-width: 1024px) 40vw, 90vw" priority className="w-full rounded-block" />
               <AvailabilityBadge availability={p.availability} place="page" />
             </div>
@@ -248,7 +269,9 @@ export default async function ProductPage({ params }: Props) {
 
             {p.customPackaging ? <p className="text-body text-accent">{t('anyPackaging')}</p> : null}
 
-            <ProductOrderPanel product={preview} phone={settings.phone} />
+            <div id="product-order">
+              <ProductOrderPanel product={preview} phone={settings.phone} />
+            </div>
           </div>
         </div>
 
@@ -347,6 +370,7 @@ export default async function ProductPage({ params }: Props) {
           />
         </div>
       </Container>
+      <ProductStickyBar product={preview} phone={settings.phone} />
     </>
   );
 }

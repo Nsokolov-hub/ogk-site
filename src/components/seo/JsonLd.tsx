@@ -98,6 +98,8 @@ export function websiteLd(s: SiteSettings, locale: string) {
 export function productLd(p: {
   url: string;
   name: string;
+  /** Русское название вещества, если оно известно: по нему позицию ищут в Яндексе */
+  alternateName?: string;
   sku: string;
   brand: string;
   description: string;
@@ -111,6 +113,7 @@ export function productLd(p: {
     '@id': `${p.url}#product`,
     url: p.url,
     name: p.name,
+    ...(p.alternateName ? { alternateName: p.alternateName } : {}),
     sku: p.sku,
     mpn: p.sku,
     brand: { '@type': 'Brand', name: p.brand },

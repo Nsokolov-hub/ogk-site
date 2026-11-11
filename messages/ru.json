@@ -339,8 +339,8 @@
   "productPage": {
     "meta": {
       "number": "кат. №",
-      "title": "{name} — {brand} {number}, CAS {cas} | ОГК-ХИМ",
-      "titleNoCas": "{name} — {brand} {numberLabel} {number} | ОГК-ХИМ",
+      "title": "{name} — купить {brand} {number}, CAS {cas} | ОГК-ХИМ",
+      "titleNoCas": "{name} — купить {brand} {numberLabel} {number} | ОГК-ХИМ",
       "description": "{name}, {ids}. Поставка в Россию, документы, {logistics}. Запросите цену",
       "cold": "холодовая цепь",
       "ambient": "доставка по всей России"
@@ -394,6 +394,8 @@
       "inCart": "В корзине",
       "added": "Добавлено в корзину запроса",
       "oneClick": "Заказать в 1 клик",
+      "requestPrice": "Запросить цену",
+      "call": "Позвонить: {phone}",
       "note": "Цену и срок поставки пришлём в коммерческом предложении в течение 2 рабочих часов."
     },
     "tabs": {

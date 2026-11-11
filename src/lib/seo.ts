@@ -15,6 +15,14 @@ export const SITE_URL = 'https://www.ogk-chem.ru';
 export const SITE_NAME = 'ОГК-ХИМ';
 export const SITE_NAME_EN = 'OGK-CHEM';
 
+/**
+ * Английские страницы указателя по CAS (/en/cas/…) в индекс не идут (аудит 11.11.2026): это ~49 тыс. шаблонных
+ * страниц, которые отличаются от русских только служебным текстом и удваивают обход сайта роботом, а спроса из-за
+ * рубежа на домене .ru нет. Страницы открываются и работают, но отдают noindex и canonical на русскую версию
+ * и не попадают в Sitemap. true — вернуть как было (hreflang-пара ru/en).
+ */
+export const CAS_EN_INDEXED = false;
+
 export function localizedPath(locale: Locale | string, path: string) {
   return locale === 'ru' ? path : `/${locale}${path}`;
 }

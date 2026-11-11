@@ -47,7 +47,7 @@ export function BrandsRow({ items }: { items: BrandRef[] }) {
               className="grid h-[100px] w-[124px] place-items-center overflow-hidden rounded-card bg-surface md:h-[140px] md:w-[172px] md:rounded-block lg:h-[172px] lg:w-[212px] transition-colors duration-300 hover:bg-surface-strong"
             >
               {b.logo ? (
-                <Image src={b.logo} alt="" width={212} height={172} unoptimized className="h-full w-full object-contain" />
+                <Image src={b.logo} alt={b.name} width={212} height={172} unoptimized className="h-full w-full object-contain" />
               ) : (
                 <span className="text-h4 font-medium text-text">{b.name}</span>
               )}

@@ -19,6 +19,14 @@
 # to 30 seconds instead of answering 502: an update goes without visible downtime (NFR-02).
 (site_routes) {
 	encode zstd gzip
+	# Pictures of public/images have no hash in their names, so Next serves them with max-age=0 and every page view
+	# asked the server again for each logo and picture (audit of 11.11.2026). A day in the browser; for a week after
+	# that the old copy is shown while the new one loads. A replaced picture reaches everyone within a day.
+	@pictures path /images/*
+	header @pictures {
+		Cache-Control "public, max-age=86400, stale-while-revalidate=604800"
+		defer
+	}
 	# route keeps the order as written (Caddy sorts bare directives by its own order).
 	route {
 		# Only the API's worker calls this route of the storefront, inside the Docker network.

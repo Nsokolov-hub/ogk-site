@@ -235,6 +235,10 @@ def cas_page(db: Session, cas: str, lang: str) -> dict[str, Any] | None:
                                    .order_by(Product.popularity.desc(), Product.name_en).limit(CAS_ITEMS))]
     out = previews(db, items, lang)
     out = [p for p in out if not hidden_category(p['categorySlug'], hidden)]
+    # The page lists offers of one substance: stand-in names and the sources' leftovers are not shown there.
+    numbers = {p.id: p.catalog_number_norm for p in items}
+    for p in out:
+        p['name'] = cas_build.offer_name(p['name'], p['brand']['name'], numbers.get(p['id']) or '', row.name)
     paths = sorted({p['categorySlug'].split('/')[0] for p in out})
     sections: list[dict[str, Any]] = [{'path': c.path, 'nameRu': c.name_ru, 'nameEn': c.name_en}
                 for c in db.scalars(select(Category).where(Category.path.in_(paths)))]

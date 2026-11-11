@@ -67,6 +67,7 @@ NEXT_DIST_DIR=.next-prod npm run build  # проверочная сборка, �
 - Уровневая индексация товаров: полнота 0–100 и решение об индексации считает API (`backend/app/catalog/completeness.py`) по критериям ТЗ 5.6, порог 70 — настройка `index_threshold`. Ниже порога — noindex и нет в Sitemap. Субстанции — index при ≥ 3 позициях и тексте.
 - JSON-LD (`src/components/seo/JsonLd.tsx`): Organization, WebSite + SearchAction, BreadcrumbList на всех страницах кроме главной, Product без offers, Article, Person, Service, FAQPage только там, где FAQ виден.
 - Метатеги товаров и субстанций — по шаблонам ТЗ 10.2; H1/Title категорий и услуг — из ТЗ 10.3.
+- Правки по аудиту 11.11.2026: в Title и Description карточки — русское название вещества (своё, со страницы CAS или МНН у стандарта субстанции) и «купить»; английские страницы указателя по CAS — noindex с canonical на русские и вне Sitemap (`CAS_EN_INDEXED` в `src/lib/seo.ts`); страницы `?page=N` указателя в Sitemap не идут; заголовок Link с hreflang от next-intl выключен — hreflang ставит только `<head>` у страниц с переводом; на странице CAS позиция с названием-заглушкой «бренд + номер» называется как вещество (`cas_pages.offer_name`); картинки `/images/*` кэшируются сутки (Caddy).
 
 ## Временно
 

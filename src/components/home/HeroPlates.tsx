@@ -96,37 +96,39 @@ function withAccent(text: string, accent?: string): ReactNode {
   );
 }
 
-function Plate({ slide, heading, priority }: { slide: HeroSlide; heading: 'h1' | 'h2' | 'p'; priority: boolean }) {
+function Plate({ slide, heading, priority, text = true }: { slide: HeroSlide; heading: 'h1' | 'h2' | 'p'; priority: boolean; text?: boolean }) {
   const Heading = heading;
   return (
     <div className="relative size-full overflow-hidden rounded-block bg-[linear-gradient(90deg,#0d0d0d_0%,#161c16_137.94%)]">
       <div aria-hidden className="hero-plate-visual pointer-events-none">
         <Visual plate={slide.plate} priority={priority} />
       </div>
-      <div className="hero-plate-text">
-        <div className="hero-plate-copy">
-          <Heading id={heading === 'h1' ? 'hero-title' : undefined} className="hero-plate-title font-medium text-text">
-            {withAccent(slide.title, slide.titleAccent)}
-          </Heading>
-          {slide.subtitle ? <p className="hero-plate-lead text-text">{withAccent(slide.subtitle, slide.subtitleAccent)}</p> : null}
-        </div>
-        {slide.ctas.length ? (
-          <div className="flex flex-wrap gap-[22px]">
-            {slide.ctas.map((c) => (
-              <Button
-                key={c.label}
-                href={c.href}
-                variant={c.variant}
-                size="m"
-                className={c.variant === 'secondary' ? 'bg-surface' : undefined}
-                icon={c.variant === 'primary' ? <ArrowDownRightIcon size={24} /> : undefined}
-              >
-                {c.label}
-              </Button>
-            ))}
+      {text ? (
+        <div className="hero-plate-text">
+          <div className="hero-plate-copy">
+            <Heading id={heading === 'h1' ? 'hero-title' : undefined} className="hero-plate-title font-medium text-text">
+              {withAccent(slide.title, slide.titleAccent)}
+            </Heading>
+            {slide.subtitle ? <p className="hero-plate-lead text-text">{withAccent(slide.subtitle, slide.subtitleAccent)}</p> : null}
           </div>
-        ) : null}
-      </div>
+          {slide.ctas.length ? (
+            <div className="flex flex-wrap gap-[22px]">
+              {slide.ctas.map((c) => (
+                <Button
+                  key={c.label}
+                  href={c.href}
+                  variant={c.variant}
+                  size="m"
+                  className={c.variant === 'secondary' ? 'bg-surface' : undefined}
+                  icon={c.variant === 'primary' ? <ArrowDownRightIcon size={24} /> : undefined}
+                >
+                  {c.label}
+                </Button>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -160,6 +162,8 @@ function useReducedMotion() {
  * Первый экран по макету Figma «Hero plates» (правки 02.11.2026): плашки на тёмном градиенте, соседние видны по краям,
  * стрелки листают по кругу в обе стороны. По краям ленты — копии двух последних и двух первых плашек: после перехода
  * на копию лента без анимации встаёт на настоящую плашку, поэтому круг бесконечный. Заголовок первой плашки — h1.
+ * Текст копий появляется только в браузере (аудит 11.11.2026): в HTML с сервера каждый слайд один раз, иначе
+ * поисковик видел заголовки и кнопки слайдов по три раза и раньше h1. Копии стоят за краем экрана, их текста не видно.
  */
 export function HeroPlates({ slides }: { slides: HeroSlide[] }) {
   const t = useTranslations('home.hero');
@@ -180,6 +184,8 @@ export function HeroPlates({ slides }: { slides: HeroSlide[] }) {
   const fallback = useRef<number | undefined>(undefined);
   const swipeStart = useRef<number | null>(null);
   const reduced = useReducedMotion();
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
   const active = looped ? (((pos - offset) % n) + n) % n : 0;
 
   // С копии — на настоящую плашку, без анимации
@@ -275,7 +281,7 @@ export function HeroPlates({ slides }: { slides: HeroSlide[] }) {
                 className="shrink-0"
                 style={{ width: 'var(--plate-w)', height: 'var(--plate-h)' }}
               >
-                <Plate slide={slide} heading={copy ? 'p' : real === 0 ? 'h1' : 'h2'} priority={!copy && real === 0} />
+                <Plate slide={slide} heading={copy ? 'p' : real === 0 ? 'h1' : 'h2'} priority={!copy && real === 0} text={!copy || hydrated} />
               </div>
             );
           })}

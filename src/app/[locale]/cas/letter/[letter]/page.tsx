@@ -9,7 +9,7 @@ import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/cn';
 import { casLabel, getCasIndex, getCasLetter } from '@/lib/product-api';
-import { pageMetadata, SITE_URL } from '@/lib/seo';
+import { CAS_EN_INDEXED, pageMetadata, SITE_URL } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale; letter: string }>; searchParams: Promise<{ page?: string }> };
 
@@ -32,7 +32,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
     canonicalQuery: data.page > 1 ? `page=${data.page}` : undefined,
     title: `${t('meta.letterTitle', { letter: label, count: data.total })}${suffix} | ${t('meta.brand')}`,
     description: t('meta.letterDescription', { letter: label, count: data.total, first: data.items[0]?.name ?? '' }),
-    hasEn: true,
+    hasEn: CAS_EN_INDEXED,
   });
 }
 

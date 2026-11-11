@@ -109,7 +109,8 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
               href={settings.phone.href}
               onClick={() => track('click_phone', { place: 'header' })}
               aria-label={t('phoneLabel', { phone: settings.phone.display })}
-              className="hidden shrink-0 items-center gap-2.5 text-body font-medium text-text transition-colors hover:text-accent lg:inline-flex"
+              // На телефоне — иконка-кнопка 44 px рядом с поиском (аудит 11.11.2026): раньше звонок был только в меню
+              className="inline-grid size-11 shrink-0 place-items-center text-body font-medium text-text transition-colors hover:text-accent lg:inline-flex lg:size-auto lg:gap-2.5"
             >
               <PhoneOutgoingIcon size={24} className="text-accent" />
               <span className="hidden whitespace-nowrap xl:inline">{settings.phone.display}</span>

@@ -103,6 +103,19 @@ def stand_in(name: str, brand: str, number_norm: str) -> bool:
     return not rest or rest == number_norm or number_norm.startswith(rest) or rest.startswith(number_norm)
 
 
+# The source's leftover at the end of a product name: «…, 98%; .».
+LEFTOVER = re.compile(r'\s*[;,]\s*\.?\s*$')
+
+
+def offer_name(name: str, brand: str, number_norm: str, substance: str) -> str:
+    """The name of an offer as the CAS page lists it (audit of 11.11.2026). The importer's stand-in «<brand>
+    <number>» says nothing beside the brand and the catalog number the row already shows, so such a row is named as
+    the page — it has this CAS number; the source's leftover «; .» is taken off the end of the others."""
+    if stand_in(name, brand, number_norm):
+        return substance
+    return LEFTOVER.sub('', name) or name
+
+
 def sort_key(name: str) -> str:
     """The name as the index /cas/ sorts it: «DL-Lactic acid» → «lactic acid», «4-Acetamidophenol» →
     «acetamidophenol», «N,N-Dimethylformamide» → «dimethylformamide»."""

@@ -13,7 +13,7 @@ import { pageList } from './content';
 import { brandsFor, getArticles, getAuthors, getServices, getSolutions } from './content-api';
 import { allLandings, landingFor, landingHref } from './landings';
 import { getCasIndex, getCasSitemap, getSubstanceList } from './product-api';
-import { absoluteUrl, SITE_URL } from './seo';
+import { absoluteUrl, CAS_EN_INDEXED, SITE_URL } from './seo';
 
 /** Карточек в одном файле: столько отдаёт API за страницу (SEO-04) */
 export const PRODUCTS_PER_FILE = 25_000;
@@ -65,17 +65,12 @@ async function sections(): Promise<Record<string, Entry[]>> {
       { path: '/solutions/', lastmod: max(solutions.map((s) => s.updatedAt)) },
       { path: '/articles/', lastmod: max(articles.map((a) => a.updatedAt)) },
       { path: '/substances/', lastmod: catalogUpdated, hasEn: true },
-      // Указатель веществ по CAS и его буквы со всеми страницами (?page=N — свой canonical, URL-08)
+      // Указатель веществ по CAS и первые страницы его букв. Страницы ?page=N в карту не идут (аудит 11.11.2026):
+      // это служебная пагинация, робот доходит до неё по ссылкам, а сами вещества перечислены в файлах cas-N
       ...(casIndex.total
         ? [
-            { path: '/cas/', lastmod: catalogUpdated, hasEn: true },
-            ...casIndex.letters.flatMap((l) =>
-              Array.from({ length: l.pageCount }, (_, i) => ({
-                path: `/cas/letter/${l.letter}/${i ? `?page=${i + 1}` : ''}`,
-                lastmod: catalogUpdated,
-                hasEn: true,
-              })),
-            ),
+            { path: '/cas/', lastmod: catalogUpdated, hasEn: CAS_EN_INDEXED },
+            ...casIndex.letters.map((l) => ({ path: `/cas/letter/${l.letter}/`, lastmod: catalogUpdated, hasEn: CAS_EN_INDEXED })),
           ]
         : []),
       ...indexableAuthors.map((a) => ({ path: `/authors/${a.slug}/`, lastmod: max(articles.filter((x) => x.authorSlug === a.slug).map((x) => x.updatedAt)) })),
@@ -99,9 +94,9 @@ async function sections(): Promise<Record<string, Entry[]>> {
 const productEntries = async (n: number): Promise<Entry[]> =>
   (await productsPage(n)).items.map((p) => ({ path: `/product/${p.slug}/`, lastmod: p.updatedAt, hasEn: p.hasEn }));
 
-/** Вещества по CAS (/cas/<cas>/): тексты страницы есть на обоих языках */
+/** Вещества по CAS (/cas/<cas>/): английские версии в карту идут только при CAS_EN_INDEXED (lib/seo) */
 const casEntries = async (n: number): Promise<Entry[]> =>
-  (await getCasSitemap(n)).items.map((c) => ({ path: `/cas/${c.cas}/`, lastmod: c.updatedAt, hasEn: true }));
+  (await getCasSitemap(n)).items.map((c) => ({ path: `/cas/${c.cas}/`, lastmod: c.updatedAt, hasEn: CAS_EN_INDEXED }));
 
 /** Файлы карты: ru — как есть, en-* — только переведённые страницы; пустые файлы не выводим */
 function files(name: string, entries: Entry[]): Record<string, { loc: string; lastmod: string }[]> {

@@ -394,6 +394,8 @@
       "inCart": "In quote cart",
       "added": "Added to the quote cart",
       "oneClick": "One-click order",
+      "requestPrice": "Request a price",
+      "call": "Call {phone}",
       "note": "We will send the price and lead time in a quotation within 2 business hours."
     },
     "tabs": {

@@ -8,7 +8,7 @@ import { breadcrumbsLd, JsonLd } from '@/components/seo/JsonLd';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
 import { getCasIndex } from '@/lib/product-api';
-import { pageMetadata, SITE_URL } from '@/lib/seo';
+import { CAS_EN_INDEXED, pageMetadata, SITE_URL } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale }> };
 
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'casIndex' });
   const index = await getCasIndex();
-  return pageMetadata({ locale, path: '/cas/', title: t('meta.title'), description: t('meta.description', { count: index.total }), hasEn: true });
+  return pageMetadata({ locale, path: '/cas/', title: t('meta.title'), description: t('meta.description', { count: index.total }), hasEn: CAS_EN_INDEXED });
 }
 
 /**

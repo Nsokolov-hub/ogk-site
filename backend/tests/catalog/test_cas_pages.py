@@ -6,7 +6,7 @@ from datetime import UTC, datetime
 from sqlalchemy import select
 
 from app.catalog import cas_pages
-from app.catalog.cas_pages import choose, display_name, stand_in
+from app.catalog.cas_pages import choose, display_name, offer_name, stand_in
 from app.catalog.models import Brand, CasPage, Category, Product, ProductCategory
 from app.catalog.settings import set_setting
 
@@ -70,6 +70,18 @@ def add(db, brand: str, number: str, name: str, cas: str | None, path: str = 're
     return product
 
 
+def test_an_offer_on_the_page_is_named_as_the_substance_when_its_own_name_says_nothing():
+    page = '1-Chloro-4-nitrobenzene'
+    assert offer_name('Acros Organics 10963-0010', 'Acros Organics', '109630010', page) == page
+    assert offer_name('Acros Organics 10963-', 'Acros Organics', '10963', page) == page
+    # The source's leftover goes, the grade and purity stay: they tell the offers of the page apart.
+    assert offer_name('1-Chloro-4-nitrobenzene, 98%; .', 'ABCR', 'ab112942', page) == '1-Chloro-4-nitrobenzene, 98%'
+    assert offer_name('Holmium(III) bromide, ultra dry, 99.98% (REO); .', 'ABCR', 'ab1', page) == \
+        'Holmium(III) bromide, ultra dry, 99.98% (REO)'
+    assert offer_name('Benzaldehyde, 2,4-dibromo-', 'ABCR', 'ab2', page) == 'Benzaldehyde, 2,4-dibromo-'
+    assert offer_name('Sodium chloride soln.', 'Merck', '1', page) == 'Sodium chloride soln.'
+
+
 def test_the_build_makes_pages_for_cas_numbers_several_brands_sell(seeded):
     with seeded.begin() as db:
         add(db, 'macklin', 'T-1', '5-TERT-BUTYL-O-ANISIDINE, 97%', ANILINE)
@@ -110,6 +122,11 @@ def test_the_page_its_link_from_the_card_and_the_sitemap(client, seeded):
     data = client.get(f'{URL}/cas/{ANILINE}').json()
     assert data['page']['name'] == '5-tert-Butyl-2-methoxyaniline' and data['page']['offers'] == 3
     assert len(data['items']) == 3 and data['sections'][0]['path'] == 'reagents'
+    # An offer the importer named «<brand> <number>» is listed under the name of the page.
+    with seeded.begin() as db:
+        add(db, 'macklin', 'T-2', 'Macklin T-2', ANILINE)
+    names = {i['catalogNumber']: i['name'] for i in client.get(f'{URL}/cas/{ANILINE}').json()['items']}
+    assert names['T-2'] == '5-tert-Butyl-2-methoxyaniline' and names['A-1'] == '5-tert-Butyl-2-methoxyaniline, 97%'
     assert client.get(f'{URL}/cas/1000-00-1').status_code == 404
     # A substance with its own page sends the storefront there.
     assert client.get(f'{URL}/cas/58-08-2').json()['substance'] == 'caffeine'

@@ -13,7 +13,7 @@ import { Container } from '@/components/ui/Container';
 import { Link, permanentRedirect } from '@/i18n/navigation';
 import { getSiteSettings } from '@/lib/api';
 import { getCasPage } from '@/lib/product-api';
-import { pageMetadata, SITE_URL } from '@/lib/seo';
+import { CAS_EN_INDEXED, pageMetadata, SITE_URL } from '@/lib/seo';
 
 type Props = { params: Promise<{ locale: Locale; cas: string }> };
 
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     path: `/cas/${page.cas}/`,
     title: t('meta.title', { name, cas: page.cas, count: page.offers }),
     description: t('meta.description', { name: ru ? `${ru} (${page.name})` : page.name, cas: page.cas, count: page.offers, brands }),
-    hasEn: true,
+    hasEn: CAS_EN_INDEXED,
   });
 }
 
