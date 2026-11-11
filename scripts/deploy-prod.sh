@@ -8,7 +8,7 @@
 #
 # Шаги: проверки (ветка main, всё закоммичено и запушено) → админка собирается здесь, если менялась → бэкап на
 # сервере → код до origin/main → текущие образы помечаются rollback-<коммит> → сборка api, worker, migrate, web
-# (без --pull) → образ Caddy с новой админкой → compose up → перезагрузка Caddy, если менялся deploy/caddy
+# (без --pull) → образ Caddy с новой админкой → compose up → перезапуск Caddy, если менялся deploy/caddy
 # → проверки (миграции, страницы, админка, CRM) → старые rollback-образы удаляются, кроме трёх последних.
 # Откат печатается в конце.
 set -euo pipefail
@@ -108,12 +108,14 @@ fi
 step "Миграции и перезапуск"
 remote_job up "compose up -d --no-build"
 
-# deploy/caddy is mounted into the running Caddy, so a changed config needs a reload; a new admin image already
-# recreated the container with it. A reload keeps the connections and is refused when the config is invalid.
+# deploy/caddy is mounted into the running Caddy, so a changed config needs a restart (a new admin image already
+# recreated the container with it). The production Caddyfile has `admin off`, so `caddy reload` cannot reach it:
+# validate inside the container first, then restart — the site, the admin panel and the CRM pause for seconds.
 if [[ -z $admin ]] && ! git diff --quiet "$live" "$sha" -- deploy/caddy 2>/dev/null; then
-  step "Конфиг Caddy изменился: проверка и перезагрузка без остановки"
-  remote "compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile 2>&1 | tail -1 && compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile" ||
-    die "Caddy не принял новый конфиг: работает прежний, см. compose exec caddy caddy validate"
+  step "Конфиг Caddy изменился: проверка и перезапуск Caddy (несколько секунд)"
+  remote "compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile 2>&1 | tail -1" |
+    grep -q 'Valid configuration' || die "Caddy не принимает новый конфиг: работает прежний, см. compose exec caddy caddy validate"
+  remote "compose restart caddy 2>&1 | tail -1"
 fi
 
 step "Проверки после выкатки"
