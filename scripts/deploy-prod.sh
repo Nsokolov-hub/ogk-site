@@ -8,8 +8,9 @@
 #
 # Шаги: проверки (ветка main, всё закоммичено и запушено) → админка собирается здесь, если менялась → бэкап на
 # сервере → код до origin/main → текущие образы помечаются rollback-<коммит> → сборка api, worker, migrate, web
-# (без --pull) → образ Caddy с новой админкой → compose up → проверки (миграции, страницы, админка, CRM)
-# → старые rollback-образы удаляются, кроме трёх последних. Откат печатается в конце.
+# (без --pull) → образ Caddy с новой админкой → compose up → перезагрузка Caddy, если менялся deploy/caddy
+# → проверки (миграции, страницы, админка, CRM) → старые rollback-образы удаляются, кроме трёх последних.
+# Откат печатается в конце.
 set -euo pipefail
 
 HOST=${SITE_DEPLOY_HOST:-kpuser@185.237.186.58}
@@ -106,6 +107,14 @@ fi
 
 step "Миграции и перезапуск"
 remote_job up "compose up -d --no-build"
+
+# deploy/caddy is mounted into the running Caddy, so a changed config needs a reload; a new admin image already
+# recreated the container with it. A reload keeps the connections and is refused when the config is invalid.
+if [[ -z $admin ]] && ! git diff --quiet "$live" "$sha" -- deploy/caddy 2>/dev/null; then
+  step "Конфиг Caddy изменился: проверка и перезагрузка без остановки"
+  remote "compose exec -T caddy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile 2>&1 | tail -1 && compose exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile" ||
+    die "Caddy не принял новый конфиг: работает прежний, см. compose exec caddy caddy validate"
+fi
 
 step "Проверки после выкатки"
 remote "compose ps -a migrate --format '{{.State}} {{.ExitCode}}'" | grep -q 'exited 0' || die "миграции не завершились успешно: compose logs migrate"
