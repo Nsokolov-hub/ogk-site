@@ -158,6 +158,8 @@ class CasPageLink(Out):
     cas: str
     name: str
     offers: int
+    # Our own Russian name (setting cas_names_ru), when there is one.
+    nameRu: str | None = None
 
 
 class SuggestResult(Out):

@@ -14,7 +14,7 @@ import { Link } from '@/i18n/navigation';
 import { getCatalogTree, getSiteSettings } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { getBrands } from '@/lib/content-api';
-import { getSubstanceList } from '@/lib/product-api';
+import { casLabel, getSubstanceList } from '@/lib/product-api';
 import { searchCatalog } from '@/lib/search';
 import { serviceMetadata } from '@/lib/seo';
 import { visitorAddress } from '@/lib/visitor';
@@ -83,7 +83,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
       <PageHeader
         breadcrumbs={breadcrumbs}
         title={q ? t('h1Query', { q }) : t('h1')}
-        lead={q ? (noResults ? t('emptyLead') : t('found', { count: result.total })) : t('lead')}
+        lead={q ? (noResults ? (result.casPages?.length ? t('emptyLeadCas') : t('emptyLead')) : t('found', { count: result.total })) : t('lead')}
       />
       <SearchBox key={q} size="lg" place="search_page" defaultValue={q} requestHref="#search-request" className="mt-8 max-w-[880px]" />
       {result.corrected ? (
@@ -97,7 +97,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
             {result.casPages.map((c) => (
               <li key={c.cas}>
                 <Link href={`/cas/${c.cas}/`} className={cn(chip, 'bg-surface-strong text-text hover:text-accent')}>
-                  <span className="chem-wrap">{c.name}</span>
+                  <span className="chem-wrap">{casLabel(c, locale)}</span>
                   <span className="tabular-nums text-text-secondary">CAS {c.cas}</span>
                   <span className="text-text-secondary">{c.offers}</span>
                 </Link>
@@ -227,7 +227,8 @@ export default async function SearchPage({ params, searchParams }: Props) {
         </div>
       ) : null}
 
-      {!q ? (
+      {/* Без запроса и при пустой выдаче — разделы каталога: пустой результат не должен быть тупиком */}
+      {!q || noResults ? (
         <section aria-labelledby="search-sections" className="mt-12">
           <h2 id="search-sections" className="text-h4 font-medium text-text">
             {t('sections')}

@@ -3,7 +3,7 @@ the nightly build and the public API."""
 
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.catalog import cas_pages
 from app.catalog.cas_pages import choose, display_name, offer_name, stand_in
@@ -163,11 +163,70 @@ def test_search_offers_the_substance_page_for_a_cas_or_its_beginning(sessions):
                     CasPage(cas='7664-38-2', name='ortho-Phosphoric acid', offers=122, brands=['Merck'])])
     with sessions() as db:
         assert [row['cas'] for row in cas_pages_for(db, '67-56-1')] == ['67-56-1']
-        assert cas_pages_for(db, '67561') == [{'cas': '67-56-1', 'name': 'Methanol', 'offers': 509}]
+        assert cas_pages_for(db, '67561') == [{'cas': '67-56-1', 'name': 'Methanol', 'offers': 509, 'nameRu': None}]
         # The beginning with its hyphens: «67-5» is not «675-…».
         assert [row['cas'] for row in cas_pages_for(db, '67-5')] == ['67-56-1', '67-52-7']
         assert [row['cas'] for row in cas_pages_for(db, '675-')] == ['675-20-7']
         assert cas_pages_for(db, '7664-35') == [] and cas_pages_for(db, '67') == []
         # The digits of «7664-38» also make the valid CAS 766-43-8: the hyphens typed decide.
         assert [row['cas'] for row in cas_pages_for(db, '7664-38')] == ['7664-38-2']
-        assert cas_pages_for(db, 'methanol') == [] and cas_pages_for(db, '67-56-2') == []
+        assert cas_pages_for(db, '67-56-2') == []
+
+
+def test_search_offers_the_substance_page_for_its_name(sessions):
+    """Audit of 12 November 2026: «натрия хлорид» found nothing although the catalog is full of sodium chloride."""
+    from app.catalog.search import query
+    from app.catalog.search.query import cas_pages_for
+
+    def page(cas: str, name: str, offers: int) -> CasPage:
+        return CasPage(cas=cas, name=name, offers=offers, brands=['Merck'], sort_key=cas_pages.sort_key(name))
+
+    with sessions.begin() as db:
+        db.add_all([page('7647-14-5', 'Sodium chloride', 900), page('7647-15-6', 'Sodium bromide', 300),
+                    page('7732-18-5', 'Water', 700), page('67-63-0', '2-Propanol', 800),
+                    page('7722-84-1', 'Hydrogen peroxide', 150), page('50-00-0', 'Formaldehyde', 60)])
+        set_setting(db, 'cas_names_ru', {'7647-14-5': 'Натрия хлорид', '7647-15-6': 'Натрия бромид',
+                                         '7732-18-5': 'Вода', '67-63-0': 'Изопропиловый спирт (2-пропанол)',
+                                         '7722-84-1': 'Водорода пероксид', '1-11-1': 'Натрия хлорат'})
+    query.reset_directory()
+    with sessions() as db:
+        found = cas_pages_for(db, 'натрия хлорид')
+        assert found == [{'cas': '7647-14-5', 'name': 'Sodium chloride', 'offers': 900, 'nameRu': 'Натрия хлорид'}]
+        # The words in any order and by their beginnings; a name without a page (1-11-1) is not offered.
+        assert [row['cas'] for row in cas_pages_for(db, 'Хлорид натрия')] == ['7647-14-5']
+        assert [row['cas'] for row in cas_pages_for(db, 'натр')] == ['7647-14-5', '7647-15-6']
+        # A name typed whole goes before the names that merely begin so.
+        assert [row['cas'] for row in cas_pages_for(db, 'вода')] == ['7732-18-5']
+        assert [row['cas'] for row in cas_pages_for(db, 'вод')] == ['7732-18-5', '7722-84-1']
+        # Each part of «Изопропиловый спирт (2-пропанол)» is a name of its own.
+        assert [row['cas'] for row in cas_pages_for(db, '2-пропанол')] == ['67-63-0']
+        assert [row['cas'] for row in cas_pages_for(db, 'изопропиловый спирт')] == ['67-63-0']
+        # A Latin name is the beginning of the page's name without locants: «propanol» is 2-Propanol.
+        assert [row['cas'] for row in cas_pages_for(db, 'Sodium')] == ['7647-14-5', '7647-15-6']
+        assert [row['cas'] for row in cas_pages_for(db, 'propanol')] == ['67-63-0']
+        assert cas_pages_for(db, 'во') == [] and cas_pages_for(db, 'кофеин') == [] and cas_pages_for(db, '100%') == []
+
+
+def test_a_product_is_searchable_by_the_russian_name_of_its_substance(seeded):
+    from app.catalog.search import documents
+
+    with seeded.begin() as db:
+        product = add(db, 'macklin', 'S-1', 'Sodium chloride, 99.5%', '7647-14-5')
+        plain = add(db, 'macklin', 'S-2', 'Sodium bromide', '7647-15-6')
+        set_setting(db, 'cas_names_ru', {'7647-14-5': 'Натрия хлорид (поваренная соль)'})
+        docs, _ = documents.build(db, [product, plain], documents.Context(db, hide_controlled=True))
+        names = {doc['catalog_number']: doc['substance_names'] for doc in docs}
+        assert names['S-1'] == ['Натрия хлорид (поваренная соль)', 'Натрия хлорид', 'поваренная соль']
+        assert names['S-2'] == []
+        # A new name sends the products of its CAS number to the search queue.
+        db.execute(update(Product).values(needs_index=False))
+        assert cas_pages.queue_products(db, ['7647-15-6']) == 1
+        assert [p.catalog_number for p in db.scalars(select(Product).where(Product.needs_index.is_(True)))] == ['S-2']
+
+
+def test_russian_names_as_they_may_be_typed():
+    assert cas_pages.name_variants('Изопропиловый спирт (2-пропанол)') == \
+        ['Изопропиловый спирт (2-пропанол)', 'Изопропиловый спирт', '2-пропанол']
+    # Brackets inside a chemical name are the name itself.
+    assert cas_pages.name_variants('Железа(III) хлорид') == ['Железа(III) хлорид']
+    assert cas_pages.name_variants(' Вода ') == ['Вода'] and cas_pages.name_variants(None) == []
