@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none">
+<defs>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2E5C3A" stop-opacity="0.45"/><stop offset="100%" stop-color="#141714" stop-opacity="0"/></radialGradient><radialGradient id="floor" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity="0.85"/><stop offset="60%" stop-color="#000" stop-opacity="0.4"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+<linearGradient id="hdpe" x1="56" y1="0" x2="184" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#9AA19A"/><stop offset="12%" stop-color="#D9DDD8"/><stop offset="34%" stop-color="#F4F5F2"/><stop offset="62%" stop-color="#DADDD8"/><stop offset="88%" stop-color="#AEB4AD"/><stop offset="100%" stop-color="#858C85"/></linearGradient>
+</defs>
+<circle cx="120" cy="140" r="98" fill="url(#glow)"/>
+<ellipse cx="120" cy="238" rx="74" ry="9" fill="url(#floor)"/>
+<path d="M56 112 C56 102, 62 98, 70 96 H170 C178 98, 184 102, 184 112 V220 C184 230, 176 236, 164 236 H76 C64 236, 56 230, 56 220 Z" fill="url(#hdpe)"/>
+<rect x="68" y="88" width="104" height="12" rx="3" fill="url(#hdpe)"/>
+<path d="M68 99 H172" stroke="#7E857E" stroke-opacity="0.6"/>
+<path d="M58 120 H182" stroke="#8A918A" stroke-opacity="0.35"/>
+<path d="M58 222 H182" stroke="#8A918A" stroke-opacity="0.3"/>
+<rect x="64.00" y="133.00" width="112.00" height="86.00" rx="5.00" fill="#000" fill-opacity="0.22"/><rect x="65" y="132" width="110" height="84.0" rx="5.00" fill="#EAE7DF"/><path d="M65 137.00 C65 134.20, 67.20 132, 70.00 132 H170.00 C172.80 132, 175 134.20, 175 137.00 V150.00 H65 Z" fill="#1A1A1A"/>
+</svg>

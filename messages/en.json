@@ -103,6 +103,7 @@
     "anyPackaging": "Any pack size on request",
     "inStock": "In stock",
     "onOrder": "On order",
+    "packIllustration": "Illustration: the manufacturer's packaging may differ",
     "customPackaging": "Custom pack size",
     "addToRfq": "Add to cart",
     "inRfq": "In cart",

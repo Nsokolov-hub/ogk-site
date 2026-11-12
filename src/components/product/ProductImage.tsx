@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
 import { cn } from '@/lib/cn';
+import { packKind } from '@/lib/pack-kind';
 import { VialPlaceholder } from './VialPlaceholder';
 
 /**
- * Изображение товара: фото производителя → 2D-структура → фирменная заглушка-флакон.
+ * Изображение товара: фото производителя → 2D-структура → рисунок тары по разделу и фасовке (lib/pack-kind).
  * Окно превью по эталону: тёмный фон, скругление 16 px, флакон 88 % по центру с отступом сверху 14 px.
  * У флакона свечение нарисовано в самом SVG; фото и структуре даём такое же свечение фоном окна.
  */
@@ -15,13 +17,17 @@ export function ProductImage({
   product,
   sizes,
   priority,
+  note,
   className,
 }: {
   product: ProductPreview;
   sizes: string;
   priority?: boolean;
+  /** Подпись под рисунком тары «упаковка может отличаться» — на странице товара */
+  note?: boolean;
   className?: string;
 }) {
+  const t = useTranslations('product');
   const [failed, setFailed] = useState(false);
   const img = product.image;
 
@@ -51,8 +57,12 @@ export function ProductImage({
             cas={product.cas}
             brand={product.brand.name}
             code={product.catalogNumber}
+            kind={packKind(product)}
             className="h-[88%] w-[88%]"
           />
+          {note ? (
+            <span className="absolute inset-x-4 bottom-3 text-center text-caption text-text-secondary">{t('packIllustration')}</span>
+          ) : null}
         </div>
       )}
     </div>

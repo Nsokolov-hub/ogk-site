@@ -247,7 +247,7 @@ export default async function ProductPage({ params }: Props) {
           <div className="min-w-0">
             {/* Нарисованная заглушка на телефоне меньше фото: она ничего не сообщает, а номер, CAS и кнопки ниже */}
             <div className={cn('relative mx-auto w-full lg:max-w-none', p.image ? 'max-w-[440px]' : 'max-w-[240px] sm:max-w-[440px]')}>
-              <ProductImage product={preview} sizes="(min-width: 1024px) 40vw, 90vw" priority className="w-full rounded-block" />
+              <ProductImage product={preview} sizes="(min-width: 1024px) 40vw, 90vw" priority note className="w-full rounded-block" />
               <AvailabilityBadge availability={p.availability} place="page" />
             </div>
           </div>

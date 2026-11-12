@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none">
+<defs>
+<linearGradient id="shade" x1="78" y1="0" x2="162" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#000" stop-opacity="0.30"/><stop offset="14%" stop-color="#000" stop-opacity="0.05"/><stop offset="35%" stop-color="#FFF" stop-opacity="0.09"/><stop offset="72%" stop-color="#000" stop-opacity="0.08"/><stop offset="90%" stop-color="#000" stop-opacity="0.25"/><stop offset="100%" stop-color="#000" stop-opacity="0.45"/></linearGradient>
+<linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#FFF" stop-opacity="0.24"/><stop offset="100%" stop-color="#FFF" stop-opacity="0"/></linearGradient>
+<linearGradient id="cap" x1="104" y1="0" x2="136" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#122416"/><stop offset="22%" stop-color="#294A30"/><stop offset="45%" stop-color="#355B3D"/><stop offset="75%" stop-color="#1A3220"/><stop offset="100%" stop-color="#0E1C11"/></linearGradient>
+<pattern id="ribs" width="4" height="80" patternUnits="userSpaceOnUse"><rect width="1.5" height="80" fill="#000" fill-opacity="0.22"/><rect x="1.5" width="1.4" height="80" fill="#FFF" fill-opacity="0.06"/></pattern>
+</defs>
+<rect x="78" y="140" width="84" height="64.15" rx="5" fill="url(#shade)"/>
+<path d="M78 112 C78 100, 88 92, 100 86 L102 90 C92 96, 86 104, 86 114 V224 C86 228, 81 229, 79 226 Z" fill="url(#sheen)"/>
+<rect x="156" y="112" width="3.5" height="108" rx="1.75" fill="#FFF" fill-opacity="0.07"/>
+<rect x="104" y="22" width="32" height="36" rx="6" fill="url(#cap)"/><rect x="106" y="24" width="28" height="24" rx="3" fill="url(#ribs)"/><rect x="103" y="52" width="34" height="6" rx="2.5" fill="url(#cap)"/><path d="M104 52 H136" stroke="#0B160D" stroke-width="1"/><path d="M110 23.5 H130" stroke="#FFF" stroke-opacity="0.18" stroke-width="1.2" stroke-linecap="round"/>
+</svg>

@@ -1,4 +1,5 @@
 import { cn } from '@/lib/cn';
+import type { PackKind } from '@/lib/pack-kind';
 
 // Ширина текста в SVG заранее неизвестна (рендер на сервере), поэтому оцениваем её по классам символов.
 // Коэффициенты сняты с Manrope с небольшим запасом; на случай ошибки этикетка ещё и обрезается clipPath.
@@ -98,9 +99,24 @@ const NAME_MIN = 8.5;
 const NAME_WIDTH = 90; // от 71 до штрихкода на 166 с запасом
 const BAR = { x: 166, w: 6, top: 148, bottom: 194 };
 
-/** Неизменные слои банки — два файла на весь сайт: всё, что под текстом этикетки, и всё, что поверх него */
-const BASE = '/images/products/vial-base.svg';
-const TOP = '/images/products/vial-top.svg';
+/**
+ * Тара — по два файла на вид на весь сайт: всё, что под текстом этикетки, и всё, что поверх него. Рамка этикетки
+ * у каждой тары своя (те же числа, что в scripts/draw-packaging.py), с пропорцией эталона 110 × 84: текст ниже
+ * свёрстан в координатах эталона и масштабируется в рамку целиком.
+ */
+const PACKS: Record<PackKind, { base: string; top: string; label: { x: number; y: number; w: number; h: number } }> = {
+  vial: { base: '/images/products/vial-base.svg', top: '/images/products/vial-top.svg', label: LABEL },
+  bottle: pack('bottle', 70, 136, 100),
+  jar: pack('jar', 65, 132, 110),
+  solvent: pack('solvent', 78, 140, 84),
+  tube: pack('tube', 85, 98, 70),
+  box: pack('box', 62, 132, 110),
+};
+
+function pack(kind: PackKind, x: number, y: number, w: number) {
+  const files = `/images/products/pack-${kind}`;
+  return { base: `${files}-base.svg`, top: `${files}-top.svg`, label: { x, y, w, h: Math.round(((w * 84) / 110) * 100) / 100 } };
+}
 
 /**
  * Фирменная заглушка флакона ОГК-ХИМ (ТЗ 5.3): когда нет фото производителя и 2D-структуры.
@@ -118,6 +134,7 @@ export function VialPlaceholder({
   cas,
   brand,
   code,
+  kind = 'vial',
   className,
 }: {
   name: string;
@@ -125,8 +142,11 @@ export function VialPlaceholder({
   brand?: string;
   /** Каталожный номер — из него строится штрихкод */
   code?: string;
+  /** Тара по разделу и фасовке (lib/pack-kind); по умолчанию — банка эталона */
+  kind?: PackKind;
   className?: string;
 }) {
+  const art = PACKS[kind];
   // Длинное слово («Hydrochlorothiazide») не рвём, а уменьшаем шрифт
   const longestWord = Math.max(...name.split(/\s+/).map((w) => textWidth(w, NAME_SIZE, 0, true)));
   const nameSize = longestWord > NAME_WIDTH ? Math.max(NAME_MIN, (NAME_SIZE * NAME_WIDTH) / longestWord) : NAME_SIZE;
@@ -149,8 +169,8 @@ export function VialPlaceholder({
       aria-label={cas ? `${name}, CAS ${cas}` : name}
       className={cn('h-full w-full', className)}
     >
-      <image href={BASE} width="240" height="260" />
-      <svg x={LABEL.x} y={LABEL.y} width={LABEL.w} height={LABEL.h} viewBox={`${LABEL.x} ${LABEL.y} ${LABEL.w} ${LABEL.h}`}>
+      <image href={art.base} width="240" height="260" />
+      <svg x={art.label.x} y={art.label.y} width={art.label.w} height={art.label.h} viewBox={`${LABEL.x} ${LABEL.y} ${LABEL.w} ${LABEL.h}`}>
         {/* Оранжевый бейдж бренда */}
         <rect x="71" y="127.5" width={round(badgeW)} height="11" rx="2" fill="#C86428" />
         <text x="74" y="135.5" fill="#FFFFFF" fontSize={brandLine.size} fontWeight="600" letterSpacing={brandLine.spacing}>
@@ -171,7 +191,7 @@ export function VialPlaceholder({
         {/* Штрихкод справа */}
         <path d={bars} fill="#222222" opacity="0.75" />
       </svg>
-      <image href={TOP} width="240" height="260" />
+      <image href={art.top} width="240" height="260" />
     </svg>
   );
 }

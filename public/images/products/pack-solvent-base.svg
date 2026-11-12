@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none">
+<defs>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2E5C3A" stop-opacity="0.45"/><stop offset="100%" stop-color="#141714" stop-opacity="0"/></radialGradient><radialGradient id="floor" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity="0.85"/><stop offset="60%" stop-color="#000" stop-opacity="0.4"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+<linearGradient id="glass" x1="72" y1="0" x2="168" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1E0901"/><stop offset="18%" stop-color="#5A2006"/><stop offset="38%" stop-color="#8C380F"/><stop offset="65%" stop-color="#4A1804"/><stop offset="88%" stop-color="#2B0D02"/><stop offset="100%" stop-color="#160600"/></linearGradient>
+<linearGradient id="neck" x1="106" y1="0" x2="134" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1E0901"/><stop offset="40%" stop-color="#7A300C"/><stop offset="100%" stop-color="#1A0701"/></linearGradient>
+</defs>
+<circle cx="120" cy="140" r="96" fill="url(#glow)"/>
+<ellipse cx="120" cy="239" rx="60" ry="8" fill="url(#floor)"/>
+<path d="M72 118 C72 96, 92 86, 104 80 C108 78, 109 76, 109 72 V62 H131 V72 C131 76, 132 78, 136 80 C148 86, 168 96, 168 118 V224 C168 232, 162 237, 152 237 H88 C78 237, 72 232, 72 224 Z" fill="url(#glass)"/>
+<rect x="107" y="54" width="26" height="12" rx="2" fill="url(#neck)"/>
+<ellipse cx="120" cy="88" rx="20" ry="3.5" fill="#B84B14" fill-opacity="0.22"/>
+<ellipse cx="120" cy="231" rx="40" ry="4" fill="#B84B14" fill-opacity="0.3"/>
+<path d="M76 226 C92 231, 148 231, 164 226" stroke="#FF8A47" stroke-opacity="0.2" stroke-width="1.5"/>
+<rect x="77.24" y="140.76" width="85.53" height="65.68" rx="3.82" fill="#000" fill-opacity="0.45"/><rect x="78" y="140" width="84" height="64.15" rx="3.82" fill="#EAE7DF"/><path d="M78 143.82 C78 141.68, 79.68 140, 81.82 140 H158.18 C160.32 140, 162 141.68, 162 143.82 V153.75 H78 Z" fill="#1A1A1A"/>
+</svg>

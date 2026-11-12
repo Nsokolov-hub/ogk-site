@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none">
+<defs>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2E5C3A" stop-opacity="0.45"/><stop offset="100%" stop-color="#141714" stop-opacity="0"/></radialGradient><radialGradient id="floor" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity="0.85"/><stop offset="60%" stop-color="#000" stop-opacity="0.4"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+<linearGradient id="glass" x1="64" y1="0" x2="176" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1E0901"/><stop offset="18%" stop-color="#5A2006"/><stop offset="38%" stop-color="#8C380F"/><stop offset="65%" stop-color="#4A1804"/><stop offset="88%" stop-color="#2B0D02"/><stop offset="100%" stop-color="#160600"/></linearGradient>
+<linearGradient id="neck" x1="98" y1="0" x2="142" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1E0901"/><stop offset="40%" stop-color="#7A300C"/><stop offset="100%" stop-color="#1A0701"/></linearGradient>
+</defs>
+<circle cx="120" cy="138" r="96" fill="url(#glow)"/>
+<ellipse cx="120" cy="238" rx="66" ry="9" fill="url(#floor)"/>
+<path d="M64 128 C64 112, 74 104, 92 98 C98 96, 100 94, 100 90 V80 H140 V90 C140 94, 142 96, 148 98 C166 104, 176 112, 176 128 V222 C176 231, 169 236, 158 236 H82 C71 236, 64 231, 64 222 Z" fill="url(#glass)"/>
+<rect x="98" y="72" width="44" height="12" rx="2" fill="url(#neck)"/>
+<path d="M98 76 H142" stroke="#A84B18" stroke-opacity="0.45"/>
+<ellipse cx="120" cy="104" rx="34" ry="5" fill="#B84B14" fill-opacity="0.22"/>
+<ellipse cx="120" cy="229" rx="46" ry="4.5" fill="#B84B14" fill-opacity="0.3"/>
+<path d="M68 224 C88 230, 152 230, 172 224" stroke="#FF8A47" stroke-opacity="0.2" stroke-width="1.5"/>
+<rect x="69.09" y="136.91" width="101.82" height="78.18" rx="4.55" fill="#000" fill-opacity="0.45"/><rect x="70" y="136" width="100" height="76.36" rx="4.55" fill="#EAE7DF"/><path d="M70 140.55 C70 138.00, 72.00 136, 74.55 136 H165.45 C168.00 136, 170 138.00, 170 140.55 V152.36 H70 Z" fill="#1A1A1A"/>
+</svg>

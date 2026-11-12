@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none">
+<defs>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2E5C3A" stop-opacity="0.45"/><stop offset="100%" stop-color="#141714" stop-opacity="0"/></radialGradient><radialGradient id="floor" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity="0.85"/><stop offset="60%" stop-color="#000" stop-opacity="0.4"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+<linearGradient id="pp" x1="82" y1="0" x2="158" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#C9CFC9" stop-opacity="0.55"/><stop offset="18%" stop-color="#EEF1EE" stop-opacity="0.75"/><stop offset="40%" stop-color="#FFFFFF" stop-opacity="0.82"/><stop offset="70%" stop-color="#DCE1DC" stop-opacity="0.7"/><stop offset="100%" stop-color="#9FA69F" stop-opacity="0.6"/></linearGradient><linearGradient id="liquid" x1="0" y1="200" x2="0" y2="236" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#E9D9A6" stop-opacity="0.85"/><stop offset="100%" stop-color="#C9B072" stop-opacity="0.95"/></linearGradient>
+</defs>
+<circle cx="120" cy="140" r="92" fill="url(#glow)"/>
+<ellipse cx="120" cy="240" rx="34" ry="6" fill="url(#floor)"/>
+<path d="M84 84 H156 V176 C156 192, 132 226, 126 234 C123 238, 117 238, 114 234 C108 226, 84 192, 84 176 Z" fill="url(#pp)"/>
+<path d="M98 208 C106 222, 112 230, 114 233 C117 237, 123 237, 126 233 C128 230, 134 222, 142 208 Z" fill="url(#liquid)"/>
+<path d="M98 208 H142" stroke="#FFF" stroke-opacity="0.5"/>
+<rect x="80" y="76" width="80" height="10" rx="2" fill="#E7EBE7" fill-opacity="0.85"/>
+<rect x="84.36" y="98.64" width="71.27" height="54.72" rx="3.18" fill="#000" fill-opacity="0.18"/><rect x="85" y="98" width="70" height="53.45" rx="3.18" fill="#EAE7DF"/><path d="M85 101.18 C85 99.40, 86.40 98, 88.18 98 H151.82 C153.60 98, 155 99.40, 155 101.18 V109.45 H85 Z" fill="#1A1A1A"/>
+</svg>

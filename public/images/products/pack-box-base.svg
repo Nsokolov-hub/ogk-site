@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none">
+<defs>
+<radialGradient id="glow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#2E5C3A" stop-opacity="0.45"/><stop offset="100%" stop-color="#141714" stop-opacity="0"/></radialGradient><radialGradient id="floor" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#000" stop-opacity="0.85"/><stop offset="60%" stop-color="#000" stop-opacity="0.4"/><stop offset="100%" stop-color="#000" stop-opacity="0"/></radialGradient>
+<linearGradient id="front" x1="54" y1="0" x2="178" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D7DAD4"/><stop offset="45%" stop-color="#F1F2EE"/><stop offset="100%" stop-color="#D0D4CD"/></linearGradient><linearGradient id="side" x1="178" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#9DA49C"/><stop offset="100%" stop-color="#7C847C"/></linearGradient><linearGradient id="lid" x1="0" y1="66" x2="0" y2="84" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FAFBF8"/><stop offset="100%" stop-color="#E2E5DF"/></linearGradient><linearGradient id="cap" x1="54" y1="0" x2="178" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#122416"/><stop offset="22%" stop-color="#294A30"/><stop offset="45%" stop-color="#355B3D"/><stop offset="75%" stop-color="#1A3220"/><stop offset="100%" stop-color="#0E1C11"/></linearGradient>
+</defs>
+<circle cx="120" cy="142" r="98" fill="url(#glow)"/>
+<ellipse cx="126" cy="238" rx="82" ry="9" fill="url(#floor)"/>
+<path d="M178 84 L200 70 V220 L178 234 Z" fill="url(#side)"/>
+<path d="M54 84 L76 70 H200 L178 84 Z" fill="url(#lid)"/>
+<rect x="54" y="84" width="124" height="150" fill="url(#front)"/>
+<rect x="54" y="84" width="124" height="30" fill="url(#cap)"/>
+<path d="M178 84 L200 70 V100 L178 114 Z" fill="#132418"/>
+<rect x="54" y="224" width="124" height="10" fill="url(#cap)"/>
+<path d="M178 224 L200 210 V220 L178 234 Z" fill="#132418"/>
+<path d="M64 99 H118" stroke="#FFF" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round"/>
+<path d="M64 106 H96" stroke="#FFF" stroke-opacity="0.2" stroke-width="2" stroke-linecap="round"/>
+<rect x="61.00" y="133.00" width="112.00" height="86.00" rx="5.00" fill="#000" fill-opacity="0.15"/><rect x="62" y="132" width="110" height="84.0" rx="5.00" fill="#EAE7DF"/><path d="M62 137.00 C62 134.20, 64.20 132, 67.00 132 H167.00 C169.80 132, 172 134.20, 172 137.00 V150.00 H62 Z" fill="#1A1A1A"/>
+</svg>

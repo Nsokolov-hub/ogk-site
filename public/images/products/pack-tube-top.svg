@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 260" fill="none">
+<defs>
+<linearGradient id="shade" x1="85" y1="0" x2="155" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#000" stop-opacity="0.18"/><stop offset="14%" stop-color="#000" stop-opacity="0.03"/><stop offset="35%" stop-color="#FFF" stop-opacity="0.05"/><stop offset="72%" stop-color="#000" stop-opacity="0.05"/><stop offset="90%" stop-color="#000" stop-opacity="0.15"/><stop offset="100%" stop-color="#000" stop-opacity="0.27"/></linearGradient>
+<linearGradient id="cap" x1="76" y1="0" x2="164" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#122416"/><stop offset="22%" stop-color="#294A30"/><stop offset="45%" stop-color="#355B3D"/><stop offset="75%" stop-color="#1A3220"/><stop offset="100%" stop-color="#0E1C11"/></linearGradient>
+</defs>
+<rect x="85" y="98" width="70" height="53.45" rx="3.2" fill="url(#shade)"/>
+<rect x="89" y="90" width="6" height="96" rx="3" fill="#FFF" fill-opacity="0.45"/>
+<path d="M89 190 C94 204, 102 216, 110 226" stroke="#FFF" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+<path d="M160 58 H170 C173 58, 174 60, 174 63 V84 C174 87, 172 88, 169 88 H158 V80 H166 V66 H160 Z" fill="#1C3523"/>
+<path d="M166 66 V80" stroke="#000" stroke-opacity="0.35"/>
+<path d="M80 60 H72 C70 60, 69 61, 69 63 V67 C69 69, 70 70, 72 70 H80 Z" fill="#1C3523"/>
+<rect x="78" y="52" width="84" height="26" rx="7" fill="url(#cap)"/>
+<rect x="82" y="44" width="76" height="12" rx="5" fill="url(#cap)"/>
+<path d="M86 45.5 H154" stroke="#FFF" stroke-opacity="0.2" stroke-width="1.2" stroke-linecap="round"/>
+<path d="M78 70 H162" stroke="#0B160D"/>
+<path d="M84 55 H156" stroke="#000" stroke-opacity="0.25"/>
+</svg>
