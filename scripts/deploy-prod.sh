@@ -196,7 +196,8 @@ if ((WATCH > 0)); then
       LC_ALL=C awk '{v[NR] = $1} END {i = int(NR * 0.95); if (i < 1) i = NR; printf "%d", (NR ? v[i] : 0)}')
     report="" failed=""
     for url in "${probes[@]}"; do
-      read -r code took < <(curl -s -o /dev/null -m 20 -w '%{http_code} %{time_total}\n' "$url" || echo "000 20")
+      # -L: страница CAS с карточкой вещества переадресует на /substances/<slug>/ (308) — смотрим итоговый ответ
+      read -r code took < <(curl -sL --max-redirs 3 -o /dev/null -m 20 -w '%{http_code} %{time_total}\n' "$url" || echo "000 20")
       report+=" $code/$(LC_ALL=C printf '%.1f' "$took")с"
       [[ $code == 200 ]] || failed=1
     done
