@@ -775,6 +775,7 @@
     "lead": "Search by name, catalog number or CAS — an exact number match always comes first.",
     "found": "{count, plural, one {# item found} other {# items found}}",
     "emptyLead": "This item isn't on the site — we will source it from manufacturers' catalogs. Leave your contact and we'll reply within 2 business hours.",
+    "emptyLeadCas": "No products with this name, but there is a substance page with every pack size and manufacturer.",
     "substances": "Substances",
     "brands": "Manufacturers",
     "filters": "Result filters",

@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint .",
+    "lint": "eslint . && node scripts/check-client-messages.mjs",
     "typecheck": "tsc --noEmit",
     "api:types": "openapi-typescript backend/openapi.json --output src/types/api-schema.d.ts",
     "api:types:check": "openapi-typescript backend/openapi.json --output src/types/api-schema.d.ts --check",

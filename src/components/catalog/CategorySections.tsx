@@ -10,9 +10,18 @@ import { Link } from '@/i18n/navigation';
 
 /**
  * Блоки под сеткой (ТЗ 5.5): производители → полезная информация → условия поставки → документы → FAQ →
- * внутренние ссылки → форма заявки.
+ * внутренние ссылки → форма заявки. withText = false — страницы 2, 3… раздела: без текста, условий, документов
+ * и вопросов, которые уже есть на первой; производители, вещества и ссылки остаются.
  */
-export async function CategorySections({ data, docs }: { data: CategoryPageData; docs: SiteSettings['docs'] }) {
+export async function CategorySections({
+  data,
+  docs,
+  withText = true,
+}: {
+  data: CategoryPageData;
+  docs: SiteSettings['docs'];
+  withText?: boolean;
+}) {
   const t = await getTranslations('catalog.sections');
   const locale = await getLocale();
   const { content, brands } = data;
@@ -62,7 +71,7 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
         </section>
       ) : null}
 
-      {content.seoText?.length ? (
+      {withText && content.seoText?.length ? (
         <section aria-labelledby="cat-info" className="max-w-[72ch]">
           <h2 id="cat-info" className={h2}>
             {t('info')}
@@ -75,49 +84,51 @@ export async function CategorySections({ data, docs }: { data: CategoryPageData;
         </section>
       ) : null}
 
-      <div className="grid gap-16 lg:grid-cols-2 lg:gap-12">
-        {content.delivery?.length ? (
-          <section aria-labelledby="cat-delivery">
-            <h2 id="cat-delivery" className={h2}>
-              {t('delivery')}
-            </h2>
-            <ul className="mt-6 flex flex-col gap-4">
-              {content.delivery.map((d) => (
-                <li key={d} className="flex gap-3 text-body text-text">
-                  <CircleCheck aria-hidden size={22} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
-                  {d}
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
+      {withText ? (
+        <div className="grid gap-16 lg:grid-cols-2 lg:gap-12">
+          {content.delivery?.length ? (
+            <section aria-labelledby="cat-delivery">
+              <h2 id="cat-delivery" className={h2}>
+                {t('delivery')}
+              </h2>
+              <ul className="mt-6 flex flex-col gap-4">
+                {content.delivery.map((d) => (
+                  <li key={d} className="flex gap-3 text-body text-text">
+                    <CircleCheck aria-hidden size={22} strokeWidth={1.5} className="mt-0.5 shrink-0 text-accent" />
+                    {d}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-        {content.documents?.length ? (
-          <section aria-labelledby="cat-docs">
-            <h2 id="cat-docs" className={h2}>
-              {t('documents')}
-            </h2>
-            <ul className="mt-6 flex flex-col gap-3">
-              {content.documents.map((d) => (
-                <li key={d.href}>
-                  <a
-                    href={d.href}
-                    target="_blank"
-                    rel="noopener"
-                    className="flex items-center gap-3 rounded-field bg-surface px-5 py-4 text-body text-text transition-colors hover:bg-surface-strong hover:text-accent"
-                  >
-                    <FileText aria-hidden size={22} strokeWidth={1.5} className="shrink-0 text-accent" />
-                    {d.title}
-                    <span className="sr-only"> {t('newTab')}</span>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
-      </div>
+          {content.documents?.length ? (
+            <section aria-labelledby="cat-docs">
+              <h2 id="cat-docs" className={h2}>
+                {t('documents')}
+              </h2>
+              <ul className="mt-6 flex flex-col gap-3">
+                {content.documents.map((d) => (
+                  <li key={d.href}>
+                    <a
+                      href={d.href}
+                      target="_blank"
+                      rel="noopener"
+                      className="flex items-center gap-3 rounded-field bg-surface px-5 py-4 text-body text-text transition-colors hover:bg-surface-strong hover:text-accent"
+                    >
+                      <FileText aria-hidden size={22} strokeWidth={1.5} className="shrink-0 text-accent" />
+                      {d.title}
+                      <span className="sr-only"> {t('newTab')}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+      ) : null}
 
-      {content.faq?.length ? (
+      {withText && content.faq?.length ? (
         <section aria-labelledby="cat-faq" className="max-w-[960px]">
           <h2 id="cat-faq" className={h2}>
             {t('faq')}

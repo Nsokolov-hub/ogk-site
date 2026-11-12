@@ -84,7 +84,9 @@ export default async function CatalogPage({ params, searchParams }: Props) {
   // Ключ выборки: при смене фильтров, сортировки или страницы клиентские блоки начинают с чистого состояния
   const queryKey = catalogHref('', query) || 'all';
   const ld: Record<string, unknown>[] = [breadcrumbsLd(data.breadcrumbs, settings.siteUrl, locale, data.href)];
-  if (data.content.faq?.length) ld.push(faqLd(data.content.faq));
+  // Тексты раздела и вопросы — только на первой странице (аудит 12.11.2026): страницы 2, 3… повторяли их целиком
+  const firstPage = query.page <= 1;
+  if (firstPage && data.content.faq?.length) ld.push(faqLd(data.content.faq));
 
   return (
     <>
@@ -169,7 +171,7 @@ export default async function CatalogPage({ params, searchParams }: Props) {
           </div>
         </div>
 
-        <CategorySections data={data} docs={settings.docs} />
+        <CategorySections data={data} docs={settings.docs} withText={firstPage} />
       </Container>
     </>
   );
