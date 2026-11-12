@@ -23,6 +23,7 @@ from app.core.db import SessionLocal
 from app.core.errors import DomainError
 from app.core.logs import configure_logging, event
 from app.core.monitoring import check_parts, init_sentry
+from app.core.overload import LoadShedding
 from app.crm.analytics import router as crm_analytics_router
 from app.crm.events import router as crm_events_router
 from app.requests.routes import router as requests_router
@@ -48,6 +49,12 @@ def error_body(request: Request, code: str, message: str, field: str | None = No
     return body
 
 
+# Added before the context middleware, so it runs inside it: refused requests are logged as http_request with 503.
+app.add_middleware(LoadShedding, limits={'/api/v1/public/': settings.api_public_concurrency,
+                                         '': settings.api_other_concurrency},
+                   queue=settings.api_queue_limit, wait=settings.api_queue_wait_seconds)
+
+
 @app.middleware('http')
 async def context(request: Request, call_next):
     request_id = request.headers.get('X-Request-ID', '')
@@ -61,7 +68,7 @@ async def context(request: Request, call_next):
         logger.exception(f'{{"event": "unhandled_error", "requestId": "{request_id}"}}')
         response = JSONResponse(error_body(request, 'INTERNAL_ERROR', 'Что-то пошло не так. Повторите позже или '
                                            'позвоните нам: +7 495 234 28 63'), status_code=500)
-    route = getattr(request.scope.get('route'), 'path', 'unmatched')
+    route = getattr(request.scope.get('route'), 'path', 'overloaded' if request.scope.get('overloaded') else 'unmatched')
     response.headers.update({'X-Request-ID': request_id, 'X-Content-Type-Options': 'nosniff',
                              'Referrer-Policy': 'same-origin'})
     # Catalog answers set their own caching; everything else (forms, the cart, errors) is never cached.

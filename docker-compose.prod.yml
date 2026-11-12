@@ -107,6 +107,12 @@ services:
     ports: !reset []
     environment:
       ENVIRONMENT: ${SITE_ENV}
+    # Incident of 12.11.2026: hundreds of queued requests hit the default 1024 open files («Too many open files»).
+    # The API now refuses what it cannot take (app.core.overload); the limit stays as a reserve.
+    ulimits: &nofile
+      nofile:
+        soft: 65536
+        hard: 65536
     restart: unless-stopped
     logging: *logging
 
@@ -124,6 +130,7 @@ services:
       YM_COUNTER_ID: ${YM_COUNTER_ID:-}
       GA_MEASUREMENT_ID: ${GA_MEASUREMENT_ID:-}
       SENTRY_DSN: ${WEB_SENTRY_DSN:-}
+    ulimits: *nofile
     restart: unless-stopped
     logging: *logging
 

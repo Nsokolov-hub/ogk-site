@@ -8,6 +8,18 @@ class Settings(BaseSettings):
 
     environment: str = 'development'
     database_url: str = 'postgresql+psycopg://site:site@127.0.0.1:54330/site'
+    # Connections of one process (PostgreSQL only) and how long a request waits for one.
+    db_pool_size: int = 10
+    db_max_overflow: int = 10
+    db_pool_timeout_seconds: float = 10.0
+    # Overload protection (app.core.overload, incident of 12.11.2026): requests the API runs at once — the storefront
+    # (/api/v1/public/) and the rest (admin panel, CRM, /ready). Together no more than the connections above, or
+    # threads and connections lock each other. Beyond that a request waits API_QUEUE_WAIT_SECONDS at most, up to
+    # API_QUEUE_LIMIT of them per group, then gets 503 with Retry-After.
+    api_public_concurrency: int = 12
+    api_other_concurrency: int = 6
+    api_queue_limit: int = 100
+    api_queue_wait_seconds: float = 5.0
     site_url: str = 'https://www.ogk-chem.ru'
     # Private storage of customer attachments until they are delivered to the CRM.
     storage_dir: Path = Path('.runtime/files')

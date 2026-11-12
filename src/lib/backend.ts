@@ -43,32 +43,63 @@ export interface ApiOptions {
   visitor?: string | null;
 }
 
-export async function api<T>(path: string, params?: Record<string, Param>, options: ApiOptions = {}): Promise<T> {
-  const { tags, method = 'GET', body, signal, visitor } = options;
-  const revalidate = visitor ? false : (options.revalidate ?? 300);
-  const headers: Record<string, string> = {};
-  if (body !== undefined) headers['Content-Type'] = 'application/json';
-  if (typeof window === 'undefined') {
-    if (visitor) headers['X-Forwarded-For'] = visitor;
-    else if (process.env.REVALIDATE_SECRET) headers['X-Site-Token'] = process.env.REVALIDATE_SECRET;
-  }
-  const init: RequestInit & { next?: { revalidate?: number | false; tags?: string[] } } = {
-    method,
-    signal,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-    credentials: 'same-origin',
-  };
-  if (typeof window === 'undefined') {
-    if (method === 'GET' && revalidate !== false) init.next = { revalidate, tags };
-    else init.cache = 'no-store';
-  }
-  const response = await fetch(apiUrl(path, params), init);
+/**
+ * Сколько сервер витрины ждёт ответа API (сбой 12.11.2026: без предела рендер ждал минутами, а API копил очередь
+ * из сотен запросов). API под нагрузкой сам отвечает 503 через несколько секунд, так что предел — с запасом.
+ */
+const SERVER_TIMEOUT_MS = Number(process.env.API_TIMEOUT_MS) || 15_000;
+
+/**
+ * Одинаковые запросы разных посетителей, которые идут в API одновременно, — один запрос (сбой 12.11.2026). Кэш Next
+ * не помогает, пока он пуст — после выкатки или когда API ошибается: тогда десятки рендеров разом спрашивали шапку,
+ * меню и дерево каталога. Только сервер и только общие, кэшируемые GET-запросы.
+ */
+const inFlight = new Map<string, Promise<unknown>>();
+
+type FetchInit = RequestInit & { next?: { revalidate?: number | false; tags?: string[] } };
+
+async function request<T>(url: string, init: FetchInit): Promise<T> {
+  const response = await fetch(url, init);
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
     throw new ApiError(response.status, typeof data.code === 'string' ? data.code : `HTTP_${response.status}`);
   }
   return (await response.json()) as T;
+}
+
+export async function api<T>(path: string, params?: Record<string, Param>, options: ApiOptions = {}): Promise<T> {
+  const { tags, method = 'GET', body, signal, visitor } = options;
+  const revalidate = visitor ? false : (options.revalidate ?? 300);
+  const onServer = typeof window === 'undefined';
+  const headers: Record<string, string> = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (onServer) {
+    if (visitor) headers['X-Forwarded-For'] = visitor;
+    else if (process.env.REVALIDATE_SECRET) headers['X-Site-Token'] = process.env.REVALIDATE_SECRET;
+  }
+  const timeout = onServer ? AbortSignal.timeout(SERVER_TIMEOUT_MS) : undefined;
+  const init: FetchInit = {
+    method,
+    signal: signal && timeout ? AbortSignal.any([signal, timeout]) : (signal ?? timeout),
+    headers,
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+    credentials: 'same-origin',
+  };
+  const cached = onServer && method === 'GET' && revalidate !== false;
+  if (onServer) {
+    if (cached) init.next = { revalidate, tags };
+    else init.cache = 'no-store';
+  }
+  // Запрос со своим signal может отменить только его вызывающий — его не делим
+  const shared = cached && !signal;
+  const url = apiUrl(path, params);
+  if (!shared) return request<T>(url, init);
+  const key = `${url} ${revalidate} ${tags?.join(',') ?? ''}`;
+  const running = inFlight.get(key) as Promise<T> | undefined;
+  if (running) return running;
+  const started = request<T>(url, init).finally(() => inFlight.delete(key));
+  inFlight.set(key, started);
+  return started;
 }
 
 /** То же, но 404 — это null (страница не найдена) */

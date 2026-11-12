@@ -5,12 +5,14 @@
 #   ./scripts/deploy-prod.sh           выкатить origin/main на прод
 #   ./scripts/deploy-prod.sh --admin   пересобрать админку, даже если admin/ не менялась
 #   ./scripts/deploy-prod.sh --check   только проверить: что на проде, что уйдёт, есть ли связь
+#   SITE_DEPLOY_WATCH=300 ./scripts/deploy-prod.sh   наблюдать после выкатки 300 с (по умолчанию 180, 0 — не наблюдать)
 #
 # Шаги: проверки (ветка main, всё закоммичено и запушено) → админка собирается здесь, если менялась → бэкап на
 # сервере → код до origin/main → текущие образы помечаются rollback-<коммит> → сборка api, worker, migrate, web
-# (без --pull) → образ Caddy с новой админкой → compose up → перезапуск Caddy, если менялся deploy/caddy
-# → проверки (миграции, страницы, админка, CRM) → старые rollback-образы удаляются, кроме трёх последних.
-# Откат печатается в конце.
+# (без --pull) → образ Caddy с новой админкой → пауза, пока сервер остынет после сборки → compose up → перезапуск
+# Caddy, если менялся deploy/caddy → проверки (миграции, страницы, админка, CRM) → наблюдение: ошибки API на живом
+# трафике и время ответа страниц; при сбое — автоматический откат на прежние образы → старые rollback-образы
+# удаляются, кроме трёх последних. Откат печатается в конце.
 set -euo pipefail
 
 HOST=${SITE_DEPLOY_HOST:-kpuser@185.237.186.58}
@@ -20,6 +22,7 @@ SITE_URL=${SITE_DEPLOY_URL:-https://www.ogk-chem.ru}
 ADMIN_URL=${SITE_DEPLOY_ADMIN_URL:-https://admin.ogk-chem.ru}
 CRM_URL=${SITE_DEPLOY_CRM_URL:-https://crm.ogk-chem.ru}
 SERVICES=(api worker migrate web)
+WATCH=${SITE_DEPLOY_WATCH:-180}
 SSH=(ssh -i "$KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ServerAliveInterval=10 "$HOST")
 
 step() { printf '\n== %s\n' "$*"; }
@@ -105,7 +108,19 @@ if [[ -n $admin ]]; then
   remote_job caddy "docker build -q -t ogk-site-caddy:local $tmp && rm -rf $tmp"
 fi
 
+# Сборка занимает все ядра сервера, а сайт в это время работает. Новые контейнеры стартуют с пустыми кэшами, и первая
+# волна запросов на нагруженный сервер — то, с чего начался сбой 12.11.2026. Ждём, пока нагрузка спадёт, до 3 минут.
+step "Пауза: нагрузка сервера после сборки"
+for _ in $(seq 1 18); do
+  read -r load cores < <(remote 'echo "$(cut -d" " -f1 /proc/loadavg) $(nproc)"')
+  LC_ALL=C awk -v l="$load" -v c="$cores" 'BEGIN { exit !(l < c) }' && break
+  echo "  нагрузка $load на $cores ядра — ждём"
+  sleep 10
+done
+echo "  нагрузка $load на $cores ядра"
+
 step "Миграции и перезапуск"
+up_at=$(remote "date -u +%Y-%m-%dT%H:%M:%SZ")
 remote_job up "compose up -d --no-build"
 
 # deploy/caddy is mounted into the running Caddy, so a changed config needs a restart (a new admin image already
@@ -138,6 +153,63 @@ if [[ -n $admin_bundle ]]; then
   echo "админка: $admin_bundle"
 fi
 remote "compose ps --format '{{.Name}} {{.Status}}'" | sed 's/^/  /'
+
+# Откат на образы rollback-$live, когда наблюдение увидело сбой. С миграциями базы — только вручную: прежний код на
+# новой схеме может не заработать, а откат миграции требует решения.
+rollback() {
+  step "АВТОМАТИЧЕСКИЙ ОТКАТ на $live: $1"
+  [[ -z $migrations ]] || die "в выкатке есть миграции базы — автоматически не откатываю, на проде остаётся $sha. Откатите миграцию, затем образы: for s in ${SERVICES[*]}; do docker tag ogk-site-\$s:rollback-$live ogk-site-\$s:latest; done; compose up -d --no-build"
+  remote "for s in ${SERVICES[*]}; do docker tag ogk-site-\$s:rollback-$live ogk-site-\$s:latest; done; docker tag ogk-site-caddy:rollback-$live ogk-site-caddy:local"
+  remote_job rollback "compose up -d --no-build"
+  # The checkout follows what runs, so --check and the next deploy see $live; the next deploy fast-forwards again.
+  remote "git reset -q --keep $live && git log --oneline -1 || echo 'код на сервере остался на $sha'" || true
+  if ! git diff --quiet "$live" "$sha" -- deploy/caddy 2>/dev/null; then
+    remote "compose restart caddy 2>&1 | tail -1" || true
+  fi
+  for _ in $(seq 1 30); do
+    code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "$SITE_URL/" || true)
+    [[ $code == 200 ]] && break
+    sleep 5
+  done
+  remote "compose ps --format '{{.Name}} {{.Status}}'" | sed 's/^/  /'
+  die "выкатка $sha не прошла наблюдение ($1), на проде снова $live (сайт отвечает $code). Журнал API: compose logs --since $up_at api"
+}
+
+# Наблюдение на живом трафике: доля ответов API 5xx (в том числе 503 защиты от перегрузки) и время ответа страниц —
+# главной, каталога, карточки товара и страницы вещества. Сбой — откат.
+if ((WATCH > 0)); then
+  step "Наблюдение ${WATCH} с: ошибки API и время ответа страниц, при сбое — автоматический откат"
+  sample=$(curl -s -m 10 "$SITE_URL/api/v1/public/catalog/popular?limit=1&lang=ru&sort=popular" |
+    python3 -c 'import json, sys; i = json.load(sys.stdin)["items"][0]; print(i["slug"], i.get("cas") or "")' 2>/dev/null || true)
+  read -r product cas <<<"$sample"
+  probes=("$SITE_URL/" "$SITE_URL/catalog/")
+  [[ -z ${product:-} ]] || probes+=("$SITE_URL/product/$product/")
+  [[ -z ${cas:-} ]] || probes+=("$SITE_URL/cas/$cas/")
+  started=$SECONDS bad_rounds=0
+  while ((SECONDS - started < WATCH)); do
+    sleep 15
+    lines=$(remote "compose logs --no-log-prefix --since $up_at api 2>/dev/null | grep -F '\"event\": \"http_request\"' | grep -vF '\"route\": \"/ready\"'" || true)
+    total=$(grep -c . <<<"$lines" || true)
+    errors=$(grep -cE '"status": 5[0-9]{2}' <<<"$lines" || true)
+    shed=$(grep -cF '"route": "overloaded"' <<<"$lines" || true)
+    p95=$(grep -oE '"duration_ms": [0-9.]+' <<<"$lines" | awk '{print $2}' | LC_ALL=C sort -n |
+      LC_ALL=C awk '{v[NR] = $1} END {i = int(NR * 0.95); if (i < 1) i = NR; printf "%d", (NR ? v[i] : 0)}')
+    report="" failed=""
+    for url in "${probes[@]}"; do
+      read -r code took < <(curl -s -o /dev/null -m 20 -w '%{http_code} %{time_total}\n' "$url" || echo "000 20")
+      report+=" $code/$(LC_ALL=C printf '%.1f' "$took")с"
+      [[ $code == 200 ]] || failed=1
+    done
+    printf '  %3d с · API: %d запросов, 5xx %d (из них отказов перегрузки %d), p95 %d мс · страницы:%s\n' \
+      $((SECONDS - started)) "$total" "$errors" "$shed" "$p95" "$report"
+    if ((errors >= 20 && errors * 100 >= total * 5)); then
+      rollback "API: $errors ответов 5xx из $total"
+    fi
+    if [[ -n $failed ]]; then bad_rounds=$((bad_rounds + 1)); else bad_rounds=0; fi
+    ((bad_rounds < 3)) || rollback "страницы сайта не отвечают 200 три проверки подряд"
+  done
+  echo "Наблюдение пройдено."
+fi
 
 step "Уборка старых образов отката (остаются три последних)"
 remote "for repo in ${SERVICES[*]/#/ogk-site-} ogk-site-caddy; do docker images \$repo --format '{{.CreatedAt}}|{{.Tag}}' | grep '|rollback-' | sort -r | tail -n +4 | cut -d'|' -f2 | while read -r tag; do docker rmi -f \$repo:\$tag >/dev/null; done; done; docker image prune -f >/dev/null; df -h / | tail -1"

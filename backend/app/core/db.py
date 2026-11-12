@@ -30,8 +30,13 @@ class Entity(Base):
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
 
 
-engine = create_engine(settings.database_url, pool_pre_ping=True, connect_args=(
-    {'options': '-c timezone=UTC'} if settings.database_url.startswith('postgresql') else {}))
+_postgres = settings.database_url.startswith('postgresql')
+# The pool is sized together with the API's overload protection (app.core.overload): no more requests at a time than
+# connections. A request that still has to wait fails in seconds, not after half a minute.
+engine = create_engine(settings.database_url, pool_pre_ping=True,
+                       connect_args={'options': '-c timezone=UTC'} if _postgres else {},
+                       **({'pool_size': settings.db_pool_size, 'max_overflow': settings.db_max_overflow,
+                           'pool_timeout': settings.db_pool_timeout_seconds} if _postgres else {}))
 SessionLocal = sessionmaker(engine, expire_on_commit=False)
 
 
