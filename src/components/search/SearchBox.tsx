@@ -188,7 +188,7 @@ export function SearchBox({
                   casPages.map((g) => (
                     <li key={g.cas}>
                       <Link data-suggest href={`/cas/${g.cas}/`} onClick={() => setOpen(false)} className={groupLink}>
-                        <span className="chem-wrap">{locale === 'ru' && g.nameRu ? `${g.nameRu} (${g.name})` : g.name}</span>
+                        <span className="chem-wrap">{g.name}</span>
                         <span className="tabular-nums text-text-secondary">
                           {' '}
                           · CAS <Highlight text={g.cas} query={hl} /> · {t('groups.casOffers', { n: g.offers })}

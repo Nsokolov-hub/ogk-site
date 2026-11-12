@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, delete, func, select, update
+from sqlalchemy import and_, delete, func, select
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.catalog.controlled import DESCRIPTORS, QUANTITY, _descriptive, _untruncated, core_name
@@ -321,30 +321,6 @@ def due(db: Session, now: datetime | None = None) -> bool:
 # ── Russian names (03.11.2026) ──
 # Our own translations of the substances' names, by CAS number (setting cas_names_ru): never the price list's
 # source names, which stay internal (NFR-09).
-
-def name_variants(name: str | None) -> list[str]:
-    """How a Russian name may be typed in the search: «Изопропиловый спирт (2-пропанол)» is the whole name and each
-    of its two parts. Brackets inside a chemical name («Железа(III) хлорид») are part of the name and stay."""
-    value = (name or '').strip()
-    if not value:
-        return []
-    out = [value]
-    match = re.fullmatch(r'(.+?)\s+\(([^()]+)\)', value)
-    if match:
-        out += [match.group(1).strip(), match.group(2).strip()]
-    return out
-
-
-def queue_products(db: Session, numbers: list[str]) -> int:
-    """The products of these CAS numbers go to the search queue: their documents carry the substance's Russian name
-    (app.catalog.search.documents), so a new or changed name is searchable once the worker has sent them."""
-    total = 0
-    for start in range(0, len(numbers), 1000):
-        result = db.execute(update(Product).where(Product.cas.in_(numbers[start:start + 1000]))
-                            .values(needs_index=True))
-        total += int(getattr(result, 'rowcount', 0) or 0)
-    return total
-
 
 def ru_name(db: Session, cas: str) -> str | None:
     return (get_setting(db, 'cas_names_ru') or {}).get(cas) or None

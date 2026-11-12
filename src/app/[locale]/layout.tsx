@@ -4,8 +4,7 @@ import { Manrope } from 'next/font/google';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
-import { clientMessages } from '@/i18n/client-messages';
+import { setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
 import { Counters } from '@/components/analytics/Counters';
 import { CaptchaHost } from '@/components/forms/CaptchaHost';
@@ -30,16 +29,7 @@ const manrope = Manrope({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://www.ogk-chem.ru'),
-  // favicon.ico — для поиска Яндекса и старых браузеров, которые берут значок только по этому адресу; SVG — для
-  // остальных; apple-touch-icon и манифест — для закладок и экрана телефона (аудит 12.11.2026: отдавали 404)
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: '48x48' },
-      { url: '/images/brand/favicon.svg', type: 'image/svg+xml' },
-    ],
-    apple: '/apple-touch-icon.png',
-  },
-  manifest: '/manifest.webmanifest',
+  icons: { icon: '/images/brand/favicon.svg' },
 };
 
 export const viewport: Viewport = {
@@ -60,12 +50,11 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const [settings, tree, requestHeaders, site, messages] = await Promise.all([
+  const [settings, tree, requestHeaders, site] = await Promise.all([
     getSiteSettings(locale),
     getCatalogTree(locale),
     headers(),
     getSite(),
-    getMessages(),
   ]);
   const menu = await siteMenu(locale, tree);
   // Номера счётчиков (ТЗ 15.1): из настроек админки, иначе из окружения сервера — у стейджа и продакшена свои
@@ -78,8 +67,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   return (
     <html lang={locale} className={manrope.variable}>
       <body>
-        {/* В браузер — только разделы словаря, которые читают клиентские компоненты (i18n/client-messages) */}
-        <NextIntlClientProvider messages={clientMessages(messages)}>
+        <NextIntlClientProvider>
           <Providers />
           <SkipLink />
           <Header settings={settings} menu={menu} />

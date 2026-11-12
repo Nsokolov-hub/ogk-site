@@ -2160,17 +2160,6 @@
           "offers": {
             "type": "integer",
             "title": "Offers"
-          },
-          "nameRu": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Nameru"
           }
         },
         "type": "object",

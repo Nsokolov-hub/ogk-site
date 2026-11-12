@@ -13,7 +13,7 @@
     python -m app.catalog.cli misses [--days 30]           — top queries without results (SRCH-12)
     python -m app.catalog.cli setting KEY [JSON]           — read or change a catalog setting
     python -m app.catalog.cli indexnow-sitemap             — queue every Russian address of the Sitemap for IndexNow
-    python -m app.catalog.cli cas-names FILE.json [--replace] [--reindex] — Russian names of CAS pages ({cas: name})
+    python -m app.catalog.cli cas-names FILE.json [--replace] — Russian names of CAS pages ({cas: name})
     python -m app.catalog.cli index-pilot --brands a,b [--limit N] [--undo] — open cards of these brands for indexing
 """
 
@@ -204,20 +204,11 @@ def _cas_names(args: argparse.Namespace) -> None:
     if not isinstance(names, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in names.items()):
         raise SystemExit('Нужен JSON-объект {"CAS": "Русское название"}')
     clean = {cas.strip(): name.strip() for cas, name in names.items() if cas.strip() and name.strip()}
-    from app.catalog import cas_pages
-    from app.catalog.search import query
-
     with SessionLocal.begin() as db:
-        before = dict(get_setting(db, 'cas_names_ru') or {})
-        current = {} if args.replace else dict(before)
+        current = {} if args.replace else dict(get_setting(db, 'cas_names_ru') or {})
         current.update(clean)
         set_setting(db, 'cas_names_ru', current)
-        # The search finds a product by the Russian name of its substance: products whose name is new or changed
-        # (with --reindex — of every named substance) go to the queue, the worker sends them to the index.
-        changed = sorted(cas for cas in {*before, *current} if before.get(cas) != current.get(cas))
-        queued = cas_pages.queue_products(db, sorted(current) if args.reindex else changed)
-    query.reset_directory()
-    print(f'Русских названий: {len(current)} (из файла {len(clean)}); в очередь поиска: {queued} товаров.')
+    print(f'Русских названий: {len(current)} (из файла {len(clean)}).')
     _refresh_storefront()
 
 
@@ -309,7 +300,6 @@ def main() -> None:
     command = commands.add_parser('cas-names', help='русские названия страниц CAS из JSON {cas: название}')
     command.add_argument('file')
     command.add_argument('--replace', action='store_true', help='заменить все, а не дополнить')
-    command.add_argument('--reindex', action='store_true', help='переиндексировать товары всех названных веществ')
     command = commands.add_parser('competitors', help='наличие на складах Химмеда и Скайклада')
     command.add_argument('--now', action='store_true', help='не ждать срока, проверить сейчас')
     command.add_argument('--status', action='store_true', help='только показать последнюю проверку')

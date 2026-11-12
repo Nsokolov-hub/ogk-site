@@ -37,8 +37,6 @@ export interface CasPageLink {
   cas: string;
   name: string;
   offers: number;
-  /** Наше русское название вещества, если оно есть: по нему страницу находят и в русском поиске */
-  nameRu?: string | null;
 }
 
 export const SUGGEST_MIN = 2;

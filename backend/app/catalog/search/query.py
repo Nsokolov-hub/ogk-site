@@ -16,7 +16,6 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.catalog.cas_pages import name_variants
 from app.catalog.models import Brand, CasPage, Category, Packaging, SearchMiss, Substance
 from app.catalog.normalize import (
     cas_check_ok,
@@ -31,7 +30,6 @@ from app.catalog.normalize import (
 )
 from app.catalog.search.documents import FACET_FIELDS, NUMBER_FIELDS
 from app.catalog.search.engine import Query, Result, SearchEngine, any_of, quote
-from app.catalog.settings import get_setting
 from app.core.config import settings
 from app.core.db import utcnow
 
@@ -203,9 +201,6 @@ def _directory(db: Session) -> dict[str, Any]:
                         db.scalars(select(Category).order_by(Category.position))],
             brands=[(b.slug, b.name) for b in db.scalars(select(Brand).where(Brand.page_published.is_(True),
                                                                              Brand.merged_into_id.is_(None)))],
-            # Russian names of the CAS pages, as they may be typed (setting cas_names_ru).
-            cas_names=[(cas, [v.casefold() for v in name_variants(name)])
-                       for cas, name in (get_setting(db, 'cas_names_ru') or {}).items()],
         )
     return _DIRECTORY
 
@@ -253,51 +248,13 @@ def cas_pages_for(db: Session, query: str, limit: int = 3) -> list[dict[str, Any
     full = (parse_cas(value)[0] if re.fullmatch(r'\d{5,10}', value)
             else value if re.fullmatch(r'\d{2,7}-\d{2}-\d', value) and cas_check_ok(value) else None)
     fragment = cas_fragment(query)
-    names = get_setting(db, 'cas_names_ru') or {}
-
-    def ref(row: CasPage) -> dict[str, Any]:
-        return {'cas': row.cas, 'name': row.name, 'offers': row.offers, 'nameRu': names.get(row.cas) or None}
-
     if full:
         stmt = select(CasPage).where(CasPage.cas == full)
     elif fragment and len(re.sub(r'\D', '', fragment)) >= 3:
         stmt = select(CasPage).where(CasPage.cas.like(fragment + '%')).order_by(CasPage.offers.desc(), CasPage.cas)
     else:
-        return [ref(row) for row in _cas_pages_by_name(db, value, limit)]
-    return [ref(row) for row in db.scalars(stmt.limit(limit))]
-
-
-NAME_MIN = 3
-WORDS = re.compile(r'[\s,;()\[\]/«»"]+')
-
-
-def _cas_pages_by_name(db: Session, query: str, limit: int) -> list[CasPage]:
-    """Substance pages for a name (audit of 12.11.2026). A Russian name is looked up in our translations: every
-    word of the query begins a word of the name, so «хлорид натрия» finds «Натрия хлорид»; a name typed whole goes
-    first, then the pages with the most offers. A Latin name is the beginning of the page's name as the index
-    /cas/ sorts it («sodium chl» → Sodium chloride)."""
-    q = ' '.join(query.casefold().split())
-    if len(q) < NAME_MIN:
         return []
-    if re.search(r'[а-яё]', q):
-        words = [w for w in WORDS.split(q) if w]
-        exact: list[str] = []
-        partial: list[str] = []
-        for cas, variants in _directory(db)['cas_names']:
-            if q in variants:
-                exact.append(cas)
-            elif words and any(all(any(part.startswith(w) for part in WORDS.split(v) if part) for w in words)
-                               for v in variants):
-                partial.append(cas)
-        found = {row.cas: row for row in db.scalars(select(CasPage).where(CasPage.cas.in_([*exact, *partial][:500])))}
-        rows = sorted((found[cas] for cas in exact if cas in found), key=lambda r: (-r.offers, r.cas))
-        rows += sorted((found[cas] for cas in partial if cas in found), key=lambda r: (-r.offers, r.cas))
-        return rows[:limit]
-    if not re.search(r'[a-z]{3}', q):
-        return []
-    pattern = q.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_') + '%'
-    return list(db.scalars(select(CasPage).where(CasPage.sort_key.like(pattern, escape='\\'))
-                           .order_by(CasPage.offers.desc(), CasPage.cas).limit(limit)))
+    return [{'cas': row.cas, 'name': row.name, 'offers': row.offers} for row in db.scalars(stmt.limit(limit))]
 
 
 def suggest(db: Session, engine: SearchEngine, query: str, lang: str, limit: int = SUGGEST_LIMIT) -> dict[str, Any]:

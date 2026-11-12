@@ -765,8 +765,6 @@ export interface components {
             name: string;
             /** Offers */
             offers: number;
-            /** Nameru */
-            nameRu?: string | null;
         };
         /** CasPageOut */
         CasPageOut: {

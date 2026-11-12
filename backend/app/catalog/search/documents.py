@@ -11,7 +11,6 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.catalog.cas_pages import name_variants
 from app.catalog.models import (
     Brand,
     BrandAlias,
@@ -23,7 +22,6 @@ from app.catalog.models import (
     shown_availability,
 )
 from app.catalog.normalize import compact
-from app.catalog.settings import get_setting
 
 # Facet keys of the storefront → document attributes.
 FACET_FIELDS = {'brand': 'brand_slug', 'pack': 'packs', 'storage': 'storage', 'purpose': 'purpose', 'type': 'type',
@@ -73,9 +71,6 @@ class Context:
             self.aliases[alias.brand_id].append(alias.name)
         self.categories = {c.id: c for c in db.scalars(select(Category))}
         self.substances: dict[str, Substance] = {}
-        # Our Russian names of substances by CAS number (setting cas_names_ru): with them a product is found by
-        # «натрия хлорид» although the manufacturer names it «Sodium chloride» (audit of 12.11.2026).
-        self.cas_names: dict[str, str] = get_setting(db, 'cas_names_ru') or {}
 
     def ancestors(self, category: Category) -> list[str]:
         parts = category.path.split('/')
@@ -143,8 +138,7 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
         'cas_numbers': [compact(c) for c in [product.cas, *product.alt_cas] if c],
         'substance_slug': substance.slug if substance else None,
         'substance_role': product.substance_role if substance else None,
-        'substance_names': [*([substance.name_en, substance.name_ru, *substance.synonyms] if substance else []),
-                            *name_variants(ctx.cas_names.get(product.cas or ''))],
+        'substance_names': [substance.name_en, substance.name_ru, *substance.synonyms] if substance else [],
         'categories': paths,
         'category': primary.path if primary else None,
         'category_top': primary.path.split('/')[0] if primary else None,
