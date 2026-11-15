@@ -21,6 +21,15 @@ export interface BrandRef {
 
 export type Availability = 'on_order' | 'in_stock';
 
+/** A reviewed manufacturer identity; the old distributor/channel page and its IDs remain valid. */
+export interface ProductIdentity {
+  manufacturer: string;
+  supplyChannel: string;
+  canonicalSlug: string;
+  identifierAliases: string[];
+  sourceUrl: string;
+}
+
 export interface ProductPreview {
   id: string;
   /** URL: /product/{slug}/ */
@@ -47,6 +56,7 @@ export interface ProductPreview {
   attributes?: Partial<Record<FacetKey, string[]>>;
   /** Популярность для сортировки по умолчанию */
   popularity?: number;
+  identity?: ProductIdentity;
   /** Подконтрольное вещество (ТЗ 5.2.1): перечень ПП № 681 или № 964. В Релизе 1 скрыто с витрины */
   controlled?: 'pp681' | 'pp964';
 }

@@ -23,6 +23,8 @@ jobs:
         run: npm run lint
       - name: TypeScript
         run: npm run typecheck
+      - name: Analytics consent and conversion regressions
+        run: node scripts/check-analytics.mjs
       - name: Production build
         run: npm run build
 

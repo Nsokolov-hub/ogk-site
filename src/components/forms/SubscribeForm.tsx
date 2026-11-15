@@ -59,11 +59,12 @@ export function SubscribeForm({ docs }: { docs: SiteSettings['docs'] }) {
           source: 'home',
           pageUrl: window.location.href.split('?')[0],
         });
+        track('subscribe');
+        track('form_submit', { form_type: 'subscribe', page: window.location.pathname });
       }
-      track('subscribe');
-      track('form_submit', { form_type: 'subscribe', page: window.location.pathname });
       setStatus('success');
     } catch {
+      track('form_error', { form_type: 'subscribe', reason: 'request_failed' });
       setStatus('error');
     }
   };
@@ -71,7 +72,10 @@ export function SubscribeForm({ docs }: { docs: SiteSettings['docs'] }) {
   if (status === 'success') return <FormStatus kind="success" title={t('success')} />;
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-4" aria-busy={isSubmitting}>
+    <form noValidate onSubmit={(event) => {
+      track('form_attempt', { form_type: 'subscribe' });
+      void handleSubmit(onSubmit, () => { track('form_error', { form_type: 'subscribe', reason: 'validation' }); })(event);
+    }} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-4" aria-busy={isSubmitting}>
       <div className="flex flex-col gap-3 md:flex-row md:items-start">
         <Input
           label={t('email')}

@@ -53,6 +53,8 @@ def test_hill_order(raw, expected):
     ('100 ?G', '100-ug', '100 мкг', '100 µg'), ('400 ?L', '400-ul', '400 мкл', '400 µl'),
     ('1 шт', '1-pcs', '1 шт.', '1 pcs'), ('шт', '1-pcs', '1 шт.', '1 pcs'), ('1.0 kg', '1-kg', '1 кг', '1 kg'),
     ('5 флаконов', '5-vial', '5 фл.', '5 vial'), ('1000 мг', '1000-mg', '1000 мг', '1000 mg'),
+    ('1AMP', '1-ampoule', '1 амп.', '1 ampoule'), ('1 ampoule', '1-ampoule', '1 амп.', '1 ampoule'),
+    ('9 ампул', '9-ampoule', '9 амп.', '9 ampoule'), ('1 vial', '1-vial', '1 фл.', '1 vial'),
 ])
 def test_packagings(raw, key, ru, en):
     pack = parse_pack(raw)
@@ -73,6 +75,7 @@ def test_unknown_packaging_stays_as_written_and_lists_split():
     ('AB477228-1мг', None, 'AB477228', '1 мг'), ('SIN-10039-MM09-A-25Tests', '25 тест', 'SIN-10039-MM09-A', '25 тест.'),
     ('AG005JV6-100', '100 мг', 'AG005JV6', '100 мг'), ('CS-CD-00140-500GM', '500 г', 'CS-CD-00140', '500 г'),
     ('SRP0562-100UG', None, 'SRP0562', '100 мкг'),
+    ('1235831-1AMP', None, '1235831', '1 амп.'),
     # Numbers that do not end with their packaging stay whole.
     ('Y0001897', '100 мг', 'Y0001897', '100 мг'), ('46142-0050', '5 г', '46142-0050', '5 г'),
     ('160-2655-1', None, '160-2655-1', None), ('NBP2-47725F', '0,1 мл', 'NBP2-47725F', '0,1 мл'),

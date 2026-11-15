@@ -11,7 +11,7 @@ from datetime import timedelta
 
 import httpx
 import pytest
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 
 from app.catalog import competitors
 from app.catalog.models import Brand, BrandAlias, CompetitorOffer, Packaging, Product
@@ -152,7 +152,7 @@ def catalog(sessions):
             'agilent-sold-out': product(db, brands['agilent'], '5190-9015').id,
             'waters': product(db, brands['waters'], '186003116').id,
         }
-        db.execute(Product.__table__.update().values(needs_index=False))
+        db.execute(update(Product).values(needs_index=False))
     return ids
 
 
@@ -209,6 +209,7 @@ def test_a_position_gone_from_a_checked_site_is_no_longer_in_stock(sessions, sit
     with sessions.begin() as db:
         set_setting(db, 'competitor_results', {**get_setting(db, 'competitor_results'), 'finishedAt': None})
     result = competitors.run_all(sessions)
+    assert result is not None
     assert result['left'] == 1
     stock = flags(sessions)
     assert stock[catalog['oxcarbazepine']] and not stock[catalog['ibuprofen']]
@@ -221,6 +222,7 @@ def test_a_refusing_site_is_left_alone_and_its_stock_expires_after_keep_days(ses
     with sessions.begin() as db:
         set_setting(db, 'competitor_results', {**get_setting(db, 'competitor_results'), 'finishedAt': None})
     result = competitors.run_all(sessions)
+    assert result is not None
     skygen = result['sources']['skygen']
     assert skygen['refused'] == '403' and not skygen['complete']
     # One refused request, then the site is not asked again in this check — no retries around a refusal.
@@ -229,7 +231,7 @@ def test_a_refusing_site_is_left_alone_and_its_stock_expires_after_keep_days(ses
     assert flags(sessions)[catalog['waters']]
     # …until they are older than keep_days.
     with sessions.begin() as db:
-        db.execute(CompetitorOffer.__table__.update().where(CompetitorOffer.source == 'skygen')
+        db.execute(update(CompetitorOffer).where(CompetitorOffer.source == 'skygen')
                    .values(seen_at=utcnow() - timedelta(days=11)))
         competitors.settle(db, utcnow(), [], utcnow())
     stock = flags(sessions)
@@ -246,6 +248,7 @@ def test_a_captcha_page_counts_as_a_refusal(sessions, sites, catalog, monkeypatc
 
     sites.handle = handle  # type: ignore[method-assign]
     result = competitors.run_all(sessions)
+    assert result is not None
     assert result['sources']['chimmed']['refused'] == 'captcha'
     assert result['sources']['skygen']['complete']
 

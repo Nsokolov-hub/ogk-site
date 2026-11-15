@@ -16,7 +16,7 @@ import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { submitSiteRequest } from '@/lib/api';
 import { submitErrorKey } from '@/lib/submit-error';
-import { track } from '@/lib/analytics';
+import { track, trackLeadSubmit } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { useFormMeta } from '@/lib/hooks';
 import { toE164 } from '@/lib/phone';
@@ -65,10 +65,10 @@ export function ServiceRequestForm({
     goods: has('goods') ? z.string().trim().min(1, 'required').min(10, 'messageShort') : optional,
     permit: z.boolean(),
     regulator: optional,
-    name: fields.fullName,
-    company: fields.company,
+    name: fields.optionalName,
+    company: fields.optionalCompany,
     email: fields.email,
-    phone: fields.phone,
+    phone: fields.optionalPhone,
     comment: optional,
     consent: fields.consent,
     website: fields.website,
@@ -105,6 +105,10 @@ export function ServiceRequestForm({
   const err = (key?: string) => (key ? te(key) : undefined);
 
   const onSubmit = async (v: Values) => {
+    if (fileError) {
+      track('form_error', { form_type: 'service', reason: 'attachment_validation' });
+      return;
+    }
     setStatus(null);
     // Поля услуги — отдельным объектом для CRM и строкой в комментарии, чтобы менеджер видел всё сразу
     const serviceFields: Record<string, string> = {};
@@ -147,11 +151,15 @@ export function ServiceRequestForm({
             pageUrl: window.location.href,
             formType: 'service',
           });
-      track('form_submit', { form_type: 'service', service: service.slug, page: window.location.pathname });
+      if (!v.website) {
+        trackLeadSubmit('service', { request_id: res.siteRequestId, service: service.slug, page: window.location.pathname });
+        track('form_submit', { form_type: 'service', service: service.slug, page: window.location.pathname });
+      }
       setStatus({ kind: 'success', number: res.number });
       reset(empty);
       setFile(undefined);
     } catch (error) {
+      track('form_error', { form_type: 'service', reason: submitErrorKey(error) });
       setStatus({ kind: 'error', key: submitErrorKey(error) });
     }
   };
@@ -170,7 +178,10 @@ export function ServiceRequestForm({
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-5" aria-busy={isSubmitting}>
+    <form noValidate onSubmit={(event) => {
+      track('form_attempt', { form_type: 'service' });
+      void handleSubmit(onSubmit, () => track('form_error', { form_type: 'service', reason: 'validation' }))(event);
+    }} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-5" aria-busy={isSubmitting}>
       <p className="text-small text-text-secondary">{tf('requiredHint')}</p>
 
       {has('route') ? (
@@ -237,8 +248,8 @@ export function ServiceRequestForm({
       <fieldset className="mt-2 flex flex-col gap-4">
         <legend className="mb-3 text-body font-medium text-text">{t('contacts')}</legend>
         <div className="grid gap-4 md:grid-cols-2">
-          <Input label={tf('fullName')} required autoComplete="name" error={err(errors.name?.message)} {...register('name')} />
-          <Input label={tf('company')} required autoComplete="organization" error={err(errors.company?.message)} {...register('company')} />
+          <Input label={tf('fullName')} autoComplete="name" error={err(errors.name?.message)} {...register('name')} />
+          <Input label={tf('company')} autoComplete="organization" error={err(errors.company?.message)} {...register('company')} />
           <Input
             label={tf('email')}
             required
@@ -255,7 +266,6 @@ export function ServiceRequestForm({
             render={({ field }) => (
               <PhoneInput
                 label={tf('phone')}
-                required
                 placeholder={tf('phonePlaceholder')}
                 error={err(errors.phone?.message)}
                 name={field.name}
@@ -285,7 +295,7 @@ export function ServiceRequestForm({
           }
           const problem = checkAttachment(f);
           setFileError(problem ? te(problem) : undefined);
-          setFile(problem ? undefined : f);
+          setFile(f);
         }}
       />
       <ConsentCheckbox kind="personalData" docs={docs} error={err(errors.consent?.message)} {...register('consent')} />

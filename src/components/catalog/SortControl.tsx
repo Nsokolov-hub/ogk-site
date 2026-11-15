@@ -6,6 +6,7 @@ import type { CatalogSort, FacetKey } from '@/types/catalog';
 import { useFieldIds } from '@/components/ui/Field';
 import { catalogHref, type CatalogQuery } from '@/lib/catalog';
 import { localizedPath, useCatalogNavigate } from '@/lib/catalog-nav';
+import { track } from '@/lib/analytics';
 
 const SORTS: CatalogSort[] = ['popular', 'name'];
 
@@ -29,7 +30,10 @@ export function SortControl({ basePath, query }: { basePath: string; query: Cata
           id={fieldId}
           name="sort"
           defaultValue={query.sort}
-          onChange={(e) => navigate(catalogHref(basePath, { filters: query.filters, sort: e.target.value as CatalogSort }))}
+          onChange={(e) => {
+            track('catalog_filter', { path: basePath, action: 'sort', sort: e.target.value });
+            navigate(catalogHref(basePath, { filters: query.filters, sort: e.target.value as CatalogSort }));
+          }}
           className="h-10 cursor-pointer appearance-none rounded-pill border border-border bg-surface py-0 pl-4 pr-10 text-small text-text outline-offset-0 transition-colors hover:border-text-secondary"
         >
           {SORTS.map((s) => (

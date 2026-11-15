@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
 import { Link } from '@/i18n/navigation';
+import { track } from '@/lib/analytics';
 import { AddToRfqButton } from './AddToRfqButton';
 import { AvailabilityBadge } from './AvailabilityBadge';
 import { OneClickButton } from './OneClickButton';
@@ -65,6 +66,9 @@ export function ProductCard({
         <h3 id={titleId} className="mb-3 text-[17px] font-semibold leading-[1.3] text-white sm:text-[20px]">
           <Link
             href={`/product/${product.slug}/`}
+            onClick={() => {
+              if (place === 'search') track('search_result_click', { sku: product.catalogNumber, brand: product.brand.name, destination: `/product/${product.slug}/`, mode: 'page' });
+            }}
             title={product.name}
             className="chem-wrap line-clamp-2 transition-colors after:absolute after:inset-0 after:rounded-[inherit] after:content-[''] hover:text-card-green"
           >

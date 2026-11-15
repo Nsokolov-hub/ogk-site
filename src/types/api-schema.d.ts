@@ -4,6 +4,26 @@
  */
 
 export interface paths {
+    "/api/v1/public/requests/repeat/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Repeat Request
+         * @description Resolve an item-only receipt link. Its token is in the body, never in access-log paths or query strings.
+         */
+        post: operations["repeat_request_api_v1_public_requests_repeat_resolve_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/public/requests": {
         parameters: {
             query?: never;
@@ -603,6 +623,17 @@ export interface components {
              * @enum {string}
              */
             cardType: "standard" | "equipment" | "other";
+            identity?: components["schemas"]["ProductIdentity"] | null;
+            /**
+             * Match
+             * @default name
+             * @enum {string}
+             */
+            match: "catalogNumber" | "cas" | "name";
+            /** Matchedpackagingid */
+            matchedPackagingId?: string | null;
+            /** Matchedcatalognumber */
+            matchedCatalogNumber?: string | null;
         };
         /** BatchIn */
         BatchIn: {
@@ -1087,6 +1118,7 @@ export interface components {
              * @default 0
              */
             popularity: number;
+            identity?: components["schemas"]["ProductIdentity"] | null;
             /** Nameru */
             nameRu?: string | null;
             /** Synonyms */
@@ -1125,6 +1157,19 @@ export interface components {
             };
             /** Updatedat */
             updatedAt: string;
+        };
+        /** ProductIdentity */
+        ProductIdentity: {
+            /** Manufacturer */
+            manufacturer: string;
+            /** Supplychannel */
+            supplyChannel: string;
+            /** Canonicalslug */
+            canonicalSlug: string;
+            /** Identifieraliases */
+            identifierAliases: string[];
+            /** Sourceurl */
+            sourceUrl: string;
         };
         /** ProductPage */
         ProductPage: {
@@ -1193,6 +1238,7 @@ export interface components {
              * @default 0
              */
             popularity: number;
+            identity?: components["schemas"]["ProductIdentity"] | null;
         };
         /** ProductsPage */
         ProductsPage: {
@@ -1200,6 +1246,42 @@ export interface components {
             items: components["schemas"]["ProductPreview"][];
             /** Total */
             total: number;
+        };
+        /** RepeatItemOut */
+        RepeatItemOut: {
+            /** Name */
+            name: string;
+            /** Brand */
+            brand?: string | null;
+            /** Catalognumber */
+            catalogNumber?: string | null;
+            /** Cas */
+            cas?: string | null;
+            /** Packaging */
+            packaging?: string | null;
+            /** Quantity */
+            quantity: number;
+            /** Unit */
+            unit: string;
+            /**
+             * Analogue
+             * @enum {string}
+             */
+            analogue: "none" | "allowed" | "requested";
+            /** Custompackaging */
+            customPackaging: boolean;
+        };
+        /** RepeatResolveIn */
+        RepeatResolveIn: {
+            /** Token */
+            token: string;
+        };
+        /** RepeatResolveOut */
+        RepeatResolveOut: {
+            /** Items */
+            items: components["schemas"]["RepeatItemOut"][];
+            /** Expiresat */
+            expiresAt: string;
         };
         /** RequestOut */
         RequestOut: {
@@ -1453,6 +1535,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    repeat_request_api_v1_public_requests_repeat_resolve_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RepeatResolveIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepeatResolveOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     submit_request_api_v1_public_requests_post: {
         parameters: {
             query?: never;

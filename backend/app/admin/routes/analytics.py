@@ -66,7 +66,8 @@ def create_goals(db: DB, staff: StaffDep) -> list[dict[str, Any]]:
     result = yandex.ensure_goals(db)
     created = [g['identifier'] for g in result if g['state'] == 'created']
     if created:
-        record(db, staff, 'setting', 'metrika_goals', 'create', f'цели Метрики: {", ".join(created)}')
+        record(db, staff, 'setting', 'metrika_goals', 'create', f'цели Метрики: создано {len(created)}',
+               after={'identifiers': created})
     return result
 
 

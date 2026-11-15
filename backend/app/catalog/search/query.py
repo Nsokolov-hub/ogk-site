@@ -76,13 +76,24 @@ def preview(hit: dict[str, Any], lang: str, brand_pages: Collection[str] = froze
         else None,
         'attributes': attributes,
         'popularity': hit.get('popularity') or 0,
+        'identity': hit.get('identity'),
     }
 
 
-def candidate(hit: dict[str, Any], lang: str) -> dict[str, Any]:
+def candidate(hit: dict[str, Any], lang: str, query: str = '', exact: bool = False) -> dict[str, Any]:
     full = preview(hit, lang)
-    return {key: full[key] for key in ('id', 'slug', 'name', 'brand', 'catalogNumber', 'cas', 'categorySlug',
-                                       'packagings', 'customPackaging', 'cardType')}
+    result = {key: full[key] for key in ('id', 'slug', 'name', 'brand', 'catalogNumber', 'cas', 'categorySlug',
+                                       'packagings', 'customPackaging', 'cardType', 'identity')}
+    number = compact(query)
+    identity = hit.get('identity') or {}
+    pack_number = number[3:] if identity.get('manufacturer') == 'USP' and number.startswith('usp') else number
+    matched_packs = [pack for pack in full['packagings']
+                     if pack.get('catalogNumber') and compact(pack['catalogNumber']) == pack_number] if exact else []
+    result.update(match='catalogNumber' if exact and number in (hit.get('numbers') or []) else
+                  'cas' if exact and number in (hit.get('cas_numbers') or []) else 'name',
+                  matchedPackagingId=matched_packs[0]['id'] if len(matched_packs) == 1 else None,
+                  matchedCatalogNumber=matched_packs[0]['catalogNumber'] if len(matched_packs) == 1 else None)
+    return result
 
 
 # ── the ranked product search ──
@@ -498,8 +509,8 @@ def parse_line(line: str) -> tuple[str, int]:
     if len(cols) >= 2 and re.fullmatch(r'\d{1,3}', cols[-1]):
         return ' '.join(cols[:-1]), int(cols[-1])
     words = line.strip().split()
-    if len(words) == 2 and re.fullmatch(r'\d{1,3}', words[1]) and re.search(r'\d', words[0]):
-        return words[0], int(words[1])
+    if len(words) >= 2 and re.fullmatch(r'\d{1,3}', words[-1]) and re.search(r'\d', ' '.join(words[:-1])):
+        return ' '.join(words[:-1]), int(words[-1])
     return line.strip(), 1
 
 
@@ -520,7 +531,7 @@ def batch(engine: SearchEngine, lines: list[str], lang: str) -> list[dict[str, A
     out = []
     for i, (line, q, quantity) in enumerate(parsed):
         hits = exact[i].hits or (fuzzy[i].hits if i in fuzzy else [])
-        status = 'none' if not hits else 'exact' if len(hits) == 1 else 'multiple'
+        status = 'none' if not hits else 'exact' if exact[i].hits and exact[i].total == 1 and len(hits) == 1 else 'multiple'
         out.append({'line': line, 'query': q, 'quantity': max(1, min(999, quantity)), 'status': status,
-                    'candidates': [candidate(hit, lang) for hit in hits[:5]]})
+                    'candidates': [candidate(hit, lang, q, bool(exact[i].hits)) for hit in hits[:5]]})
     return out

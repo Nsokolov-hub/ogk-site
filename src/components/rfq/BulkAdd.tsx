@@ -10,11 +10,14 @@ import { Textarea } from '@/components/ui/Textarea';
 import { track } from '@/lib/analytics';
 import { api, apiUrl } from '@/lib/backend';
 import { cn } from '@/lib/cn';
+import { itemFromProduct } from '@/lib/rfq-item';
+import { defaultProductSelection } from '@/lib/product-selection';
 import { useRfqStore } from '@/lib/rfq-store';
 import type { BatchLineResult } from '@/lib/search';
 
 const SKIP = '__skip__';
 const FREE = '__free__';
+const CHOOSE = '__choose__';
 const MAX_LINES = 200;
 
 /**
@@ -29,6 +32,7 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
   const [text, setText] = useState('');
   const [results, setResults] = useState<BatchLineResult[] | null>(null);
   const [choice, setChoice] = useState<Record<number, string>>({});
+  const [packChoice, setPackChoice] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [note, setNote] = useState<string | null>(null);
@@ -40,8 +44,12 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
 
   const show = (found: BatchLineResult[]) => {
     setResults(found);
-    // По умолчанию: точное совпадение — добавить, несколько — первый кандидат, не найдено — свободной строкой
-    setChoice(Object.fromEntries(found.map((r, i) => [i, r.status === 'none' ? FREE : r.candidates[0].id])));
+    // An uncertain result requires the buyer's choice, even when search suggested only one product.
+    setChoice(Object.fromEntries(found.map((r, i) => [i, r.status === 'none' ? FREE : r.status === 'exact' ? r.candidates[0].id : CHOOSE])));
+    setPackChoice(Object.fromEntries(found.map((r, i) => {
+      const p = r.candidates[0];
+      return [i, p?.matchedPackagingId ?? (p?.packagings.length === 1 ? p.packagings[0].id : CHOOSE)];
+    })));
     track('bulk_upload', { rows: found.length, found: found.filter((r) => r.status === 'exact').length });
   };
 
@@ -70,7 +78,7 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
       setNote(t('fileType'));
       return;
     }
-    onAttach(file);
+    if (!name.endsWith('.txt')) onAttach(file);
     setLoading(true);
     setError(false);
     setAdded(null);
@@ -81,7 +89,7 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
       if (!res.ok) throw new Error(String(res.status));
       const data = (await res.json()) as { lines: BatchLineResult[] };
       setText(data.lines.map((r) => r.line).join('\n'));
-      setNote(t('fileParsed', { name: file.name, count: data.lines.length }));
+      setNote(t(name.endsWith('.txt') ? 'textFileParsed' : 'fileParsed', { name: file.name, count: data.lines.length }));
       show(data.lines);
     } catch {
       setError(true);
@@ -92,6 +100,7 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
 
   const addAll = () => {
     if (!results) return;
+    if (unresolved > 0) return;
     let n = 0;
     results.forEach((r, i) => {
       const c = choice[i];
@@ -103,22 +112,9 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
       }
       const p = r.candidates.find((x) => x.id === c);
       if (!p) return;
-      const pk = p.packagings[0];
-      add({
-        productId: p.id,
-        slug: p.slug,
-        name: p.name,
-        brand: p.brand.name,
-        catalogNumber: p.catalogNumber,
-        cas: p.cas,
-        categorySlug: p.categorySlug,
-        packagings: p.packagings,
-        customAllowed: p.customPackaging,
-        packagingId: pk?.id ?? null,
-        packagingLabel: pk?.label,
-        quantity: r.quantity,
-        analogue: 'none',
-      });
+      const pk = p.packagings.find((pack) => pack.id === packChoice[i]) ?? p.packagings.find((pack) => pack.id === p.matchedPackagingId) ?? p.packagings[0];
+      add({ ...itemFromProduct(p, { ...defaultProductSelection(p, pk?.id), quantity: r.quantity }, locale),
+        catalogNumber: pk?.catalogNumber ?? (p.matchedPackagingId === pk?.id ? p.matchedCatalogNumber : null) ?? p.catalogNumber });
       track('add_to_rfq', { sku: p.catalogNumber, brand: p.brand.name, place: 'list' });
       n += 1;
     });
@@ -130,6 +126,11 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
   const stats = results
     ? { exact: results.filter((r) => r.status === 'exact').length, multiple: results.filter((r) => r.status === 'multiple').length, none: results.filter((r) => r.status === 'none').length }
     : null;
+  const unresolved = results?.filter((row, i) => {
+    if (!choice[i] || choice[i] === CHOOSE) return true;
+    const p = row.candidates.find((candidate) => candidate.id === choice[i]);
+    return !!p && p.packagings.length > 1 && !p.packagings.some((pack) => pack.id === packChoice[i]);
+  }).length ?? 0;
 
   return (
     <div className="rounded-block bg-surface p-5 md:p-8">
@@ -183,6 +184,7 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
           <ul className="mt-4 flex flex-col gap-2">
             {results.map((r, i) => {
               const Icon = r.status === 'exact' ? CircleCheck : r.status === 'multiple' ? CircleHelp : CircleAlert;
+              const selected = r.candidates.find((candidate) => candidate.id === choice[i]);
               return (
                 <li key={`${r.line}-${i}`} className="grid gap-3 rounded-field bg-surface-strong p-4 md:grid-cols-[minmax(0,14rem)_minmax(0,1fr)] md:items-center md:gap-6">
                   <div className="flex min-w-0 items-start gap-3">
@@ -199,10 +201,12 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
                       </p>
                     </div>
                   </div>
+                  <div className="grid gap-3">
                   <Select
                     label={t('choose')}
                     hideLabel
                     options={[
+                      ...(r.status === 'multiple' ? [{ value: CHOOSE, label: t('confirmChoice') }] : []),
                       ...r.candidates.map((c) => ({
                         value: c.id,
                         label: `${c.brand.name} · ${c.catalogNumber} · ${c.name}${c.cas ? ` · CAS ${c.cas}` : ''}`,
@@ -210,21 +214,34 @@ export function BulkAdd({ onAttach }: { onAttach: (file: File) => void }) {
                       { value: FREE, label: t('asFree') },
                       { value: SKIP, label: t('skip') },
                     ]}
-                    value={choice[i] ?? SKIP}
-                    onChange={(e) => setChoice((prev) => ({ ...prev, [i]: e.target.value }))}
+                    value={choice[i] ?? CHOOSE}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setChoice((prev) => ({ ...prev, [i]: value }));
+                      const p = r.candidates.find((candidate) => candidate.id === value);
+                      setPackChoice((prev) => ({ ...prev, [i]: p?.matchedPackagingId ?? (p?.packagings.length === 1 ? p.packagings[0].id : CHOOSE) }));
+                    }}
                   />
+                  {selected && selected.packagings.length > 1 ? (
+                    <Select label={t('choosePackaging')} options={[
+                      { value: CHOOSE, label: t('confirmPackaging') },
+                      ...selected.packagings.map((pack) => ({ value: pack.id, label: `${pack.label}${pack.catalogNumber ? ` · ${pack.catalogNumber}` : ''}` })),
+                    ]} value={packChoice[i] ?? CHOOSE} onChange={(e) => setPackChoice((prev) => ({ ...prev, [i]: e.target.value }))} />
+                  ) : null}
+                  </div>
                 </li>
               );
             })}
           </ul>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Button size="m" onClick={addAll}>
-              {t('addAll', { count: Object.values(choice).filter((c) => c !== SKIP).length })}
+            <Button size="m" onClick={addAll} disabled={unresolved > 0}>
+              {t('addAll', { count: Object.values(choice).filter((c) => c !== SKIP && c !== CHOOSE).length })}
             </Button>
             <Button variant="ghost" size="m" onClick={() => setResults(null)}>
               {t('cancel')}
             </Button>
           </div>
+          {unresolved > 0 ? <p role="status" className="mt-3 text-small text-warning">{t('unresolved', { count: unresolved })}</p> : null}
           <p className="mt-3 text-small text-text-secondary">{t('packagingNote')}</p>
         </div>
       ) : null}

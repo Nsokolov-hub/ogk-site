@@ -8,10 +8,18 @@ from fastapi.concurrency import run_in_threadpool
 from app.core.config import settings
 from app.core.db import DB
 from app.core.errors import DomainError
-from app.requests.schemas import RequestOut
+from app.requests.repeat import resolve
+from app.requests.schemas import RepeatResolveIn, RepeatResolveOut, RequestOut
 from app.requests.service import accept
 
 router = APIRouter(tags=['Заявки'])
+
+
+@router.post('/public/requests/repeat/resolve', response_model=RepeatResolveOut)
+def repeat_request(data: RepeatResolveIn, response: Response, db: DB) -> dict[str, Any]:
+    """Resolve an item-only receipt link. Its token is in the body, never in access-log paths or query strings."""
+    response.headers['Cache-Control'] = 'private, no-store'
+    return resolve(db, data.token)
 
 
 # The storefront keeps a trailing slash on every address (URL-01); both spellings reach the same handler.

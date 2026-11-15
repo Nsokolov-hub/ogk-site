@@ -48,9 +48,9 @@ class CamelModel(BaseModel):
 
 
 class CustomerIn(CamelModel):
-    name: str = Field(min_length=2, max_length=200)
-    company: str = Field(min_length=2, max_length=250)
-    phone: str = Field(max_length=20, description='E.164: +79991234567')
+    name: str = Field(default='', max_length=200)
+    company: str = Field(default='', max_length=250)
+    phone: str = Field(default='', max_length=20, description='E.164 when supplied: +79991234567')
     email: str = Field(max_length=254)
     inn: str | None = Field(default=None, max_length=12)
     city: str | None = Field(default=None, max_length=200)
@@ -59,11 +59,18 @@ class CustomerIn(CamelModel):
 
     _blank = field_validator('inn', 'city', 'comment', mode='before')(blank_to_none)
 
+    @field_validator('name', 'company')
+    @classmethod
+    def optional_contact(cls, value: str) -> str:
+        if value and len(value) < 2:
+            raise ValueError('tooShort')
+        return value
+
     @field_validator('phone')
     @classmethod
     def phone_e164(cls, value: str) -> str:
         # Business remark of 31 October 2026: the length of the country's numbers, no made-up numbers.
-        if not E164_RE.fullmatch(value) or not plausible_phone(value):
+        if value and (not E164_RE.fullmatch(value) or not plausible_phone(value)):
             raise ValueError('phone')
         return value
 
@@ -138,8 +145,6 @@ class RequestIn(CamelModel):
 
     @model_validator(mode='after')
     def items_for_kind(self) -> 'RequestIn':
-        if self.kind in ('product_rfq', 'one_click') and not self.items:
-            raise ValueError('items')
         if self.kind == 'one_click' and len(self.items) != 1:
             raise ValueError('items')
         if self.kind == 'service' and self.service is None:
@@ -150,3 +155,25 @@ class RequestIn(CamelModel):
 class RequestOut(CamelModel):
     site_request_id: str
     number: str
+
+
+class RepeatResolveIn(CamelModel):
+    token: str = Field(min_length=40, max_length=500)
+
+
+class RepeatItemOut(CamelModel):
+    # A repeat is a new editable request, not an authorisation to inspect the original customer or files.
+    name: str
+    brand: str | None = None
+    catalog_number: str | None = None
+    cas: str | None = None
+    packaging: str | None = None
+    quantity: float
+    unit: str
+    analogue: Analogue
+    custom_packaging: bool
+
+
+class RepeatResolveOut(CamelModel):
+    items: list[RepeatItemOut]
+    expires_at: str

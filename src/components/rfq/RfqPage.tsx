@@ -21,7 +21,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Link } from '@/i18n/navigation';
 import { submitSiteRequest } from '@/lib/api';
 import { submitErrorKey } from '@/lib/submit-error';
-import { track } from '@/lib/analytics';
+import { track, trackLeadSubmit } from '@/lib/analytics';
 import { useFormMeta } from '@/lib/hooks';
 import { toE164 } from '@/lib/phone';
 import { type RfqItem, useRfqStore } from '@/lib/rfq-store';
@@ -29,11 +29,12 @@ import { absoluteUrl } from '@/lib/seo';
 import { ATTACHMENT_EXTENSIONS, checkAttachment, fields, isValidInn } from '@/lib/validation';
 import { BulkAdd } from './BulkAdd';
 import { RfqItemRow } from './RfqItemRow';
+import { RepeatRequest } from './RepeatRequest';
 
 const schema = z.object({
-  name: fields.shortName,
-  company: fields.company,
-  phone: fields.phone,
+  name: fields.optionalName,
+  company: fields.optionalCompany,
+  phone: fields.optionalPhone,
   email: fields.email,
   inn: z
     .string()
@@ -66,6 +67,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
   useEffect(() => {
     const sync = () => {
       if (window.location.hash === '#bulk') setShowBulk(true);
+      if (window.location.hash === '#file') document.getElementById('rfq-form')?.scrollIntoView({ block: 'start' });
     };
     sync();
     window.addEventListener('hashchange', sync);
@@ -76,11 +78,14 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
     if (hydrated && showBulk && window.location.hash === '#bulk') {
       document.getElementById('rfq-bulk')?.scrollIntoView({ block: 'start' });
     }
+    if (hydrated && window.location.hash === '#file') {
+      document.getElementById('rfq-form')?.scrollIntoView({ block: 'start' });
+    }
   }, [hydrated, showBulk]);
   const [file, setFile] = useState<File | undefined>();
   const [fileError, setFileError] = useState<string | undefined>();
   const [failed, setFailed] = useState<string | null>(null);
-  const [done, setDone] = useState<{ number: string; items: RfqItem[] } | null>(null);
+  const [done, setDone] = useState<{ number: string; items: RfqItem[]; fileName?: string } | null>(null);
   const { onFocusCapture, elapsedMs } = useFormMeta('rfq');
 
   const allAnalogues = items.length > 0 && items.every((i) => i.analogue === 'allowed');
@@ -99,7 +104,10 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
   const err = (key?: string) => (key ? te(key) : undefined);
 
   const onSubmit = async (v: Values) => {
-    if (!items.length || freeInvalid) return;
+    if ((!items.length && !file) || freeInvalid || fileError) {
+      track('form_error', { form_type: 'rfq', reason: fileError ? 'attachment_validation' : 'validation' });
+      return;
+    }
     setFailed(null);
     const payloadItems: SiteRequestItem[] = items.map((i) => ({
       siteProductId: i.free ? undefined : i.productId,
@@ -109,9 +117,9 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
       name: i.name.trim(),
       packaging: i.packagingLabel,
       quantity: i.quantity,
-      unit: 'pack',
+      unit: i.unit ?? 'pack',
       analogue: i.analogue,
-      customPackaging: !!i.customPackaging || (!i.free && i.packagingId === null),
+      customPackaging: !!i.requestedCustomPackaging || !!i.customPackaging || (!i.free && i.packagingId === null),
       comment: i.comment?.trim() || undefined,
       pageUrl: i.free ? undefined : absoluteUrl(locale, `/product/${i.slug}/`),
     }));
@@ -139,12 +147,16 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
             formType: 'rfq',
             desiredDate: v.date || undefined,
           });
-      track('quote_request', { items: items.length, brands: Array.from(new Set(items.map((i) => i.brand).filter(Boolean))) });
-      track('form_submit', { form_type: 'rfq', page: window.location.pathname });
-      setDone({ number: res.number, items });
+      if (!v.website) {
+        track('quote_request', { items: items.length, brands: Array.from(new Set(items.map((i) => i.brand).filter(Boolean))) });
+        trackLeadSubmit('rfq', { request_id: res.siteRequestId, page: window.location.pathname });
+        track('form_submit', { form_type: 'rfq', page: window.location.pathname });
+      }
+      setDone({ number: res.number, items, fileName: file?.name });
       clear();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
+      track('form_error', { form_type: 'rfq', reason: submitErrorKey(error) });
       setFailed(submitErrorKey(error));
     }
   };
@@ -158,6 +170,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
           {t('done.title', { number: done.number })}
         </h2>
         <p className="mt-4 max-w-[60ch] text-lead text-text">{t('done.text')}</p>
+        {done.fileName ? <p className="mt-4 text-body text-text">{t('done.file', { name: done.fileName })}</p> : null}
         <h3 className="mt-10 text-h4 font-medium text-text">{t('done.items', { count: done.items.length })}</h3>
         <ol className="mt-4 flex max-w-[880px] flex-col gap-2">
           {done.items.map((i) => (
@@ -192,6 +205,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
 
   return (
     <div className="mt-10 flex flex-col gap-10 lg:gap-14">
+      <RepeatRequest />
       {/* Действия над списком */}
       <div className="flex flex-wrap items-center gap-3">
         <Button
@@ -216,7 +230,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
 
       {showBulk ? (
         <div id="rfq-bulk" className="scroll-mt-28">
-          <BulkAdd onAttach={(f) => setFile(f)} />
+          <BulkAdd onAttach={(f) => { setFile(f); setFileError(undefined); }} />
         </div>
       ) : null}
 
@@ -265,18 +279,21 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
             ) : null}
           </div>
 
-          <form noValidate onSubmit={handleSubmit(onSubmit)} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-5" aria-busy={isSubmitting}>
+          <form noValidate onSubmit={(event) => {
+            track('form_attempt', { form_type: 'rfq' });
+            void handleSubmit(onSubmit, () => track('form_error', { form_type: 'rfq', reason: 'validation' }))(event);
+          }} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-5" aria-busy={isSubmitting}>
             <p className="text-small text-text-secondary">{tf('requiredHint')}</p>
+            <p className="text-small text-text-secondary">{tf('quickHint')}</p>
             <div className="grid gap-4 md:grid-cols-2">
-              <Input label={tf('name')} required autoComplete="name" error={err(errors.name?.message)} {...register('name')} />
-              <Input label={tf('companyShort')} required autoComplete="organization" error={err(errors.company?.message)} {...register('company')} />
+              <Input label={tf('name')} autoComplete="name" error={err(errors.name?.message)} {...register('name')} />
+              <Input label={tf('companyShort')} autoComplete="organization" error={err(errors.company?.message)} {...register('company')} />
               <Controller
                 control={control}
                 name="phone"
                 render={({ field }) => (
                   <PhoneInput
                     label={tf('phone')}
-                    required
                     placeholder={tf('phonePlaceholder')}
                     error={err(errors.phone?.message)}
                     name={field.name}
@@ -317,18 +334,18 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
                 }
                 const problem = checkAttachment(f);
                 setFileError(problem ? te(problem) : undefined);
-                setFile(problem ? undefined : f);
+                setFile(f);
               }}
             />
             <ConsentCheckbox kind="personalData" docs={docs} error={err(errors.consent?.message)} {...register('consent')} />
             <Checkbox label={tf('consentMarketing')} {...register('marketing')} />
             <Honeypot {...register('website')} />
 
-            {!items.length ? <p className="text-small text-warning">{t('form.noItems')}</p> : null}
+            {!items.length && !file ? <p className="text-small text-warning">{t('form.noItems')}</p> : null}
             {freeInvalid ? <p className="text-small text-warning">{t('form.freeInvalid')}</p> : null}
             {failed ? <FormStatus kind="error" title={tf('errorTitle')}>{tf(failed)}</FormStatus> : null}
 
-            <Button type="submit" size="l" aria-disabled={isSubmitting || !items.length || freeInvalid || undefined} className="mt-2">
+            <Button type="submit" size="l" aria-disabled={isSubmitting || (!items.length && !file) || !!fileError || freeInvalid || undefined} className="mt-2">
               {isSubmitting ? tf('sending') : t('form.submit')}
             </Button>
             <p className="text-small text-text-secondary">

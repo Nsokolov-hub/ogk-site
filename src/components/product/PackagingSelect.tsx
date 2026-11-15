@@ -4,7 +4,8 @@ import { useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
 import { Select } from '@/components/ui/Select';
 
-export const CUSTOM_PACKAGING = '__custom__';
+import { CUSTOM_PACKAGING } from '@/lib/product-selection';
+export { CUSTOM_PACKAGING } from '@/lib/product-selection';
 
 /** Выбор фасовки. В окне «в 1 клик» и корзине добавляется «Своя фасовка» (5.2.2). */
 export function PackagingSelect({

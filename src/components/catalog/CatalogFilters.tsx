@@ -9,6 +9,7 @@ import { useFieldIds } from '@/components/ui/Field';
 import { catalogHref, countSelected, type CatalogQuery } from '@/lib/catalog';
 import { localizedPath, useCatalogNavigate } from '@/lib/catalog-nav';
 import { cn } from '@/lib/cn';
+import { track } from '@/lib/analytics';
 import { facetValueLabel } from './facet-label';
 
 const VISIBLE = 10;
@@ -55,6 +56,7 @@ export function CatalogFilters({
       action={localizedPath(locale, basePath)}
       onSubmit={(e) => {
         e.preventDefault();
+        track('catalog_filter', { path: basePath, action: 'apply', filters: draft, count: countSelected(draft) });
         navigate(catalogHref(basePath, { filters: draft, sort: query.sort }));
         onDone?.();
       }}
@@ -76,6 +78,7 @@ export function CatalogFilters({
           variant="menu"
           size="s"
           onClick={() => {
+            track('catalog_filter', { path: basePath, action: 'reset' });
             setDraft({});
             onDone?.();
           }}

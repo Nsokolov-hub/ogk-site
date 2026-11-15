@@ -90,7 +90,7 @@ export function SearchBox({
         if (!res.ok) throw new Error(String(res.status));
         const result = (await res.json()) as SuggestResult;
         setState({ status: 'done', result });
-        track(result.total ? 'site_search' : 'search_no_results', { query: q, place, results: result.total, mode: 'suggest' });
+        track('search_suggest', { query: q, place, results: result.total });
       } catch (e) {
         if ((e as Error).name !== 'AbortError') setState({ status: 'error' });
       }
@@ -297,7 +297,11 @@ export function SearchBox({
           inputRef.current?.focus();
           return;
         }
-        track('site_search', { query: query.trim(), place, mode: 'submit' });
+        track('search_submit', { query: query.trim(), place });
+      }}
+      onClickCapture={(event) => {
+        const target = event.target instanceof Element ? event.target.closest('a[data-suggest]') : null;
+        if (target) track('search_result_click', { query: query.trim(), place, destination: target.getAttribute('href'), mode: 'suggest' });
       }}
       onBlur={(e) => {
         if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOpen(false);

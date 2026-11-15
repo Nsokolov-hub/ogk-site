@@ -230,13 +230,13 @@ export function HeroPlates({ slides }: { slides: HeroSlide[] }) {
   );
 
   return (
-    <section aria-labelledby="hero-title" className="pt-[88px] lg:pt-[152px]">
+    <section aria-label={t('region')} className="mt-10 lg:mt-12">
       <div
         role="region"
         aria-roledescription="carousel"
         aria-label={t('region')}
         // clip, а не hidden: hidden-блок браузер прокручивает сам при фокусе внутри, и лента съезжает
-        className="hero-plates relative touch-pan-y overflow-clip"
+        className="hero-plates hero-plates-compact relative touch-pan-y overflow-clip"
         onScroll={(e) => {
           e.currentTarget.scrollLeft = 0;
         }}
@@ -281,7 +281,7 @@ export function HeroPlates({ slides }: { slides: HeroSlide[] }) {
                 className="shrink-0"
                 style={{ width: 'var(--plate-w)', height: 'var(--plate-h)' }}
               >
-                <Plate slide={slide} heading={copy ? 'p' : real === 0 ? 'h1' : 'h2'} priority={!copy && real === 0} text={!copy || hydrated} />
+                <Plate slide={slide} heading={copy ? 'p' : 'h2'} priority={false} text={!copy || hydrated} />
               </div>
             );
           })}

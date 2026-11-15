@@ -37,19 +37,22 @@ def ensure_index(db: Session, engine: SearchEngine) -> bool:
     return True
 
 
-def index_pending(db: Session, engine: SearchEngine, limit: int = BATCH, changed: list[str] | None = None) -> int:
+def index_pending(db: Session, engine: SearchEngine, limit: int = BATCH, changed: list[str] | None = None,
+                  *, product_ids: list[str] | None = None) -> int:
     """Push one batch of queued products; the rows stay locked until the caller commits.
 
     ``changed`` collects the slugs, so the caller can drop the storefront's cached pages of these products.
     """
-    products = db.scalars(select(Product).where(Product.needs_index.is_(True)).order_by(Product.id).limit(limit)
-                          .with_for_update(skip_locked=True)).all()
+    statement = select(Product).where(Product.needs_index.is_(True))
+    if product_ids is not None:
+        statement = statement.where(Product.id.in_(product_ids))
+    products = db.scalars(statement.order_by(Product.id).limit(limit).with_for_update(skip_locked=True)).all()
     if not products:
         return 0
     if changed is not None:
         changed.extend(p.slug for p in products)
     ctx = documents.Context(db, get_setting(db, 'hide_controlled'))
-    docs, deleted = documents.build(db, list(products), ctx)
+    docs, deleted = documents.build(db, list(products), ctx, for_index=True)
     engine.upsert(settings.meili_index, docs)
     engine.delete(settings.meili_index, deleted)
     db.execute(update(Product).where(Product.id.in_([p.id for p in products])).values(needs_index=False))
@@ -73,7 +76,7 @@ def reindex_all(db_factory: Callable[[], Session], engine: SearchEngine,
                                   .limit(5000)).all()
             if not products:
                 break
-            docs, _ = documents.build(db, list(products), ctx)
+            docs, _ = documents.build(db, list(products), ctx, for_index=True)
             engine.upsert(staging, docs)
             last_id = products[-1].id
             total += len(docs)

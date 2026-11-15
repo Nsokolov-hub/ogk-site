@@ -60,8 +60,12 @@ export const BATCH_LIMIT = 200;
 
 export type BatchCandidate = Pick<
   ProductPreview,
-  'id' | 'slug' | 'name' | 'brand' | 'catalogNumber' | 'cas' | 'categorySlug' | 'packagings' | 'customPackaging' | 'cardType'
->;
+  'id' | 'slug' | 'name' | 'brand' | 'catalogNumber' | 'cas' | 'categorySlug' | 'packagings' | 'customPackaging' | 'cardType' | 'identity'
+> & {
+  matchedPackagingId?: string | null;
+  matchedCatalogNumber?: string | null;
+  match?: 'catalogNumber' | 'cas' | 'name';
+};
 
 export interface BatchLineResult {
   line: string;

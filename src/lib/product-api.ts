@@ -170,6 +170,7 @@ function toDetail(p: ApiProductDetail, substance: ApiSubstance | null | undefine
     indexable: p.indexable && !p.discontinued,
     hasEn,
     updatedAt: p.updatedAt,
+    identity: p.identity ?? undefined,
   };
 }
 
@@ -340,5 +341,6 @@ export function toPreview(p: ProductDetail): ProductPreview {
     image: p.image,
     discontinued: p.discontinued,
     substance: p.substance,
+    identity: p.identity,
   };
 }

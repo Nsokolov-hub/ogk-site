@@ -27,9 +27,11 @@ from app.requests.models import SiteRequest
 
 METRIKA_URL = 'https://api-metrika.yandex.net/management/v1/counter/{counter}/offline_conversions/upload'
 GA_URL = 'https://www.google-analytics.com/mp/collect'
-METRIKA_TARGETS = {'qualified': 'crm_qualified', 'proposal': 'crm_proposal', 'sale': 'crm_sale'}
+METRIKA_TARGETS = {'qualified': 'crm_qualified', 'proposal': 'crm_proposal', 'sale': 'crm_sale',
+                   'payment_received': 'crm_payment_received'}
 # qualify_lead and close_convert_lead are GA4's recommended lead events; the proposal has no standard name.
-GA_EVENTS = {'qualified': 'qualify_lead', 'proposal': 'crm_proposal', 'sale': 'close_convert_lead'}
+GA_EVENTS = {'qualified': 'qualify_lead', 'proposal': 'crm_proposal', 'sale': 'close_convert_lead',
+             'payment_received': 'crm_payment_received'}
 # The answer will not change on a repeat: the upload itself is wrong (a person must look).
 PERMANENT = {400, 404, 413, 415, 422}
 
@@ -49,7 +51,7 @@ def identities(row: SiteRequest) -> dict[str, str | None]:
             'yclid': next((t['yclid'] for t in touches if t.get('yclid')), None)}
 
 
-def queue(db: Session, row: SiteRequest, goal: str) -> int:
+def queue(db: Session, row: SiteRequest, goal: str, *, at: str | None = None) -> int:
     """The goal for each counter that can recognise the visitor; a goal already queued is not queued again."""
     ym, ga = counters(db)
     ids = identities(row)
@@ -58,7 +60,7 @@ def queue(db: Session, row: SiteRequest, goal: str) -> int:
         systems.append('metrika')
     if ga and settings.ga_api_secret and ids['ga_client_id']:
         systems.append('ga4')
-    payload: dict[str, Any] = {'request_id': row.id, 'goal': goal, 'at': utcnow().isoformat()}
+    payload: dict[str, Any] = {'request_id': row.id, 'goal': goal, 'at': at or utcnow().isoformat()}
     if goal == 'sale' and row.sale_amount is not None:
         payload.update(value=str(row.sale_amount), currency=row.sale_currency or 'RUB')
     queued = 0

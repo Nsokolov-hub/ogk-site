@@ -74,7 +74,7 @@ def test_key_reused_for_another_request_is_a_conflict(client):
     ({'customer': {**form()['customer'], 'inn': '7707083890'}}, 'customer.inn'),
     ({'customer': {**form()['customer'], 'email': 'zakupki@example'}}, 'customer.email'),
     ({'personalDataConsent': False}, 'personalDataConsent'),
-    ({'items': []}, ''),
+    ({'items': []}, 'items'),
 ])
 def test_invalid_fields_are_named(client, change, field):
     response = submit(client, form(**change))
@@ -112,6 +112,30 @@ def test_attachment_is_kept_with_its_checksum(client, sessions):
         file = db.scalar(select(SiteRequestAttachment))
         assert (file.file_name, file.size, file.media_type) == ('spec.pdf', len(PDF), 'application/pdf')
         assert (settings.storage_dir / file.storage_key).read_bytes() == PDF
+
+
+def test_file_only_request_needs_only_email_and_survives_retry(client, sessions):
+    body = form(items=[], customer={'email': 'buyer@example.ru'})
+    key = str(uuid4())
+    first = submit(client, body, key=key, attachment=('list.pdf', PDF, 'application/pdf'))
+    assert first.status_code == 201, first.text
+    assert submit(client, body, key=key, attachment=('list.pdf', PDF, 'application/pdf')).json() == first.json()
+    conflict = submit(client, body, key=key, attachment=('other.pdf', PDF + b'\n', 'application/pdf'))
+    assert conflict.status_code == 409
+    with sessions() as db:
+        row = db.get(SiteRequest, first.json()['siteRequestId'])
+        assert (row.customer_name, row.company, row.phone) == ('', '', '')
+        assert len(db.scalars(select(SiteRequest)).all()) == 1
+
+
+@pytest.mark.parametrize('contact', [{'name': 'Я'}, {'company': 'А'}, {'phone': '123'}])
+def test_optional_contacts_still_validate_when_supplied(client, contact):
+    response = submit(client, form(customer={'email': 'buyer@example.ru', **contact}))
+    assert response.status_code == 422
+
+
+def test_empty_general_request_is_not_a_lead(client):
+    assert submit(client, form(kind='general', items=[], customer={'email': 'buyer@example.ru'})).status_code == 422
 
 
 @pytest.mark.parametrize('attachment, code', [

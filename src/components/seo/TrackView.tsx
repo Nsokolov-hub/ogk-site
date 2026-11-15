@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { track, type AnalyticsEvent } from '@/lib/analytics';
+import { afterAnalyticsConsent, track, type AnalyticsEvent } from '@/lib/analytics';
 
 /**
  * Событие просмотра страницы: product_view, brand_view, service_view (ТЗ 15.2).
@@ -11,7 +11,7 @@ import { track, type AnalyticsEvent } from '@/lib/analytics';
 export function TrackView({ event, params, demandSlug }: { event: AnalyticsEvent; params: Record<string, unknown>; demandSlug?: string }) {
   const key = JSON.stringify(params);
   useEffect(() => {
-    track(event, JSON.parse(key));
+    return afterAnalyticsConsent(() => { track(event, JSON.parse(key)); });
   }, [event, key]);
   useEffect(() => {
     if (!demandSlug) return;

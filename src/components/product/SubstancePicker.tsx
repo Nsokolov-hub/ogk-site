@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useState } from 'react';
 import { Check, ShoppingCart } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/navigation';
@@ -10,6 +10,8 @@ import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { openCartDrawer } from '@/lib/cart-drawer';
 import { rfqKey, useRfqStore } from '@/lib/rfq-store';
+import { itemFromProduct } from '@/lib/rfq-item';
+import { defaultProductSelection } from '@/lib/product-selection';
 
 /**
  * Позиции субстанции с выбором нескольких строк и добавлением в корзину одним действием (ТЗ SC-05).
@@ -24,6 +26,7 @@ export function SubstancePicker({
   groups: { role: string; title: string; items: ProductPreview[] }[];
   headingLevel?: 'h2' | 'h3';
 }) {
+  const locale = useLocale();
   const t = useTranslations('substancePage.picker');
   const tp = useTranslations('product');
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -60,22 +63,7 @@ export function SubstancePicker({
   const addSelected = () => {
     const chosen = all.filter((p) => selected.has(p.id));
     for (const p of chosen) {
-      const pk = p.packagings[0];
-      add({
-        productId: p.id,
-        slug: p.slug,
-        name: p.name,
-        brand: p.brand.name,
-        catalogNumber: p.catalogNumber,
-        cas: p.cas,
-        categorySlug: p.categorySlug,
-        packagings: p.packagings,
-        customAllowed: p.customPackaging,
-        packagingId: pk?.id ?? null,
-        packagingLabel: pk?.label,
-        quantity: 1,
-        analogue: 'none',
-      });
+      add(itemFromProduct(p, defaultProductSelection(p), locale));
       track('add_to_rfq', { sku: p.catalogNumber, brand: p.brand.name, place: 'list' });
     }
     setAdded(chosen.length);

@@ -27,6 +27,7 @@ interface RequestRow {
   crmStage: string | null;
   crmRequestNumber: string | null;
   sale: { amount: string; currency: string | null } | null;
+  payments: { currency: string; received: string; refunded: string; net: string; receipts: number; pendingRefunds: string }[];
 }
 
 const STATUS: Record<string, [string, 'good' | 'warn' | 'bad']> = {
@@ -38,7 +39,7 @@ const CRM_STATUS: Record<string, string> = { in_work: 'в работе', convert
 const CRM_STAGE: Record<string, string> = {
   new: 'новая', clarification: 'уточнение', collecting_quotes: 'сбор квот', quote_given: 'квота получена',
   calculation: 'расчёт', proposal_sent: 'КП отправлено', composition_agreed: 'состав согласован',
-  awaiting_payment: 'ждёт оплаты', sale_confirmed: 'продажа', lost: 'проиграна',
+  awaiting_payment: 'ждёт оплаты', sale_confirmed: 'заказ подтверждён', lost: 'проиграна',
 };
 
 function money(sale: RequestRow['sale']) {
@@ -46,13 +47,21 @@ function money(sale: RequestRow['sale']) {
 }
 
 function CrmProgress({ r }: { r: RequestRow }) {
-  if (!r.crmStatus && !r.crmStage) return <span className="muted">—</span>;
+  if (!r.crmStatus && !r.crmStage && !r.payments?.length) return <span className="muted">—</span>;
   return (
     <>
       {r.crmStage ? <Badge tone={r.crmStage === 'sale_confirmed' ? 'good' : r.crmStage === 'lost' ? 'bad' : 'info'}>{CRM_STAGE[r.crmStage] ?? r.crmStage}</Badge>
         : <Badge tone={r.crmStatus === 'rejected' ? 'bad' : 'info'}>{CRM_STATUS[r.crmStatus ?? ''] ?? r.crmStatus}</Badge>}
       {r.crmRequestNumber ? <div className="muted small">{r.crmRequestNumber}</div> : null}
-      {r.sale ? <div className="small">{money(r.sale)}</div> : null}
+      {r.sale ? <div className="small">Сумма заказа: {money(r.sale)}</div> : null}
+      {(r.payments ?? []).map((payment) => (
+        <div key={payment.currency} className="small">
+          {Number(payment.received) > 0 ? <>Подтверждённые поступления: {Number(payment.received).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</> : null}
+          {Number(payment.refunded) > 0 ? <> · Возвраты: {Number(payment.refunded).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</> : null}
+          {Number(payment.received) > 0 ? <div>После возвратов: {Number(payment.net).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</div> : null}
+          {Number(payment.pendingRefunds) > 0 ? <div className="muted">Возврат {Number(payment.pendingRefunds).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency} ожидает поступления в журнал.</div> : null}
+        </div>
+      ))}
     </>
   );
 }
@@ -68,6 +77,7 @@ export function Requests() {
   return (
     <>
       <PageHeader title="Журнал заявок" description="Каждая заявка сначала сохраняется на сайте, потом уходит в CRM через очередь с повторами (RFQ-07)." />
+      <FunnelOverview />
       <div className="filters">
         <TextInput placeholder={list.data?.pii ? 'Номер, компания, почта, телефон, ИНН' : 'Номер заявки или номер CRM'} value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
         <Select value={status} options={[{ value: '', label: 'Все заявки' }, ...Object.entries(STATUS).map(([k, v]) => ({ value: k, label: `${v[0]} · ${list.data?.counts[k] ?? 0}` }))]} onChange={(e) => { setParams(e.target.value ? { status: e.target.value } : {}); setPage(1); }} />
@@ -107,6 +117,30 @@ export function Requests() {
   );
 }
 
+type FunnelCounts = { leads: number; deals: number; qualified: number; proposals: number; confirmedOrders: number; paymentReceived: number; payments: RequestRow['payments'] };
+function FunnelOverview() {
+  const [period, setPeriod] = useState('30');
+  const report = useQuery({ queryKey: ['request-funnel', period], queryFn: () => api.get<{ dateFrom: string; dateTo: string; historyIncomplete: number; channels: (FunnelCounts & { channel: string; name: string })[]; totals: FunnelCounts }>('/requests/funnel', { period }), refetchInterval: 60_000 });
+  const data = report.data;
+  const cells = (line: FunnelCounts) => <><td className="num">{line.leads}</td><td className="num">{line.deals}</td><td className="num">{line.qualified}</td><td className="num">{line.proposals}</td><td className="num">{line.confirmedOrders}</td><td className="num">{line.paymentReceived}</td></>;
+  return (
+    <section className="panel stack" aria-label="Воронка заявок и поступлений">
+      <div className="row"><h2>Заявки → сделки → поступления</h2><Select value={period} onChange={(event) => setPeriod(event.target.value)} options={[{ value: '7', label: '7 дней' }, { value: '30', label: '30 дней' }, { value: '90', label: '90 дней' }]} /></div>
+      <p className="muted small">Сохранённые заявки сайта за период; результаты сделок — на текущий момент. Несколько заявок, объединённых в одну сделку CRM, считаются одной сделкой. Подтверждённое поступление может быть частичной оплатой.</p>
+      <p className="muted small">Поступления учитываются по подтверждённым фактам из CRM. Отсутствие записи в журнале не подтверждает отсутствие оплаты в прошлом.</p>
+      <ErrorBox error={report.error} />
+      {report.isLoading ? <Loading /> : data ? <>
+        <div className="table-wrap"><table className="table"><thead><tr><th>Канал</th><th>Заявки</th><th>Сделки CRM</th><th>Квалифицированы</th><th>КП</th><th>Заказ подтверждён</th><th>С поступлением</th></tr></thead><tbody>
+          {data.channels.map((line) => <tr key={line.channel}><td>{line.name}</td>{cells(line)}</tr>)}
+          <tr><th>Всего</th>{cells(data.totals)}</tr>
+        </tbody></table></div>
+        {data.totals.payments.map((payment) => <p key={payment.currency} className="small">{payment.currency}: поступления {Number(payment.received).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}; возвраты {Number(payment.refunded).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}; после возвратов {Number(payment.net).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}{Number(payment.pendingRefunds) > 0 ? `; ожидают сверки возвраты ${payment.pendingRefunds}` : ''}.</p>)}
+        {data.historyIncomplete ? <div className="note">У {data.historyIncomplete} заявок история этапов неполна: для ранних данных известен только текущий статус. Прошлые даты переходов не восстанавливаются предположениями.</div> : null}
+      </> : null}
+    </section>
+  );
+}
+
 interface Card extends RequestRow {
   attempts: { attempt: number; at: string; outcome: string; statusCode: number | null; error: string | null; durationMs: number }[];
   attachments: { name: string; size: number }[];
@@ -140,7 +174,7 @@ function RequestCard({ id, onClose }: { id: string; onClose: () => void }) {
           <div className="row">
             <Badge tone={STATUS[c.status]?.[1]}>{STATUS[c.status]?.[0] ?? c.status}</Badge>
             {c.crmNumber ? <span>в CRM: <strong>{c.crmNumber}</strong> ({formatDate(c.deliveredAt)})</span> : null}
-            {c.crmStatus || c.crmStage ? <span>· в работе CRM: <CrmProgress r={c} /></span> : null}
+            {c.crmStatus || c.crmStage || c.payments?.length ? <span>· в работе CRM: <CrmProgress r={c} /></span> : null}
             {can('requests.resend') && c.status !== 'delivered' ? <Button size="sm" busy={resend.isPending} onClick={() => resend.mutate()}>Отправить в CRM повторно</Button> : null}
           </div>
           <div className="grid-2">

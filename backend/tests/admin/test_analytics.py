@@ -4,6 +4,7 @@ each period come from one snapshot, a refused service leaves the other one worki
 import json
 from datetime import date, datetime, timedelta
 from pathlib import Path
+from typing import TypedDict
 
 import httpx
 import pytest
@@ -18,6 +19,12 @@ from app.crm.conversions import METRIKA_TARGETS
 TOKEN = 'y0_AgAAAAB-test-token_0123456789abcdefXYZ'
 TODAY = date(2026, 11, 2)
 HOST = 'https:www.ogk-chem.ru:443'
+
+
+class ConcurrencyState(TypedDict):
+    now: int
+    most: int
+    refused: set[str]
 
 
 class FakeYandex:
@@ -335,7 +342,7 @@ def test_metrica_gets_at_most_two_requests_at_a_time_and_a_429_is_retried(fake, 
     import time
 
     real, lock = fake.handle, threading.Lock()
-    state = {'now': 0, 'most': 0, 'refused': set()}
+    state: ConcurrencyState = {'now': 0, 'most': 0, 'refused': set()}
 
     def handle(request: httpx.Request) -> httpx.Response:
         if request.url.host != 'api-metrika.yandex.net' or request.url.path != '/stat/v1/data':

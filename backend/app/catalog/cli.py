@@ -15,6 +15,8 @@
     python -m app.catalog.cli indexnow-sitemap             — queue every Russian address of the Sitemap for IndexNow
     python -m app.catalog.cli cas-names FILE.json [--replace] [--reindex] — Russian names of CAS pages ({cas: name})
     python -m app.catalog.cli index-pilot --brands a,b [--limit N] [--undo] — open cards of these brands for indexing
+    python -m app.catalog.cli enrich-usp-enoxaparin [--apply] — reviewed two-card identity; dry run by default
+    python -m app.catalog.cli quality-pilot --brands usp,edqm [--limit 25] [--apply] — bounded 20–50-page pilot
 """
 
 import argparse
@@ -236,6 +238,59 @@ def _index_pilot(args: argparse.Namespace) -> None:
     _refresh_storefront()
 
 
+def _index_targeted(ids: list[str]) -> int:
+    """Do not drain an unrelated import's queue when updating two reviewed cards or a bounded pilot."""
+    from app.catalog.search import indexer
+    from app.catalog.search.meili import engine
+
+    search = engine()
+    total = 0
+    with SessionLocal.begin() as db:
+        indexer.ensure_index(db, search)
+    while ids:
+        with SessionLocal.begin() as db:
+            count = indexer.index_pending(db, search, limit=50, product_ids=ids)
+        if not count:
+            break
+        total += count
+    search.wait(timeout=120)
+    return total
+
+
+def _enrich_usp(args: argparse.Namespace) -> None:
+    from app.catalog.identity import enrich_existing
+    from app.core import storefront
+
+    with SessionLocal.begin() as db:
+        result = enrich_existing(db, apply=args.apply)
+    if result['errors']:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        raise SystemExit(2)
+    if args.apply:
+        result['indexed'] = _index_targeted([row['id'] for row in result['products']])
+        # Product answers have their own tags; indexing here consumes the worker's change queue.
+        result['cacheInvalidated'] = storefront.revalidate(
+            ['catalog', *(f'product:{row["slug"]}' for row in result['products'])])
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+def _quality_pilot(args: argparse.Namespace) -> None:
+    from app.catalog import pilot
+    from app.core import storefront
+
+    slugs = [value.strip() for value in args.brands.split(',') if value.strip()]
+    try:
+        with SessionLocal.begin() as db:
+            result = pilot.apply_quality_pilot(db, slugs, args.limit) if args.apply else \
+                {**pilot.quality_report(db, slugs, args.limit), 'applied': False}
+    except (pilot.UnknownBrands, ValueError) as exc:
+        raise SystemExit(str(exc)) from None
+    if args.apply:
+        result['indexed'] = _index_targeted([row['id'] for row in result['candidates']])
+        result['cacheInvalidated'] = storefront.revalidate_catalog()
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
 def _misses(args: argparse.Namespace) -> None:
     from app.catalog.models import SearchMiss
 
@@ -317,11 +372,18 @@ def main() -> None:
     command.add_argument('--brands', required=True, help='слаги брендов через запятую')
     command.add_argument('--limit', type=int, default=10000)
     command.add_argument('--undo', action='store_true', help='вернуть решение полноте карточки')
+    command = commands.add_parser('enrich-usp-enoxaparin', help='проверенные название, канал и ампула существующих USP/Sigma')
+    command.add_argument('--apply', action='store_true', help='применить; без флага — только JSON-предпросмотр')
+    command = commands.add_parser('quality-pilot', help='отчёт и ограниченный SEO-пилот реальных карточек')
+    command.add_argument('--brands', required=True, help='слаги выбранных брендов через запятую')
+    command.add_argument('--limit', type=int, choices=range(20, 51), default=25)
+    command.add_argument('--apply', action='store_true', help='открыть выбранные карточки; без флага — отчёт')
     args = parser.parse_args()
     handlers = {'seed': _seed, 'recategorize': _recategorize, 'index': _index, 'reindex': _reindex, 'import': _import, 'batches': _batches,
                 'issues': _issues, 'rollback': _rollback, 'controlled': _controlled, 'sync-brands': _sync_brands,
                 'cas-pages': _cas_pages, 'indexnow-sitemap': _indexnow_sitemap, 'cas-names': _cas_names,
                 'index-pilot': _index_pilot, 'competitors': _competitors,
+                'enrich-usp-enoxaparin': _enrich_usp, 'quality-pilot': _quality_pilot,
                 'misses': _misses, 'setting': _setting}
     handlers[args.command](args)
 

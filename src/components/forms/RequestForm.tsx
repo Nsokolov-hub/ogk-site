@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { submitSiteRequest } from '@/lib/api';
 import { submitErrorKey } from '@/lib/submit-error';
-import { track } from '@/lib/analytics';
+import { track, trackLeadSubmit } from '@/lib/analytics';
 import { useFormMeta } from '@/lib/hooks';
 import { toE164 } from '@/lib/phone';
 import { ATTACHMENT_EXTENSIONS, checkAttachment, fields } from '@/lib/validation';
@@ -21,17 +21,21 @@ import { FormStatus } from './FormStatus';
 import { Honeypot } from './Honeypot';
 import { PhoneInput } from './PhoneInput';
 
-const schema = z.object({
-  name: fields.fullName,
-  company: fields.company,
+const schema = (hasAttachment: boolean) => z.object({
+  name: fields.optionalName,
+  company: fields.optionalCompany,
   email: fields.email,
-  phone: fields.phone,
-  message: fields.message,
+  phone: fields.optionalPhone,
+  message: z.string().trim(),
   consent: fields.consent,
   website: fields.website,
+}).superRefine((value, ctx) => {
+  if (!hasAttachment && value.message.length < 10) {
+    ctx.addIssue({ code: 'custom', path: ['message'], message: 'messageShort' });
+  }
 });
 
-type Values = z.infer<typeof schema>;
+type Values = z.infer<ReturnType<typeof schema>>;
 
 /** Событие «подставить текст в форму заявки» — кнопки «Запросить CoA партии», «Запросить SDS» на карточке */
 export const REQUEST_PREFILL_EVENT = 'ogk:request-prefill';
@@ -71,7 +75,7 @@ export function RequestForm({
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<Values>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(schema(!!file)),
     mode: 'onTouched',
     defaultValues: { name: '', company: '', email: '', phone: '', message: defaultMessage, consent: false, website: '' },
   });
@@ -95,6 +99,10 @@ export function RequestForm({
   const err = (key?: string) => (key ? te(key) : undefined);
 
   const onSubmit = async (v: Values) => {
+    if (fileError) {
+      track('form_error', { form_type: formType, reason: 'attachment_validation' });
+      return;
+    }
     setStatus(null);
     try {
       const res = v.website
@@ -117,11 +125,15 @@ export function RequestForm({
             pageUrl: window.location.href,
             formType,
           });
-      track('form_submit', { form_type: formType, page: window.location.pathname });
+      if (!v.website) {
+        trackLeadSubmit(formType, { request_id: res.siteRequestId, page: window.location.pathname });
+        track('form_submit', { form_type: formType, page: window.location.pathname });
+      }
       setStatus({ kind: 'success', number: res.number });
       reset({ name: '', company: '', email: '', phone: '', message: defaultMessage, consent: false, website: '' });
       setFile(undefined);
     } catch (error) {
+      track('form_error', { form_type: formType, reason: submitErrorKey(error) });
       setStatus({ kind: 'error', key: submitErrorKey(error) });
     }
   };
@@ -143,17 +155,20 @@ export function RequestForm({
     <form
       ref={formRef}
       noValidate
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={(event) => {
+        track('form_attempt', { form_type: formType });
+        void handleSubmit(onSubmit, () => track('form_error', { form_type: formType, reason: 'validation' }))(event);
+      }}
       onFocusCapture={onFocusCapture}
       className="relative flex scroll-mt-32 flex-col gap-4 md:gap-5"
       aria-busy={isSubmitting}
     >
       <p className="text-small text-text-secondary">{t('requiredHint')}</p>
+      <p className="text-small text-text-secondary">{t('quickHint')}</p>
       <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-        <Input label={t('fullName')} required autoComplete="name" placeholder={t('fullNamePlaceholder')} error={err(errors.name?.message)} {...register('name')} />
+        <Input label={t('fullName')} autoComplete="name" placeholder={t('fullNamePlaceholder')} error={err(errors.name?.message)} {...register('name')} />
         <Input
           label={t('company')}
-          required
           autoComplete="organization"
           placeholder={t('companyPlaceholder')}
           error={err(errors.company?.message)}
@@ -175,7 +190,6 @@ export function RequestForm({
           render={({ field }) => (
             <PhoneInput
               label={t('phone')}
-              required
               placeholder={t('phonePlaceholder')}
               error={err(errors.phone?.message)}
               name={field.name}
@@ -187,7 +201,7 @@ export function RequestForm({
           )}
         />
       </div>
-      <Textarea label={t('message')} required placeholder={t('messagePlaceholder')} error={err(errors.message?.message)} {...register('message')} />
+      <Textarea label={t('message')} required={!file} placeholder={t('messagePlaceholder')} error={err(errors.message?.message)} {...register('message')} />
       <FileInput
         label={t('attach')}
         hint={t('attachHint')}
@@ -203,7 +217,7 @@ export function RequestForm({
           }
           const problem = checkAttachment(f);
           setFileError(problem ? te(problem) : undefined);
-          setFile(problem ? undefined : f);
+          setFile(f);
         }}
       />
       <ConsentCheckbox kind="personalData" docs={docs} error={err(errors.consent?.message)} {...register('consent')} />

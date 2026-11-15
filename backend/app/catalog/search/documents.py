@@ -12,6 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.catalog.cas_pages import name_variants
+from app.catalog.identity import identifier_aliases, indexed_as_alias, public_identity
 from app.catalog.models import (
     Brand,
     BrandAlias,
@@ -88,7 +89,8 @@ def visible(product: Product, ctx: Context) -> bool:
     return not (ctx.hide_controlled and product.controlled)
 
 
-def build(db: Session, products: list[Product], ctx: Context) -> tuple[list[dict[str, Any]], list[str]]:
+def build(db: Session, products: list[Product], ctx: Context, *, for_index: bool = False
+          ) -> tuple[list[dict[str, Any]], list[str]]:
     """(documents to upsert, ids to delete)."""
     ids = [p.id for p in products]
     packs: dict[str, list[Packaging]] = defaultdict(list)
@@ -105,7 +107,7 @@ def build(db: Session, products: list[Product], ctx: Context) -> tuple[list[dict
 
     documents, deleted = [], []
     for product in products:
-        if not visible(product, ctx):
+        if not visible(product, ctx) or (for_index and indexed_as_alias(db, product)):
             deleted.append(product.id)
             continue
         documents.append(document(product, ctx, packs[product.id], links[product.id]))
@@ -122,7 +124,8 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
             if path not in paths:
                 paths.append(path)
     custom = product.custom_packaging if product.custom_packaging is not None else brand.custom_packaging
-    numbers = [compact(product.catalog_number)] + [compact(p.catalog_number) for p in packs if p.catalog_number]
+    numbers = ([compact(product.catalog_number)] + [compact(p.catalog_number) for p in packs if p.catalog_number]
+               + [compact(alias) for alias in identifier_aliases(product)])
     image = product.images[0] if product.images else None
     doc: dict[str, Any] = {
         'id': product.id,
@@ -137,6 +140,7 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
         'brand_slug': brand.slug,
         'brand_logo': brand.logo,
         'brand_aliases': [a for a in ctx.aliases.get(brand.id, []) if a.casefold() != brand.name.casefold()],
+        'identity': public_identity(product),
         'catalog_number': product.catalog_number,
         'numbers': list(dict.fromkeys(n for n in numbers if n)),
         'cas': product.cas,

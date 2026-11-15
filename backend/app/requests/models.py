@@ -9,6 +9,7 @@ from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import (
+    DDL,
     JSON,
     BigInteger,
     Boolean,
@@ -20,6 +21,8 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    UniqueConstraint,
+    event,
 )
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -27,6 +30,38 @@ from app.core.db import Base, Entity, utcnow
 
 # accepted → delivered; accepted → failed (a permanent CRM refusal or 24 hours of failures) → resent by hand.
 REQUEST_STATUSES = ('accepted', 'delivered', 'failed')
+
+
+class SiteRequestPayment(Entity):
+    """Append-only facts from confirmed CRM receipts/refunds; a receipt need not pay the entire order."""
+
+    __tablename__ = 'site_request_payments'
+    __table_args__ = (
+        UniqueConstraint('kind', 'external_id', name='uq_site_request_payment_external'),
+        CheckConstraint("kind IN ('received', 'refunded')", name='ck_site_request_payment_kind'),
+        CheckConstraint('amount > 0', name='ck_site_request_payment_amount'),
+    )
+    site_request_id: Mapped[str] = mapped_column(ForeignKey('site_requests.id'), index=True)
+    kind: Mapped[str] = mapped_column(String(12))
+    external_id: Mapped[str] = mapped_column(String(64))
+    payment_id: Mapped[str] = mapped_column(String(64), index=True)
+    amount: Mapped[Decimal] = mapped_column(Numeric(24, 8))
+    currency: Mapped[str] = mapped_column(String(3))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    payload_hash: Mapped[str] = mapped_column(String(64))
+
+
+_PAYMENT_FUNCTION = """CREATE OR REPLACE FUNCTION ogk_protect_request_payments() RETURNS trigger
+LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'Confirmed payment facts are append-only' USING ERRCODE = '23514';
+RETURN NULL; END $$"""
+event.listen(SiteRequestPayment.__table__, 'after_create', DDL(_PAYMENT_FUNCTION).execute_if(dialect='postgresql'))
+event.listen(SiteRequestPayment.__table__, 'after_create', DDL(
+    'CREATE TRIGGER protect_request_payments BEFORE UPDATE OR DELETE ON site_request_payments '
+    'FOR EACH ROW EXECUTE FUNCTION ogk_protect_request_payments()').execute_if(dialect='postgresql'))
+for _operation in ('UPDATE', 'DELETE'):
+    event.listen(SiteRequestPayment.__table__, 'after_create', DDL(
+        f'CREATE TRIGGER protect_request_payments_{_operation.lower()} BEFORE {_operation} ON site_request_payments '
+        "BEGIN SELECT RAISE(ABORT, 'Confirmed payment facts are append-only'); END").execute_if(dialect='sqlite'))
 
 
 class SiteRequest(Entity):
@@ -73,6 +108,10 @@ class SiteRequest(Entity):
     crm_stage: Mapped[str | None] = mapped_column(String(40))
     crm_request_number: Mapped[str | None] = mapped_column(String(40))
     crm_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    crm_request_id: Mapped[str | None] = mapped_column(String(36))
+    qualified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    proposal_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    order_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     sale_amount: Mapped[Decimal | None] = mapped_column(Numeric(18, 2))
     sale_currency: Mapped[str | None] = mapped_column(String(3))
 

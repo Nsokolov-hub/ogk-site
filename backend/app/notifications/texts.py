@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import settings
 from app.requests.models import SiteRequest, SiteRequestAttachment, SiteRequestItem
+from app.requests.repeat import repeat_url
 from app.subscriptions.models import Subscriber
 
 KIND_RU = {'product_rfq': 'Запрос КП (корзина)', 'one_click': 'Заказ в 1 клик', 'service': 'Заявка на услугу',
@@ -58,22 +59,24 @@ def customer_letter(db: Session, row: SiteRequest) -> tuple[str, str]:
     items = item_lines(db, row, english)
     if english:
         subject = f'Your request {row.number} — OGK-CHEM'
-        body = [f'Dear {row.customer_name},', '',
+        body = [f'Dear {row.customer_name},' if row.customer_name else 'Hello,', '',
                 mail_setting(db, 'customer_intro_en').replace('{number}', row.number) or
                 f'We have received your request {row.number}. A manager will contact you within 2 business hours '
                 '(Mon–Fri, 9:00–18:00 Moscow time) with a quotation.']
         if items:
             body += ['', 'Items:', *items]
+            body += ['', 'Repeat this item list (you can edit it before sending):', repeat_url(row)]
         body += ['', 'If you need to add something, just reply to this e-mail.', '', 'OGK-CHEM',
                  '+7 495 234 28 63 · order@ogk-chem.ru', settings.site_url]
     else:
         subject = f'Ваша заявка {row.number} — ОГК-ХИМ'
-        body = [f'Здравствуйте, {row.customer_name}!', '',
+        body = [f'Здравствуйте, {row.customer_name}!' if row.customer_name else 'Здравствуйте!', '',
                 mail_setting(db, 'customer_intro_ru').replace('{number}', row.number) or
                 f'Мы получили вашу заявку {row.number}. Менеджер свяжется с вами в течение 2 рабочих часов '
                 '(пн–пт, 9:00–18:00 по Москве) и подготовит коммерческое предложение.']
         if items:
             body += ['', 'Состав заявки:', *items]
+            body += ['', 'Повторить этот список товаров (его можно изменить перед отправкой):', repeat_url(row)]
         body += ['', 'Если нужно что-то добавить, просто ответьте на это письмо.', '', 'ОГК-ХИМ',
                  '+7 495 234 28 63 · order@ogk-chem.ru', settings.site_url]
     return subject, '\n'.join(body)

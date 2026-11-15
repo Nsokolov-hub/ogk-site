@@ -86,7 +86,7 @@ export function RfqItemRow({ item }: { item: RfqItem }) {
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.2fr)_auto_minmax(0,1.4fr)] lg:items-end lg:gap-6">
         {item.free ? (
-          <div className="hidden lg:block" />
+          <Input label={tp('packaging')} value={item.packagingLabel ?? ''} onChange={(e) => updateFree(item.key, { packagingLabel: e.target.value })} />
         ) : packOptions.length > 1 ? (
           <Select
             label={tp('packaging')}
@@ -108,7 +108,7 @@ export function RfqItemRow({ item }: { item: RfqItem }) {
           </div>
         )}
         <QuantityStepper
-          label={t('quantity')}
+          label={item.unit && item.unit !== 'pack' ? t('quantityIn', { unit: tu(item.unit) }) : t('quantity')}
           value={item.quantity}
           onChange={(n) => setQuantity(item.key, n)}
           decreaseLabel={t('decrease')}

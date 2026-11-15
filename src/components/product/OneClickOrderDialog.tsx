@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import { z } from 'zod';
 import type { PackUnit, ProductPreview } from '@/types/catalog';
-import type { Analogue } from '@/types/requests';
 import type { SiteSettings } from '@/types/settings';
 import { ConsentCheckbox } from '@/components/forms/ConsentCheckbox';
 import { FormStatus } from '@/components/forms/FormStatus';
@@ -19,9 +18,11 @@ import { QuantityStepper } from '@/components/ui/QuantityStepper';
 import { Select } from '@/components/ui/Select';
 import { submitSiteRequest } from '@/lib/api';
 import { submitErrorKey } from '@/lib/submit-error';
-import { track } from '@/lib/analytics';
+import { track, trackLeadSubmit } from '@/lib/analytics';
 import { useFormMeta } from '@/lib/hooks';
 import { useOneClickStore } from '@/lib/one-click-store';
+import { requestItemFromProduct } from '@/lib/rfq-item';
+import { defaultProductSelection, type ProductSelection } from '@/lib/product-selection';
 import { toE164 } from '@/lib/phone';
 import { fields } from '@/lib/validation';
 import { AnalogueChoice } from './AnalogueChoice';
@@ -36,9 +37,9 @@ const schema = z
     customUnit: z.enum(['mg', 'g', 'ml', 'pcs']),
     quantity: z.number().int().min(1).max(999),
     analogue: z.enum(['none', 'allowed', 'requested']),
-    name: fields.shortName,
-    company: fields.company,
-    phone: fields.phone,
+    name: fields.optionalName,
+    company: fields.optionalCompany,
+    phone: fields.optionalPhone,
     email: fields.email,
     consent: fields.consent,
     website: fields.website,
@@ -55,7 +56,7 @@ type Values = z.infer<typeof schema>;
 export function OneClickOrderDialog({ docs }: { docs: SiteSettings['docs'] }) {
   const t = useTranslations('oneClick');
   const tc = useTranslations('common');
-  const { isOpen, product, packagingId, trigger, close } = useOneClickStore();
+  const { isOpen, product, selection, trigger, close } = useOneClickStore();
   // Новый ключ на каждое открытие — форма начинается с чистого листа
   const [session, setSession] = useState(0);
   const [lastOpen, setLastOpen] = useState(false);
@@ -80,7 +81,7 @@ export function OneClickOrderDialog({ docs }: { docs: SiteSettings['docs'] }) {
       }}
     >
       {product ? (
-        <OneClickForm key={session} product={product} initialPackagingId={packagingId} docs={docs} onClose={close} />
+        <OneClickForm key={session} product={product} initialSelection={selection ?? defaultProductSelection(product)} docs={docs} onClose={close} />
       ) : null}
     </Dialog>
   );
@@ -88,12 +89,12 @@ export function OneClickOrderDialog({ docs }: { docs: SiteSettings['docs'] }) {
 
 function OneClickForm({
   product,
-  initialPackagingId,
+  initialSelection,
   docs,
   onClose,
 }: {
   product: ProductPreview;
-  initialPackagingId: string | null;
+  initialSelection: ProductSelection;
   docs: SiteSettings['docs'];
   onClose: () => void;
 }) {
@@ -106,8 +107,6 @@ function OneClickForm({
   const [result, setResult] = useState<{ number: string } | null>(null);
   const [failed, setFailed] = useState<string | null>(null);
 
-  const firstPackaging = initialPackagingId ?? product.packagings[0]?.id ?? (product.customPackaging ? CUSTOM_PACKAGING : '');
-
   const {
     register,
     control,
@@ -117,11 +116,7 @@ function OneClickForm({
     resolver: zodResolver(schema),
     mode: 'onTouched',
     defaultValues: {
-      packagingId: firstPackaging,
-      customAmount: '',
-      customUnit: 'mg',
-      quantity: 1,
-      analogue: (product.discontinued ? 'requested' : 'none') satisfies Analogue,
+      ...initialSelection,
       name: '',
       company: '',
       phone: '',
@@ -139,7 +134,6 @@ function OneClickForm({
 
   const onSubmit = async (v: Values) => {
     setFailed(null);
-    const pk = product.packagings.find((p) => p.id === v.packagingId);
     const custom = v.packagingId === CUSTOM_PACKAGING;
     try {
       const res = v.website
@@ -154,30 +148,21 @@ function OneClickForm({
               email: v.email.trim(),
               marketingConsent: false,
             },
-            items: [
-              {
-                siteProductId: product.id,
-                brand: product.brand.name,
-                catalogNumber: product.catalogNumber,
-                cas: product.cas,
-                name: product.name,
-                packaging: custom ? `${v.customAmount} ${t(`units.${v.customUnit}`)}` : pk?.label,
-                quantity: v.quantity,
-                unit: 'pack',
-                analogue: v.analogue,
-                customPackaging: custom,
-                pageUrl: window.location.href,
-              },
-            ],
+            items: [requestItemFromProduct(product, v, locale, window.location.href,
+              custom ? `${v.customAmount} ${t(`units.${v.customUnit}`)}` : undefined)],
             personalDataConsent: true,
             antispam: { website: v.website ?? '', elapsedMs: elapsedMs() },
             pageUrl: window.location.href,
             formType: 'one_click',
           });
-      track('product_request', { sku: product.catalogNumber, brand: product.brand.name, category: product.categorySlug });
-      track('form_submit', { form_type: 'one_click', page: window.location.pathname });
+      if (!v.website) {
+        track('product_request', { sku: product.catalogNumber, brand: product.brand.name, category: product.categorySlug });
+        trackLeadSubmit('one_click', { request_id: res.siteRequestId, page: window.location.pathname });
+        track('form_submit', { form_type: 'one_click', page: window.location.pathname });
+      }
       setResult({ number: res.number });
     } catch (error) {
+      track('form_error', { form_type: 'one_click', reason: submitErrorKey(error) });
       setFailed(submitErrorKey(error));
     }
   };
@@ -196,7 +181,10 @@ function OneClickForm({
   }
 
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-6" aria-busy={isSubmitting}>
+    <form noValidate onSubmit={(event) => {
+      track('form_attempt', { form_type: 'one_click' });
+      void handleSubmit(onSubmit, () => track('form_error', { form_type: 'one_click', reason: 'validation' }))(event);
+    }} onFocusCapture={onFocusCapture} className="relative flex flex-col gap-6" aria-busy={isSubmitting}>
       {/* Товар */}
       <div className="rounded-field bg-surface p-4">
         <p className="chem-wrap text-body font-medium text-text">{product.name}</p>
@@ -268,16 +256,16 @@ function OneClickForm({
       {/* Контакты */}
       <fieldset className="flex flex-col gap-4">
         <legend className="mb-3 text-body font-medium text-text">{t('contacts')}</legend>
+        <p className="mb-3 text-small text-text-secondary">{tf('quickContactHint')}</p>
         <div className="grid gap-4 md:grid-cols-2">
-          <Input label={tf('name')} required autoComplete="name" error={err(errors.name?.message)} {...register('name')} />
-          <Input label={tf('companyShort')} required autoComplete="organization" error={err(errors.company?.message)} {...register('company')} />
+          <Input label={tf('name')} autoComplete="name" error={err(errors.name?.message)} {...register('name')} />
+          <Input label={tf('companyShort')} autoComplete="organization" error={err(errors.company?.message)} {...register('company')} />
           <Controller
             control={control}
             name="phone"
             render={({ field }) => (
               <PhoneInput
                 label={tf('phone')}
-                required
                 placeholder={tf('phonePlaceholder')}
                 error={err(errors.phone?.message)}
                 name={field.name}

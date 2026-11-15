@@ -50,7 +50,11 @@ TOKEN_SHAPE = re.compile(r'[A-Za-z0-9_.\-]{20,300}')
 # Events the site sends (src/lib/analytics.ts) and the stages of the CRM (app.crm.conversions.METRIKA_TARGETS):
 # goals «JavaScript-событие» with these identifiers.
 GOALS: list[tuple[str, str]] = [
-    ('form_submit', 'Заявка: отправлена любая форма'),
+    ('form_submit', 'Форма: отправлена (включая подписку)'),
+    ('lead_submit', 'Заявка: сохранён коммерческий запрос'),
+    ('request_open', 'Открытие формы запроса'),
+    ('form_attempt', 'Попытка отправить форму'),
+    ('form_error', 'Ошибка отправки или заполнения формы'),
     ('quote_request', 'Заявка: запрос КП из корзины'),
     ('product_request', 'Заявка: заказ в один клик'),
     ('add_to_rfq', 'Добавление позиции в запрос'),
@@ -59,11 +63,20 @@ GOALS: list[tuple[str, str]] = [
     ('click_email', 'Клик по почте'),
     ('download_document', 'Скачивание документа'),
     ('site_search', 'Поиск по сайту'),
+    ('search_suggest', 'Подсказки поиска'),
+    ('search_submit', 'Отправка поискового запроса'),
+    ('search_no_results', 'Завершённый поиск без товаров'),
+    ('search_result_click', 'Переход из результатов поиска'),
+    ('catalog_filter', 'Применение фильтра каталога'),
+    ('product_view', 'Просмотр карточки товара'),
+    ('brand_view', 'Просмотр бренда'),
+    ('service_view', 'Просмотр услуги'),
     ('subscribe', 'Подписка на рассылку'),
     ('form_start', 'Начало заполнения формы'),
     ('crm_qualified', 'CRM: заявка взята в работу'),
     ('crm_proposal', 'CRM: отправлено КП'),
     ('crm_sale', 'CRM: продажа'),
+    ('crm_payment_received', 'CRM: первое подтверждённое поступление'),
 ]
 
 SEVERITY = {'FATAL': 'Фатальная', 'CRITICAL': 'Критичная', 'POSSIBLE_PROBLEM': 'Возможная проблема',

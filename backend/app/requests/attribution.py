@@ -55,9 +55,9 @@ def host_of(url: str | None) -> str:
 
 
 def channel(touch: dict[str, str] | None) -> str:
-    """cpc, organic, referral, direct, email or social — rules of TZ 15.3."""
+    """A missing touch is unknown; an observed landing without a referring source is direct."""
     if not touch:
-        return 'direct'
+        return 'unknown'
     medium = touch.get('utm_medium', '').lower()
     source = touch.get('utm_source', '').lower()
     if touch.get('yclid') or touch.get('gclid') or medium in PAID_MEDIUMS:

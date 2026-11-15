@@ -35,8 +35,8 @@ export default async function HomePage({ params, searchParams }: Props) {
   return (
     <>
       <JsonLd data={[organizationLd(settings), websiteLd(settings, locale)]} />
+      <HeroSearch search={content.hero.search} facts={content.hero.facts} intro={content.hero.slides[0]} />
       <HeroPlates slides={content.hero.slides} />
-      <HeroSearch search={content.hero.search} facts={content.hero.facts} />
       <ProductsSection content={content.products} locale={locale} />
       <BrandsSection brands={content.brands} promo={content.promo} />
       <QualitySection quality={content.quality} />

@@ -50,7 +50,7 @@ export function ProductStickyBar({ product, phone }: { product: ProductPreview; 
         size="m"
         aria-haspopup="dialog"
         className="min-w-0 flex-1"
-        onClick={(e) => openOneClick({ product, packagingId: product.packagings[0]?.id ?? null, trigger: e.currentTarget })}
+        onClick={(e) => openOneClick({ product, selection: useOneClickStore.getState().drafts[product.id], trigger: e.currentTarget })}
       >
         {t('requestPrice')}
       </Button>

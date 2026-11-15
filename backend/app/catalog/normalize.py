@@ -189,7 +189,8 @@ UNITS: dict[str, tuple[str, str]] = {
     'ul': ('мкл', 'µl'), 'ml': ('мл', 'ml'), 'l': ('л', 'l'),
     'umol': ('мкмоль', 'µmol'), 'mmol': ('ммоль', 'mmol'),
     'pcs': ('шт.', 'pcs'), 'test': ('тест.', 'tests'), 'kit': ('набор', 'kit'), 'pack': ('упак.', 'pack'),
-    'vial': ('фл.', 'vial'), 'mm': ('мм', 'mm'), 'cm': ('см', 'cm'), 'm': ('м', 'm'), 'iu': ('ЕД', 'IU'),
+    'vial': ('фл.', 'vial'), 'ampoule': ('амп.', 'ampoule'),
+    'mm': ('мм', 'mm'), 'cm': ('см', 'cm'), 'm': ('м', 'm'), 'iu': ('ЕД', 'IU'),
 }
 _UNIT_WORDS = {
     'ug': ('мкг', 'ug', 'µg', 'μg', 'mcg', '?g'),
@@ -205,7 +206,8 @@ _UNIT_WORDS = {
     'test': ('тест', 'тест.', 'тестов', 't', 'tst', 'test', 'tests', 'определений', 'реакций', 'rxn'),
     'kit': ('набор', 'наборов', 'kit', 'компл', 'компл.', 'комплект'),
     'pack': ('упак', 'упак.', 'упаковка', 'уп', 'уп.', 'pak', 'pk', 'pack'),
-    'vial': ('vl', 'флакон', 'флакона', 'флаконов', 'фл', 'фл.', 'амп', 'ампула', 'ампулы', 'vial', 'vials'),
+    'vial': ('vl', 'флакон', 'флакона', 'флаконов', 'фл', 'фл.', 'vial', 'vials'),
+    'ampoule': ('amp', 'amps', 'ampoule', 'ampoules', 'ampule', 'ampules', 'амп', 'амп.', 'ампула', 'ампулы', 'ампул'),
     'mm': ('мм', 'mm'), 'cm': ('см', 'cm'), 'm': ('м', 'm'),
     'iu': ('ед', 'iu', 'ме'),
 }
@@ -265,7 +267,7 @@ def parse_packs(raw: str | None) -> list[Pack]:
 
 # ── catalog numbers of packagings: «CS-T-60514-5MG», «AB477228-1мг», «SIN-10039-MM09-A-25Tests» ──
 
-_SUFFIX_UNITS = r'mg|g|gm|gr|kg|ug|µg|mcg|ml|l|ul|µl|мг|г|кг|мкг|мл|л|мкл|tests?|tst|t|pcs|pc|ea|vl|kit|pk|mmol|umol'
+_SUFFIX_UNITS = r'mg|g|gm|gr|kg|ug|µg|mcg|ml|l|ul|µl|мг|г|кг|мкг|мл|л|мкл|tests?|tst|t|pcs|pc|ea|vl|amp(?:oules?|ules?|s)?|амп(?:ула|улы|ул)?|kit|pk|mmol|umol'
 _PACK_SUFFIX = re.compile(rf'^(?P<base>.+?)[-_/.](?P<amount>\d+(?:[.,]\d+)?)\s*(?P<unit>{_SUFFIX_UNITS})$', re.I)
 _NUMBER_SUFFIX = re.compile(r'^(?P<base>.+?)[-_/](?P<amount>\d+(?:[.,]\d+)?)$')
 

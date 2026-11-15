@@ -19,7 +19,8 @@ from tests.support import attribution_cookie
     ({'referrer': 'https://pharm-portal.example/distributors'}, 'referral'),
     ({'referrer': 'https://www.ogk-chem.ru/catalog/'}, 'direct'),
     ({'landing_url': 'https://www.ogk-chem.ru/'}, 'direct'),
-    (None, 'direct'),
+    (None, 'unknown'),
+    ({}, 'unknown'),
 ])
 def test_channel(touch, expected):
     assert channel(touch) == expected
@@ -28,6 +29,8 @@ def test_channel(touch, expected):
 def test_damaged_cookie_is_ignored():
     assert read_cookie('not-base64-json!') == (None, None)
     assert read_cookie(None) == (None, None)
+    assert collect({}, 'https://www.ogk-chem.ru/rfq/')['channel'] == 'unknown'
+    assert collect({'ogk_attr': 'broken'}, None)['channel'] == 'unknown'
 
 
 def test_first_touch_survives_and_last_decides_the_channel():

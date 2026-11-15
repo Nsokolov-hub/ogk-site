@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { ProductPreview } from '@/types/catalog';
 import { Button, type ButtonSize, type ButtonVariant } from '@/components/ui/Button';
 import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
+import { itemFromProduct } from '@/lib/rfq-item';
+import { defaultProductSelection } from '@/lib/product-selection';
 import { openCartDrawer } from '@/lib/cart-drawer';
 import { rfqKey, useRfqStore } from '@/lib/rfq-store';
 
@@ -30,6 +32,7 @@ export function AddToRfqButton({
   className?: string;
 }) {
   const t = useTranslations('product');
+  const locale = useLocale();
   const key = rfqKey(product.id, packagingId);
   const inCart = useRfqStore((s) => s.items.some((i) => i.key === key));
   const add = useRfqStore((s) => s.add);
@@ -46,22 +49,7 @@ export function AddToRfqButton({
   }, [inCart]);
 
   const handleAdd = () => {
-    const pk = product.packagings.find((p) => p.id === packagingId);
-    add({
-      productId: product.id,
-      slug: product.slug,
-      name: product.name,
-      brand: product.brand.name,
-      catalogNumber: product.catalogNumber,
-      cas: product.cas,
-      categorySlug: product.categorySlug,
-      packagings: product.packagings,
-      customAllowed: product.customPackaging,
-      packagingId,
-      packagingLabel: pk?.label,
-      quantity: 1,
-      analogue: product.discontinued ? 'requested' : 'none',
-    });
+    add(itemFromProduct(product, defaultProductSelection(product, packagingId), locale));
     justAdded.current = true;
     setAnnouncement(t('added', { name: product.name }));
     track('add_to_rfq', { sku: product.catalogNumber, brand: product.brand.name, place });

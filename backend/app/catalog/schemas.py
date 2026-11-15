@@ -40,6 +40,14 @@ class SubstanceLink(Out):
     role: Literal['api', 'impurity', 'metabolite', 'labeled']
 
 
+class ProductIdentity(Out):
+    manufacturer: str
+    supplyChannel: str
+    canonicalSlug: str
+    identifierAliases: list[str]
+    sourceUrl: str
+
+
 class ProductPreview(Out):
     id: str
     slug: str
@@ -58,6 +66,7 @@ class ProductPreview(Out):
     substance: SubstanceLink | None = None
     attributes: dict[str, list[str]] = Field(default_factory=dict)
     popularity: int = 0
+    identity: ProductIdentity | None = None
 
 
 class FacetValue(Out):
@@ -203,6 +212,12 @@ class BatchCandidate(Out):
     packagings: list[PackagingOut]
     customPackaging: bool
     cardType: CardType
+    identity: ProductIdentity | None = None
+    # A fuzzy singleton still requires a person's choice. A matched packaging is an identifier match,
+    # never a guess based on its position in the product's packagings array.
+    match: Literal['catalogNumber', 'cas', 'name'] = 'name'
+    matchedPackagingId: str | None = None
+    matchedCatalogNumber: str | None = None
 
 
 class BatchLine(Out):

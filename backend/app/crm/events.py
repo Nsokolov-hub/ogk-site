@@ -19,6 +19,7 @@ import hmac
 import ipaddress
 import time
 from collections.abc import Callable
+from datetime import datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -33,9 +34,9 @@ from app.catalog.normalize import brand_key, cas_or_none, clean_spaces, compact,
 from app.catalog.service import refresh_card, unique_product_slug
 from app.catalog.settings import set_setting
 from app.core.config import settings
-from app.core.db import DB, utcnow
+from app.core.db import DB, as_utc, utcnow
 from app.core.errors import DomainError
-from app.crm import conversions
+from app.crm import conversions, payments
 from app.crm.models import CrmEvent
 from app.requests.models import SiteRequest
 
@@ -51,7 +52,7 @@ GOALS = (('qualified', 'collecting_quotes'), ('proposal', 'proposal_sent'), ('sa
 class EventIn(BaseModel):
     id: str = Field(min_length=1, max_length=64)
     type: str = Field(min_length=1, max_length=60)
-    occurred_at: str | None = None
+    occurred_at: datetime | None = None
     data: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -101,6 +102,8 @@ def on_site_request(db: Session, data: dict[str, Any]) -> dict[str, Any]:
     if row is None:
         return {'ignored': 'SITE_REQUEST_UNKNOWN'}
     row.crm_status = clean_spaces(str(data.get('status') or ''))[:20] or row.crm_status
+    if data.get('crm_request_id'):
+        row.crm_request_id = str(data['crm_request_id'])[:36]
     touched(row)
     return {}
 
@@ -111,6 +114,8 @@ def on_stage(db: Session, data: dict[str, Any]) -> dict[str, Any]:
         return {'ignored': 'SITE_REQUEST_UNKNOWN'}
     stage = clean_spaces(str(data.get('stage') or ''))[:40]
     row.crm_stage = stage or row.crm_stage
+    if data.get('crm_request_id'):
+        row.crm_request_id = str(data['crm_request_id'])[:36]
     if data.get('crm_request_number'):
         row.crm_request_number = str(data['crm_request_number'])[:40]
     revenue = data.get('revenue')
@@ -123,6 +128,12 @@ def on_stage(db: Session, data: dict[str, Any]) -> dict[str, Any]:
     touched(row)
     queued = 0
     if stage in STAGES:
+        occurred = data.get('_event_at')
+        at = as_utc(occurred) if isinstance(occurred, datetime) else utcnow()
+        for column, first in (('qualified_at', 'collecting_quotes'), ('proposal_sent_at', 'proposal_sent'),
+                              ('order_confirmed_at', 'sale_confirmed')):
+            if STAGES.index(stage) >= STAGES.index(first) and getattr(row, column) is None:
+                setattr(row, column, at)
         for goal, first in GOALS:
             if STAGES.index(stage) >= STAGES.index(first):
                 queued += conversions.queue(db, row, goal)
@@ -244,6 +255,8 @@ HANDLERS: dict[str, Callable[[Session, dict[str, Any]], dict[str, Any]]] = {
     'site_request.rejected': on_site_request, 'request.stage_changed': on_stage, 'request.closed': on_closed,
     'product.upserted': on_product, 'manufacturer.upserted': on_manufacturer,
     'manufacturer.merged': on_manufacturer,
+    'request.payment_received': payments.on_received,
+    'request.payment_refunded': payments.on_refunded,
 }
 
 
@@ -252,7 +265,8 @@ def apply(db: Session, event: EventIn) -> dict[str, Any]:
     if known is not None:
         return known.answer
     handler = HANDLERS.get(event.type)
-    answer = {'ok': True, **(handler(db, event.data) if handler else {'ignored': 'UNKNOWN_TYPE'})}
+    data = {**event.data, '_event_at': event.occurred_at or utcnow()}
+    answer = {'ok': True, **(handler(db, data) if handler else {'ignored': 'UNKNOWN_TYPE'})}
     db.add(CrmEvent(id=event.id, type=event.type, answer=answer))
     db.flush()
     return answer

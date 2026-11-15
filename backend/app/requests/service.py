@@ -99,6 +99,9 @@ def accept(db: Session, payload: str | None, client_key: str | None, upload: tup
         # A filled trap field: a bot. It gets an ordinary-looking answer and nothing is saved.
         now = utcnow()
         return {'site_request_id': str(uuid4()), 'number': f'S-{secrets.randbelow(9000) + 100}'}, True
+    # Two different attached lists are different requests even when their short contact form is identical.
+    if upload:
+        digest = hashlib.sha256(f'{digest}:{upload[0]}:{hashlib.sha256(upload[1]).hexdigest()}'.encode()).hexdigest()
     advisory(db, f'site-request:{client_key}')
     previous = db.scalar(select(SiteRequest).where(SiteRequest.client_key == client_key))
     if previous is not None:
@@ -106,6 +109,10 @@ def accept(db: Session, payload: str | None, client_key: str | None, upload: tup
             raise DomainError('IDEMPOTENCY_CONFLICT', 'Этот ключ уже использован для другой заявки', 409)
         return result(previous), False
     file = attachments.validate(*upload) if upload else None
+    if data.kind == 'product_rfq' and not data.items and file is None:
+        raise FormError([{'field': 'items', 'message': 'Добавьте позиции или приложите список товаров'}])
+    if data.kind == 'general' and not data.items and file is None and len(data.customer.comment or '') < 10:
+        raise FormError([{'field': 'customer.comment', 'message': 'Опишите запрос или приложите список товаров'}])
     if settings.check_email_domains and contacts.domain_receives_mail(data.customer.email.rsplit('@', 1)[1].lower()) \
             is False:
         raise DomainError('EMAIL_DOMAIN', 'Почтовый домен в адресе e-mail не найден: проверьте часть после @', 422,

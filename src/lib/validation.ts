@@ -53,6 +53,8 @@ export const fields = {
   fullName: z.string().trim().min(1, 'required').min(3, 'tooShort'),
   shortName: z.string().trim().min(1, 'required').min(2, 'tooShort'),
   company: z.string().trim().min(1, 'required').min(2, 'tooShort'),
+  optionalName: z.string().trim().refine((value) => !value || value.length >= 2, 'tooShort'),
+  optionalCompany: z.string().trim().refine((value) => !value || value.length >= 2, 'tooShort'),
   email: z
     .string()
     .trim()
@@ -62,6 +64,7 @@ export const fields = {
       if (problem) ctx.addIssue({ code: 'custom', message: problem });
     }),
   phone: z.string().trim().min(1, 'required').refine(isValidPhone, 'phone'),
+  optionalPhone: z.string().trim().refine((value) => !value || isValidPhone(value), 'phone'),
   message: z.string().trim().min(1, 'required').min(10, 'messageShort'),
   consent: z.boolean().refine((v) => v, 'consent'),
   /** Поле-ловушка для ботов */

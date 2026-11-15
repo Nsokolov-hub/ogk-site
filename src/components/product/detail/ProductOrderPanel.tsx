@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import { Check, Phone } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { PackUnit, ProductPreview } from '@/types/catalog';
 import type { Analogue } from '@/types/requests';
 import { TrackedLink } from '@/components/layout/TrackedLink';
@@ -16,6 +16,7 @@ import { track } from '@/lib/analytics';
 import { cn } from '@/lib/cn';
 import { useOneClickStore } from '@/lib/one-click-store';
 import { openCartDrawer } from '@/lib/cart-drawer';
+import { itemFromProduct } from '@/lib/rfq-item';
 import { rfqKey, useRfqStore } from '@/lib/rfq-store';
 
 const UNITS: PackUnit[] = ['mg', 'g', 'ml', 'pcs'];
@@ -34,6 +35,7 @@ export function ProductOrderPanel({
   className?: string;
 }) {
   const t = useTranslations('productPage.order');
+  const locale = useLocale();
   const tu = useTranslations('oneClick.units');
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '');
   const [packagingId, setPackagingId] = useState<string>(product.packagings[0]?.id ?? CUSTOM_PACKAGING);
@@ -47,10 +49,17 @@ export function ProductOrderPanel({
   const linkWrapRef = useRef<HTMLSpanElement>(null);
 
   const isCustom = packagingId === CUSTOM_PACKAGING;
-  const key = rfqKey(product.id, isCustom ? null : packagingId);
+  const customNumericAmount = Number(customAmount.replace(',', '.'));
+  const key = rfqKey(product.id, isCustom ? null : packagingId,
+    isCustom && customNumericAmount > 0 ? { amount: customNumericAmount, unit: customUnit } : undefined);
   const inCart = useRfqStore((s) => s.hydrated && s.items.some((i) => i.key === key));
   const add = useRfqStore((s) => s.add);
   const openOneClick = useOneClickStore((s) => s.open);
+  const setDraft = useOneClickStore((s) => s.setDraft);
+
+  useEffect(() => {
+    setDraft(product.id, { packagingId, quantity, analogue, customAmount, customUnit });
+  }, [product.id, packagingId, quantity, analogue, customAmount, customUnit, setDraft]);
 
   useEffect(() => {
     if (inCart && justAdded.current) {
@@ -72,23 +81,8 @@ export function ProductOrderPanel({
       document.getElementById(`${uid}-amount`)?.focus();
       return;
     }
-    const pk = product.packagings.find((p) => p.id === packagingId);
-    add({
-      productId: product.id,
-      slug: product.slug,
-      name: product.name,
-      brand: product.brand.name,
-      catalogNumber: product.catalogNumber,
-      cas: product.cas,
-      categorySlug: product.categorySlug,
-      packagings: product.packagings,
-      customAllowed: product.customPackaging,
-      packagingId: isCustom ? null : packagingId,
-      packagingLabel: isCustom ? `${customAmount.trim()} ${tu(customUnit)}` : pk?.label,
-      customPackaging: isCustom ? { amount, unit: customUnit } : undefined,
-      quantity,
-      analogue,
-    });
+    add(itemFromProduct(product, { packagingId, quantity, analogue, customAmount, customUnit }, locale,
+      isCustom ? `${customAmount.trim()} ${tu(customUnit)}` : undefined));
     justAdded.current = true;
     setAnnouncement(t('added'));
     track('add_to_rfq', { sku: product.catalogNumber, brand: product.brand.name, place: 'card' });
@@ -192,7 +186,7 @@ export function ProductOrderPanel({
           variant="secondary"
           size="m"
           aria-haspopup="dialog"
-          onClick={(e) => openOneClick({ product, packagingId: isCustom ? null : packagingId, trigger: e.currentTarget })}
+          onClick={(e) => openOneClick({ product, selection: { packagingId, quantity, analogue, customAmount, customUnit }, trigger: e.currentTarget })}
         >
           {t('oneClick')}
         </Button>

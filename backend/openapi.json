@@ -6,6 +6,48 @@
     "version": "0.1.0"
   },
   "paths": {
+    "/api/v1/public/requests/repeat/resolve": {
+      "post": {
+        "tags": [
+          "Заявки"
+        ],
+        "summary": "Repeat Request",
+        "description": "Resolve an item-only receipt link. Its token is in the body, never in access-log paths or query strings.",
+        "operationId": "repeat_request_api_v1_public_requests_repeat_resolve_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepeatResolveIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepeatResolveOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/public/requests": {
       "post": {
         "tags": [
@@ -1717,6 +1759,48 @@
               "other"
             ],
             "title": "Cardtype"
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "match": {
+            "type": "string",
+            "enum": [
+              "catalogNumber",
+              "cas",
+              "name"
+            ],
+            "title": "Match",
+            "default": "name"
+          },
+          "matchedPackagingId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matchedpackagingid"
+          },
+          "matchedCatalogNumber": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matchedcatalognumber"
           }
         },
         "type": "object",
@@ -3078,6 +3162,16 @@
             "title": "Popularity",
             "default": 0
           },
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "nameRu": {
             "anyOf": [
               {
@@ -3234,6 +3328,42 @@
           "updatedAt"
         ],
         "title": "ProductDetailOut"
+      },
+      "ProductIdentity": {
+        "properties": {
+          "manufacturer": {
+            "type": "string",
+            "title": "Manufacturer"
+          },
+          "supplyChannel": {
+            "type": "string",
+            "title": "Supplychannel"
+          },
+          "canonicalSlug": {
+            "type": "string",
+            "title": "Canonicalslug"
+          },
+          "identifierAliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Identifieraliases"
+          },
+          "sourceUrl": {
+            "type": "string",
+            "title": "Sourceurl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "manufacturer",
+          "supplyChannel",
+          "canonicalSlug",
+          "identifierAliases",
+          "sourceUrl"
+        ],
+        "title": "ProductIdentity"
       },
       "ProductPage": {
         "properties": {
@@ -3419,6 +3549,16 @@
             "type": "integer",
             "title": "Popularity",
             "default": 0
+          },
+          "identity": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductIdentity"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -3455,6 +3595,124 @@
           "total"
         ],
         "title": "ProductsPage"
+      },
+      "RepeatItemOut": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brand"
+          },
+          "catalogNumber": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalognumber"
+          },
+          "cas": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cas"
+          },
+          "packaging": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Packaging"
+          },
+          "quantity": {
+            "type": "number",
+            "title": "Quantity"
+          },
+          "unit": {
+            "type": "string",
+            "title": "Unit"
+          },
+          "analogue": {
+            "type": "string",
+            "enum": [
+              "none",
+              "allowed",
+              "requested"
+            ],
+            "title": "Analogue"
+          },
+          "customPackaging": {
+            "type": "boolean",
+            "title": "Custompackaging"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "quantity",
+          "unit",
+          "analogue",
+          "customPackaging"
+        ],
+        "title": "RepeatItemOut"
+      },
+      "RepeatResolveIn": {
+        "properties": {
+          "token": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 40,
+            "title": "Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "token"
+        ],
+        "title": "RepeatResolveIn"
+      },
+      "RepeatResolveOut": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/RepeatItemOut"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "expiresAt": {
+            "type": "string",
+            "title": "Expiresat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "expiresAt"
+        ],
+        "title": "RepeatResolveOut"
       },
       "RequestOut": {
         "properties": {

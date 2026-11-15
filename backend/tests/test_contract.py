@@ -19,6 +19,8 @@ def validator(name: str) -> Draft202012Validator:
 
 @pytest.mark.parametrize('body', [
     form(),
+    form(customer={'email': 'buyer@example.ru'}),
+    form(items=[], customer={'email': 'buyer@example.ru'}),
     form(kind='one_click', formType='one_click', desiredDate=None),
     form(kind='general', items=[], customer={**form()['customer'], 'inn': None, 'city': None}),
     form(kind='service', items=[], service={'slug': 'cold-chain', 'name': 'Холодовая цепь',

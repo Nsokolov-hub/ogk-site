@@ -388,3 +388,26 @@
     right: calc((100cqw - var(--plate-w)) / 2 - 22px - var(--arrow) / 2);
   }
 }
+
+/* Keep the branded offers, while the search and file request lead the first screen. */
+.hero-plates-compact {
+  --plate-h: calc(var(--plate-w) * 0.34 + 250px);
+  --title: 26px;
+  --lead: 16px;
+}
+@media (min-width: 768px) {
+  .hero-plates-compact {
+    --plate-h: calc(var(--plate-w) * 0.27 + 180px);
+    --title: 32px;
+  }
+}
+@media (min-width: 1024px) {
+  .hero-plates-compact {
+    --plate-h: calc(400 * var(--u));
+    --title: max(calc(44 * var(--u)), 28px);
+    --lead: max(calc(21 * var(--u)), 16px);
+  }
+  .hero-plates-compact .hero-plate-text {
+    gap: max(calc(30 * var(--u)), 20px);
+  }
+}

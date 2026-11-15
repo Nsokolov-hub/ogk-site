@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import type { Packaging, PackUnit } from '@/types/catalog';
-import type { Analogue } from '@/types/requests';
+import type { Analogue, SiteRequestItem } from '@/types/requests';
 
 /**
  * Корзина запроса КП (RFQ-01, RFQ-02, RFQ-12).
@@ -16,6 +16,8 @@ export interface RfqItem {
   name: string;
   brand: string;
   catalogNumber: string;
+  /** Base product code, so a pack change cannot retain another pack's SKU. Absent on older saved rows. */
+  baseCatalogNumber?: string;
   cas?: string;
   categorySlug?: string;
   packagingId: string | null;
@@ -26,6 +28,8 @@ export interface RfqItem {
   customAllowed?: boolean;
   customPackaging?: { amount: number; unit: PackUnit };
   quantity: number;
+  unit?: SiteRequestItem['unit'];
+  requestedCustomPackaging?: boolean;
   analogue: Analogue;
   comment?: string;
   /** Свободная строка — позиция вне каталога (RFQ-02) */
@@ -41,6 +45,10 @@ export interface FreeItemInput {
   catalogNumber?: string;
   cas?: string;
   quantity?: number;
+  unit?: SiteRequestItem['unit'];
+  packagingLabel?: string;
+  requestedCustomPackaging?: boolean;
+  analogue?: Analogue;
   comment?: string;
 }
 
@@ -60,9 +68,11 @@ interface RfqState {
   clear: () => void;
 }
 
-export const rfqKey = (productId: string, packagingId: string | null) => `${productId}:${packagingId ?? 'custom'}`;
+export const rfqKey = (productId: string, packagingId: string | null, custom?: RfqItem['customPackaging']) =>
+  `${productId}:${packagingId ?? (custom ? `custom-${custom.amount}-${custom.unit}` : 'custom')}`;
 
 const clampQty = (n: number) => Math.max(1, Math.min(999, Math.round(n) || 1));
+const freeQty = (n: number) => Number.isFinite(n) && n > 0 ? Math.min(1_000_000_000, n) : 1;
 
 export const useRfqStore = create<RfqState>()(
   persist(
@@ -71,7 +81,7 @@ export const useRfqStore = create<RfqState>()(
       hydrated: false,
       add: (input) =>
         set((s) => {
-          const key = rfqKey(input.productId, input.packagingId);
+          const key = rfqKey(input.productId, input.packagingId, input.customPackaging);
           const existing = s.items.find((i) => i.key === key);
           if (existing) {
             return {
@@ -97,8 +107,11 @@ export const useRfqStore = create<RfqState>()(
                 catalogNumber: input.catalogNumber ?? '',
                 cas: input.cas,
                 packagingId: null,
-                quantity: clampQty(input.quantity ?? 1),
-                analogue: 'none',
+                quantity: freeQty(input.quantity ?? 1),
+                unit: input.unit,
+                packagingLabel: input.packagingLabel,
+                requestedCustomPackaging: input.requestedCustomPackaging,
+                analogue: input.analogue ?? 'none',
                 comment: input.comment,
                 free: true,
                 addedAt: Date.now(),
@@ -122,7 +135,11 @@ export const useRfqStore = create<RfqState>()(
                   ...(patch.brand !== undefined ? { brand: patch.brand } : {}),
                   ...(patch.catalogNumber !== undefined ? { catalogNumber: patch.catalogNumber } : {}),
                   ...(patch.cas !== undefined ? { cas: patch.cas } : {}),
-                  ...(patch.quantity !== undefined ? { quantity: clampQty(patch.quantity) } : {}),
+                  ...(patch.quantity !== undefined ? { quantity: freeQty(patch.quantity) } : {}),
+                  ...(patch.unit !== undefined ? { unit: patch.unit } : {}),
+                  ...(patch.packagingLabel !== undefined ? { packagingLabel: patch.packagingLabel } : {}),
+                  ...(patch.requestedCustomPackaging !== undefined ? { requestedCustomPackaging: patch.requestedCustomPackaging } : {}),
+                  ...(patch.analogue !== undefined ? { analogue: patch.analogue } : {}),
                 }
               : i,
           ),
@@ -131,8 +148,11 @@ export const useRfqStore = create<RfqState>()(
         set((s) => {
           const item = s.items.find((i) => i.key === key);
           if (!item) return s;
-          const nextKey = rfqKey(item.productId, p.packagingId);
-          const updated: RfqItem = { ...item, ...p, key: nextKey, customPackaging: p.packagingId ? undefined : p.customPackaging };
+          const nextKey = rfqKey(item.productId, p.packagingId, p.customPackaging);
+          const pack = item.packagings?.find((candidate) => candidate.id === p.packagingId);
+          const updated: RfqItem = { ...item, ...p, key: nextKey,
+            catalogNumber: pack?.catalogNumber ?? item.baseCatalogNumber ?? item.catalogNumber,
+            customPackaging: p.packagingId ? undefined : p.customPackaging };
           const clash = nextKey !== key ? s.items.find((i) => i.key === nextKey) : undefined;
           if (clash) {
             return {

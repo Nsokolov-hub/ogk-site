@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useRef, useSyncExternalStore } from 'react';
-import { track } from './analytics';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { afterAnalyticsConsent, track } from './analytics';
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
@@ -26,11 +26,15 @@ export function useFormMeta(formType: string) {
   const started = useRef(false);
   const mountedAt = useRef<number | null>(null);
 
+  useEffect(() => afterAnalyticsConsent(() => {
+    if (mountedAt.current !== null && !started.current)
+      started.current = track('form_start', { form_type: formType });
+  }), [formType]);
+
   const onFocusCapture = useCallback(() => {
     if (mountedAt.current === null) mountedAt.current = Date.now();
     if (started.current) return;
-    started.current = true;
-    track('form_start', { form_type: formType });
+    started.current = track('form_start', { form_type: formType });
   }, [formType]);
 
   const elapsedMs = useCallback(() => (mountedAt.current === null ? 0 : Date.now() - mountedAt.current), []);

@@ -6,7 +6,7 @@ content of requests, and the list of subscribers, are personal data: administrat
 
 from typing import Any
 
-from fastapi import APIRouter, Response
+from fastapi import APIRouter, Query, Response
 from sqlalchemy import func, or_, select
 
 from app.admin.audit import record
@@ -14,6 +14,8 @@ from app.admin.security import StaffDep, requires
 from app.cli import resend as resend_request
 from app.core.db import DB
 from app.core.errors import DomainError
+from app.crm.funnel import report as funnel_report
+from app.crm.payments import for_requests as payment_totals
 from app.requests.models import DeliveryAttempt, SiteRequest, SiteRequestAttachment, SiteRequestItem
 from app.subscriptions.models import Subscriber
 from app.subscriptions.service import export_csv
@@ -62,8 +64,14 @@ def journal(staff: StaffDep, db: DB, status: str = '', q: str = '', page: int = 
                              .where(SiteRequestItem.request_id.in_([r.id for r in rows]))
                              .group_by(SiteRequestItem.request_id)).all()) if rows else {}
     by_status = dict(db.execute(select(SiteRequest.status, func.count()).group_by(SiteRequest.status)).all())
+    payments = payment_totals(db, [row.id for row in rows])
     return {'total': total, 'counts': by_status, 'pii': pii,
-            'items': [request_out(r, counts.get(r.id, 0), pii) for r in rows]}
+            'items': [{**request_out(r, counts.get(r.id, 0), pii), 'payments': payments.get(r.id, [])} for r in rows]}
+
+
+@router.get('/requests/funnel', dependencies=[requires('requests.journal')])
+def funnel(db: DB, period: int = Query(30, ge=1, le=365)) -> dict[str, Any]:
+    return funnel_report(db, period)
 
 
 @router.get('/requests/{request_id}', dependencies=[requires('requests.journal')])
@@ -78,6 +86,7 @@ def request_card(request_id: str, staff: StaffDep, db: DB) -> dict[str, Any]:
                           .order_by(DeliveryAttempt.attempt))
     files = db.scalars(select(SiteRequestAttachment).where(SiteRequestAttachment.request_id == row.id))
     out = request_out(row, len(items), pii)
+    out['payments'] = payment_totals(db, [row.id]).get(row.id, [])
     out.update({
         'attempts': [{'attempt': a.attempt, 'at': a.created_at.isoformat(), 'outcome': a.outcome,
                       'statusCode': a.status_code, 'error': a.error_code, 'durationMs': a.duration_ms}

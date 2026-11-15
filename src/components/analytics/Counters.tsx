@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { CONSENT_EVENT, hasAnalyticsConsent } from '@/lib/consent';
-import { counters, type CounterIds } from '@/lib/analytics';
+import { configureCounters, sanitizeAnalyticsUrl, type CounterIds } from '@/lib/analytics';
 
 type Queue = ((...args: unknown[]) => void) & { a?: unknown[][]; l?: number };
 
@@ -20,9 +20,17 @@ export function Counters({ ids, nonce }: { ids: CounterIds; nonce?: string }) {
 
   useEffect(() => {
     const load = () => {
-      if (loaded.current || !hasAnalyticsConsent() || (!ids.ym && !ids.ga)) return;
+      if (!hasAnalyticsConsent()) {
+        configureCounters(null);
+        return;
+      }
+      if (!ids.ym && !ids.ga) return;
+      if (loaded.current) {
+        configureCounters(ids);
+        hit();
+        return;
+      }
       loaded.current = true;
-      counters.ids = ids;
       const w = window as unknown as Record<string, unknown>;
       const inject = (src: string) => {
         const script = document.createElement('script');
@@ -53,6 +61,7 @@ export function Counters({ ids, nonce }: { ids: CounterIds; nonce?: string }) {
         gtag('config', ids.ga, { send_page_view: false });
         inject(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(ids.ga)}`);
       }
+      configureCounters(ids);
       lastHit.current = '';
       hit();
     };
@@ -64,8 +73,8 @@ export function Counters({ ids, nonce }: { ids: CounterIds; nonce?: string }) {
 
   // Просмотр страницы при каждом переходе внутри сайта: сам переход Next не перезагружает страницу
   const hit = () => {
-    if (!loaded.current) return;
-    const url = window.location.href;
+    if (!loaded.current || !hasAnalyticsConsent()) return;
+    const url = sanitizeAnalyticsUrl(window.location.href);
     if (url === lastHit.current) return;
     lastHit.current = url;
     const w = window as unknown as Record<string, (...args: unknown[]) => void>;

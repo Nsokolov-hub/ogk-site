@@ -16,6 +16,7 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { ProductImage } from '@/components/product/ProductImage';
 import { CopyButton } from '@/components/product/detail/CopyButton';
 import { DocumentList } from '@/components/product/detail/DocumentList';
+import { ProductIdentityNote } from '@/components/product/detail/ProductIdentityNote';
 import { ProductOrderPanel } from '@/components/product/detail/ProductOrderPanel';
 import { ProductStickyBar } from '@/components/product/detail/ProductStickyBar';
 import { ProductTabs } from '@/components/product/detail/ProductTabs';
@@ -61,6 +62,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!data || 'moved' in data) return {};
   const [t, site] = await Promise.all([getTranslations({ locale, namespace: 'productPage.meta' }), getSite()]);
   const p = data.product;
+  const manufacturer = p.identity?.manufacturer ?? p.brand.name;
   const numberLabel = p.cardType === 'equipment' ? 'P/N' : t('number');
   const ids = [`${p.brand.name}`, `${numberLabel} ${p.catalogNumber}`, p.cas ? `CAS ${p.cas}` : null, p.formula ? p.formula : null]
     .filter(Boolean)
@@ -71,22 +73,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const template = site.metaTemplates?.product?.[locale] ?? {};
   const ru = russianName(data, locale);
   const withRu = (name: string, max = Infinity) => (ru && ru.length <= max ? `${name} (${ru})` : name);
-  const values = { name: withRu(shortName(p.name, ru ? 60 : 70), RU_NAME_IN_TITLE), brand: p.brand.name, number: p.catalogNumber, cas: p.cas, ids, logistics, numberLabel };
+  const values = { name: withRu(shortName(p.name, ru ? 60 : 70), RU_NAME_IN_TITLE), brand: manufacturer, number: p.catalogNumber, cas: p.cas, ids, logistics, numberLabel };
   const titleTemplate = p.cas ? template.title : (template.titleNoCas ?? template.title);
   const title =
     own?.title ||
     (titleTemplate
       ? fillTemplate(titleTemplate, values)
       : p.cas
-        ? t('title', { name: values.name, brand: p.brand.name, number: p.catalogNumber, cas: p.cas })
-        : t('titleNoCas', { name: values.name, brand: p.brand.name, number: p.catalogNumber, numberLabel }));
+        ? t('title', { name: values.name, brand: manufacturer, number: p.catalogNumber, cas: p.cas })
+        : t('titleNoCas', { name: values.name, brand: manufacturer, number: p.catalogNumber, numberLabel }));
   const description =
     own?.description ||
     (template.description
       ? fillTemplate(template.description, { ...values, name: withRu(shortName(p.name, 90)) })
       : t('description', { name: withRu(shortName(p.name, 90)), ids, logistics }));
 
-  return pageMetadata({ locale, path: `/product/${p.slug}/`, title, description, index: p.indexable, hasEn: p.hasEn });
+  return pageMetadata({ locale, path: `/product/${p.identity?.canonicalSlug ?? p.slug}/`, title, description,
+    index: p.indexable, hasEn: p.hasEn });
 }
 
 export default async function ProductPage({ params }: Props) {
@@ -124,11 +127,11 @@ export default async function ProductPage({ params }: Props) {
   const ld: Record<string, unknown>[] = [
     breadcrumbsLd(breadcrumbs, SITE_URL, locale, path),
     productLd({
-      url: absoluteUrl(locale, path),
+      url: absoluteUrl(locale, `/product/${p.identity?.canonicalSlug ?? p.slug}/`),
       name: p.name,
       alternateName: ruName ?? undefined,
       sku: p.catalogNumber,
-      brand: p.brand.name,
+      brand: p.identity?.manufacturer ?? p.brand.name,
       description: p.description[0],
       image: p.image ? `${SITE_URL}${p.image.src}` : undefined,
       cas: p.cas,
@@ -149,7 +152,7 @@ export default async function ProductPage({ params }: Props) {
 
   // Технические данные: все заполненные поля типа карточки (ТЗ 5.2)
   const specs: { label: string; value: ReactNode }[] = [
-    { label: t('ids.brand'), value: p.brand.name },
+    { label: t('ids.brand'), value: p.identity?.manufacturer ?? p.brand.name },
     { label: numberLabel, value: p.catalogNumber },
     ...(p.cas ? [{ label: t('ids.cas'), value: p.cas }] : []),
     ...(p.altCas?.length ? [{ label: t('ids.altCas'), value: p.altCas.join(', ') }] : []),
@@ -233,6 +236,8 @@ export default async function ProductPage({ params }: Props) {
             {p.nameRu ?? data.casPage?.nameRu ?? kindLabel}
           </p>
         </div>
+
+        <ProductIdentityNote identity={p.identity} slug={p.slug} locale={locale} />
 
         {p.discontinued ? (
           <p role="note" className="mt-6 flex max-w-[880px] gap-3 rounded-field bg-warning/10 p-4 text-body text-text">

@@ -165,7 +165,9 @@
     "errorFile": "The file is not accepted: use xlsx, csv, pdf or docx up to 10 MB. Remove it or choose another one.",
     "errorCaptcha": "We could not confirm you are not a robot. Try again or call us at +7 495 234 28 63.",
     "errorUnavailable": "The service is temporarily unavailable. Try again in a minute or call us at +7 495 234 28 63. Your data has been kept.",
-    "errorEmailDomain": "The mail domain of the e-mail was not found — check the part after @ and send again."
+    "errorEmailDomain": "The mail domain of the e-mail was not found — check the part after @ and send again.",
+    "quickHint": "Your email and an item list or description are enough to send a request. Other contact details are optional.",
+    "quickContactHint": "Your email is enough. Name, company and phone are optional."
   },
   "errors": {
     "required": "Please fill in this field",
@@ -226,7 +228,10 @@
       "examples": "Try:",
       "exampleLabel": "Search for “{q}”",
       "list": "Send us your list of items — we'll quote them all at once",
-      "listAction": "Send a list"
+      "listAction": "Send a list",
+      "fileTitle": "Already have an item list?",
+      "fileText": "Attach an Excel, CSV, PDF or DOCX file without adding each item to the cart.",
+      "parseList": "Match an item list to the catalog"
     }
   },
   "notFound": {
@@ -705,7 +710,8 @@
       "freeRow": "free-text item",
       "freeName": "Item description",
       "freeBrand": "Manufacturer",
-      "freeNumber": "Cat. No."
+      "freeNumber": "Cat. No.",
+      "quantityIn": "Quantity, {unit}"
     },
     "bulk": {
       "title": "Add items as a list",
@@ -724,7 +730,7 @@
       "stats": "Exact: {exact} · choose: {multiple} · not found: {none}",
       "status": {
         "exact": "Exact match",
-        "multiple": "Several options",
+        "multiple": "Product confirmation needed",
         "none": "Not in catalog — will be added as free text"
       },
       "qty": "{n} pack(s)",
@@ -734,7 +740,12 @@
       "addAll": "Add to cart ({count})",
       "cancel": "Cancel",
       "added": "{count, plural, one {# item added} other {# items added}}",
-      "packagingNote": "You can change pack size, quantity and alternatives in the cart."
+      "packagingNote": "You can change pack size, quantity and alternatives in the cart.",
+      "confirmChoice": "Choose a product or keep the original description",
+      "unresolved": "Confirm the product and pack size for {count} rows before adding them.",
+      "choosePackaging": "Pack size",
+      "confirmPackaging": "Choose a pack size",
+      "textFileParsed": "File “{name}”: {count} rows parsed. Your selected items will be sent; the original TXT file is not attached."
     },
     "empty": {
       "title": "Your cart is empty",
@@ -755,7 +766,7 @@
       "submit": "Send request",
       "note": "We reply within 2 business hours.",
       "terms": "Supply terms",
-      "noItems": "Add at least one item — or describe your request on the contacts page.",
+      "noItems": "Add items to the cart or attach an item list.",
       "freeInvalid": "Fill in the description for items not in the catalog."
     },
     "done": {
@@ -764,7 +775,20 @@
       "items": "Request contents: {count, plural, one {# item} other {# items}}",
       "qty": "{n} pack(s)",
       "catalog": "Back to catalog",
-      "home": "Home"
+      "home": "Home",
+      "file": "Attached file: {name}"
+    },
+    "repeat": {
+      "title": "Repeat a request",
+      "text": "Review the previous items. They will be added to your current cart, where you can change pack sizes and quantities.",
+      "loading": "Loading the items for your repeat request…",
+      "unavailable": "Could not open the repeat request",
+      "tryNew": "The link may have expired. Add products or attach a list for a new request.",
+      "quantity": "Quantity: {count} {unit}",
+      "add": "Add items to the current cart",
+      "added": "Items added to your cart",
+      "reviewCart": "Review the items and quantities below, then enter your email for a new request.",
+      "pack": "packs"
     }
   },
   "searchPage": {
