@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense, type ReactNode } from 'react';
-import { Manrope } from 'next/font/google';
+import localFont from 'next/font/local';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
@@ -20,10 +20,11 @@ import { getSite } from '@/lib/content';
 import { siteMenu } from '@/lib/site-menu';
 import '../globals.css';
 
-// Временный шрифт до подключения LT Superior (ТЗ 11.1)
-const manrope = Manrope({
-  subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700'],
+// Keep the same font self-hosted and versioned: production builds must not depend on Google CSS responses.
+const manrope = localFont({
+  src: '../../fonts/manrope/Manrope-Variable.ttf',
+  weight: '200 800',
+  style: 'normal',
   variable: '--font-manrope',
   display: 'swap',
 });
