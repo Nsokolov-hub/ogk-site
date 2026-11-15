@@ -26,11 +26,11 @@ def received(client, identifier, payment_id='p-1', amount='500', currency='RUB',
                     'confirmed_at': '2026-11-15T10:00:00Z'}, **extra})
 
 
-def refunded(client, identifier, refund_id='refund-1', payment_id='p-1', amount='100', currency='RUB'):
+def refunded(client, identifier, refund_id='refund-1', payment_id='p-1', amount='100', currency='RUB', **extra):
     return send(client, 'request.payment_refunded', {
         'site_request_id': identifier, 'crm_request_id': 'crm-deal-1',
         'refund': {'id': refund_id, 'payment_id': payment_id, 'amount': amount, 'currency': currency,
-                   'refunded_at': '2026-11-15T12:00:00Z'}})
+                   'refunded_at': '2026-11-15T12:00:00Z', **extra}})
 
 
 def test_confirmed_partial_receipt_does_not_claim_a_sale_and_is_idempotent(client, sessions):
@@ -45,6 +45,7 @@ def test_confirmed_partial_receipt_does_not_claim_a_sale_and_is_idempotent(clien
         row = db.get(SiteRequest, identifier)
         assert row is not None
         assert entry.amount == Decimal('500') and entry.kind == 'received'
+        assert entry.source_kind is None
         assert row.crm_stage is None and row.sale_amount is None
         assert row.crm_request_id == 'crm-deal-1'
         assert for_requests(db, [identifier])[identifier][0]['net'] == '500.00000000'
@@ -88,6 +89,26 @@ def test_refund_cannot_change_payment_owner_currency_or_exceed_the_receipt(clien
     assert refunded(client, identifier, amount='100.01').status_code == 422
     assert refunded(client, identifier, amount='100').status_code == 200
     assert refunded(client, identifier, refund_id='over-refund', amount='1').status_code == 422
+
+
+def test_correction_reduces_net_and_retains_its_kind_while_legacy_refunds_still_work(client, sessions):
+    identifier = site_request(client)
+    assert received(client, identifier, amount='100').status_code == 200
+    assert refunded(client, identifier, refund_id='correction-1', amount='100', kind='correction').status_code == 200
+    assert refunded(client, identifier, refund_id='correction-1', amount='100', kind='correction').json()['duplicate'] is True
+    # The same immutable fact cannot later change from a correction into a cash refund.
+    assert refunded(client, identifier, refund_id='correction-1', amount='100', kind='refund').status_code == 409
+    assert received(client, identifier, payment_id='replacement', amount='80').status_code == 200
+    assert refunded(client, identifier, payment_id='replacement', amount='10').status_code == 200
+    assert refunded(client, identifier, refund_id='unallocate', payment_id='replacement', amount='1',
+                    kind='unallocate').status_code == 422
+    with sessions() as db:
+        corrections = {entry.external_id: entry.source_kind for entry in db.scalars(
+            select(SiteRequestPayment).where(SiteRequestPayment.kind == 'refunded'))}
+        assert corrections == {'correction-1': 'correction', 'refund-1': 'refund'}
+        [money] = for_requests(db, [identifier])[identifier]
+        assert Decimal(money['received']) == 180
+        assert Decimal(money['refunded']) == 110 and Decimal(money['net']) == 70
 
 
 @pytest.mark.parametrize('change', [

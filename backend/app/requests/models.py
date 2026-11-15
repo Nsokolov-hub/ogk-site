@@ -39,10 +39,13 @@ class SiteRequestPayment(Entity):
     __table_args__ = (
         UniqueConstraint('kind', 'external_id', name='uq_site_request_payment_external'),
         CheckConstraint("kind IN ('received', 'refunded')", name='ck_site_request_payment_kind'),
+        CheckConstraint("source_kind IS NULL OR source_kind IN ('refund', 'correction')",
+                        name='ck_site_request_payment_source_kind'),
         CheckConstraint('amount > 0', name='ck_site_request_payment_amount'),
     )
     site_request_id: Mapped[str] = mapped_column(ForeignKey('site_requests.id'), index=True)
     kind: Mapped[str] = mapped_column(String(12))
+    source_kind: Mapped[str | None] = mapped_column(String(12))
     external_id: Mapped[str] = mapped_column(String(64))
     payment_id: Mapped[str] = mapped_column(String(64), index=True)
     amount: Mapped[Decimal] = mapped_column(Numeric(24, 8))

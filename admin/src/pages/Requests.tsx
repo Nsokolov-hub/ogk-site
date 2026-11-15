@@ -57,9 +57,9 @@ function CrmProgress({ r }: { r: RequestRow }) {
       {(r.payments ?? []).map((payment) => (
         <div key={payment.currency} className="small">
           {Number(payment.received) > 0 ? <>Подтверждённые поступления: {Number(payment.received).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</> : null}
-          {Number(payment.refunded) > 0 ? <> · Возвраты: {Number(payment.refunded).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</> : null}
-          {Number(payment.received) > 0 ? <div>После возвратов: {Number(payment.net).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</div> : null}
-          {Number(payment.pendingRefunds) > 0 ? <div className="muted">Возврат {Number(payment.pendingRefunds).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency} ожидает поступления в журнал.</div> : null}
+          {Number(payment.refunded) > 0 ? <> · Возвраты/корректировки: {Number(payment.refunded).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</> : null}
+          {Number(payment.received) > 0 ? <div>После возвратов/корректировок: {Number(payment.net).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency}</div> : null}
+          {Number(payment.pendingRefunds) > 0 ? <div className="muted">Возврат/корректировка {Number(payment.pendingRefunds).toLocaleString('ru-RU', { maximumFractionDigits: 8 })} {payment.currency} ожидает поступления в журнал.</div> : null}
         </div>
       ))}
     </>
@@ -134,7 +134,7 @@ function FunnelOverview() {
           {data.channels.map((line) => <tr key={line.channel}><td>{line.name}</td>{cells(line)}</tr>)}
           <tr><th>Всего</th>{cells(data.totals)}</tr>
         </tbody></table></div>
-        {data.totals.payments.map((payment) => <p key={payment.currency} className="small">{payment.currency}: поступления {Number(payment.received).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}; возвраты {Number(payment.refunded).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}; после возвратов {Number(payment.net).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}{Number(payment.pendingRefunds) > 0 ? `; ожидают сверки возвраты ${payment.pendingRefunds}` : ''}.</p>)}
+        {data.totals.payments.map((payment) => <p key={payment.currency} className="small">{payment.currency}: поступления {Number(payment.received).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}; возвраты/корректировки {Number(payment.refunded).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}; после возвратов/корректировок {Number(payment.net).toLocaleString('ru-RU', { maximumFractionDigits: 8 })}{Number(payment.pendingRefunds) > 0 ? `; ожидают сверки возвраты/корректировки ${payment.pendingRefunds}` : ''}.</p>)}
         {data.historyIncomplete ? <div className="note">У {data.historyIncomplete} заявок история этапов неполна: для ранних данных известен только текущий статус. Прошлые даты переходов не восстанавливаются предположениями.</div> : null}
       </> : null}
     </section>

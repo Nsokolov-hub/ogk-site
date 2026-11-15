@@ -21,6 +21,7 @@ def upgrade():
         sa.Column('version', sa.Integer(), nullable=False),
         sa.Column('site_request_id', sa.String(36), sa.ForeignKey('site_requests.id'), nullable=False),
         sa.Column('kind', sa.String(12), nullable=False),
+        sa.Column('source_kind', sa.String(12), nullable=True),
         sa.Column('external_id', sa.String(64), nullable=False),
         sa.Column('payment_id', sa.String(64), nullable=False),
         sa.Column('amount', sa.Numeric(24, 8), nullable=False),
@@ -28,6 +29,8 @@ def upgrade():
         sa.Column('occurred_at', sa.DateTime(timezone=True), nullable=False),
         sa.Column('payload_hash', sa.String(64), nullable=False),
         sa.CheckConstraint("kind IN ('received', 'refunded')", name='ck_site_request_payment_kind'),
+        sa.CheckConstraint("source_kind IS NULL OR source_kind IN ('refund', 'correction')",
+                           name='ck_site_request_payment_source_kind'),
         sa.CheckConstraint('amount > 0', name='ck_site_request_payment_amount'),
         sa.UniqueConstraint('kind', 'external_id', name='uq_site_request_payment_external'),
         sa.PrimaryKeyConstraint('id'))

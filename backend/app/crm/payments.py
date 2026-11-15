@@ -4,7 +4,7 @@ import hashlib
 import json
 from collections import defaultdict
 from decimal import Decimal
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import AwareDatetime, BaseModel, Field, ValidationError
 from sqlalchemy import select
@@ -29,6 +29,7 @@ class Refund(BaseModel):
     amount: Decimal = Field(gt=0, max_digits=24, decimal_places=8)
     currency: str = Field(pattern=r'^[A-Za-z]{3}$')
     refunded_at: AwareDatetime
+    kind: Literal['refund', 'correction'] = 'refund'
 
 
 def _record(db: Session, data: dict[str, Any], kind: str) -> dict[str, Any]:
@@ -42,9 +43,11 @@ def _record(db: Session, data: dict[str, Any], kind: str) -> dict[str, Any]:
     currency = fact.currency.upper().replace('RUR', 'RUB')
     payment_id = fact.id if isinstance(fact, Receipt) else fact.payment_id
     at = fact.confirmed_at if isinstance(fact, Receipt) else fact.refunded_at
+    source_kind = fact.kind if isinstance(fact, Refund) else None
     at = as_utc(at)
     content = {'request_id': row.id, 'kind': kind, 'external_id': fact.id, 'payment_id': payment_id,
-               'amount': format(fact.amount.normalize(), 'f'), 'currency': currency, 'at': at.isoformat()}
+               'source_kind': source_kind, 'amount': format(fact.amount.normalize(), 'f'),
+               'currency': currency, 'at': at.isoformat()}
     digest = hashlib.sha256(json.dumps(content, sort_keys=True).encode()).hexdigest()
     existing = db.scalar(select(SiteRequestPayment).where(SiteRequestPayment.kind == kind,
                                                         SiteRequestPayment.external_id == fact.id))
@@ -61,9 +64,10 @@ def _record(db: Session, data: dict[str, Any], kind: str) -> dict[str, Any]:
     if kind == 'refunded':
         refund_total += fact.amount
     if receipt is not None and refund_total > receipt:
-        raise DomainError('CRM_REFUND_AMOUNT', 'Возвраты превышают подтверждённое поступление', 422)
+        raise DomainError('CRM_REFUND_AMOUNT', 'Возвраты и корректировки превышают подтверждённое поступление', 422)
     entry = SiteRequestPayment(site_request_id=row.id, kind=kind, external_id=fact.id, payment_id=payment_id,
-                               amount=fact.amount, currency=currency, occurred_at=at, payload_hash=digest)
+                               source_kind=source_kind, amount=fact.amount, currency=currency,
+                               occurred_at=at, payload_hash=digest)
     db.add(entry)
     db.flush()
     row.crm_updated_at = utcnow()

@@ -7,6 +7,7 @@ No CAS, stock, document, delivery term or chemical characteristic is inferred fr
 from copy import deepcopy
 from decimal import Decimal
 from typing import Any
+from uuid import NAMESPACE_URL, uuid5
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -24,6 +25,8 @@ NAME = 'Enoxaparin Sodium for Bioassays, USP Reference Standard'
 NAME_RU = 'Эноксапарин натрия для биоанализа, стандартный образец USP'
 ALIASES = ['1235831', '1235831-1AMP']
 REVIEW = 'usp-enoxaparin-2026-11-15'
+# Public production preflight: two old, unnumbered placeholders of this exact existing master.
+LEGACY_MASTER_ID = '24ee8915-ca0b-464e-97cd-80ed65b11781'
 
 
 def verified_identity(product: Product) -> dict[str, Any] | None:
@@ -52,6 +55,13 @@ def identifier_aliases(product: Product) -> list[str]:
         return []
     aliases = identity['identifierAliases']
     return [*aliases, *(f'USP {alias}' for alias in aliases)]
+
+
+def public_packagings(product: Product, packs: list[Packaging]) -> list[Packaging]:
+    """A reviewed pack allowlist leaves old DB rows/history intact and hides future unreviewed import variants."""
+    identity = verified_identity(product)
+    selected = identity.get('verifiedPackagingId') if identity else None
+    return [pack for pack in packs if pack.id == selected] if isinstance(selected, str) else packs
 
 
 def indexed_as_alias(db: Session, product: Product) -> bool:
@@ -90,18 +100,29 @@ def enrichment_plan(db: Session) -> dict[str, Any]:
             continue
         packs = list(db.scalars(select(Packaging).where(Packaging.product_id == product.id)
                                 .order_by(Packaging.position, Packaging.id)))
+        previous_identity = verified_identity(product) or {}
+        legacy_ids = list(previous_identity.get('legacyPackagingIds') or [])
         matches = [p for p in packs if p.catalog_number_norm == compact('1235831-1AMP') or
                    (p.unit == 'ampoule' and p.amount == 1)]
         pack = matches[0] if len(matches) == 1 else packs[0] if len(packs) == 1 else None
+        # This is a reviewed correction of the exact production record, never a rule for ambiguous products.
+        if (product.id == LEGACY_MASTER_ID and product.slug == MASTER_SLUG and len(packs) == 2 and
+                {p.key for p in packs} == {'1-pcs', '1viala'} and
+                all(not p.catalog_number and not p.catalog_number_norm for p in packs)):
+            pack = next(p for p in packs if p.key == '1viala')
+            legacy_ids = [p.id for p in packs if p.key == '1-pcs']
         if len(matches) > 1 or (packs and pack is None):
             errors.append(f'У {slug} несколько неоднозначных фасовок; требуется проверка, изменения не применены')
             continue
         if any(p.key == '1-ampoule' and p is not pack for p in packs):
             errors.append(f'У {slug} ключ 1-ampoule занят другой фасовкой; объединение запрещено')
             continue
+        # Only a genuinely new packaging receives a new ID; its planned UUID is stable across dry runs/apply.
+        pack_id = pack.id if pack else str(uuid5(NAMESPACE_URL, f'{SOURCE_URL}#{REVIEW}:{product.id}:1-ampoule'))
         identity = {'review': REVIEW, 'manufacturer': 'USP', 'supplyChannel': channel,
                     'canonicalProductId': master.id, 'canonicalSlug': master.slug,
-                    'identifierAliases': ALIASES, 'sourceUrl': SOURCE_URL}
+                    'identifierAliases': ALIASES, 'sourceUrl': SOURCE_URL,
+                    'verifiedPackagingId': pack_id, 'legacyPackagingIds': legacy_ids}
         wanted = {'name_en': NAME, 'name_ru': NAME_RU, 'catalog_number': '1235831',
                   'catalog_number_norm': compact('1235831'),
                   'synonyms': list(dict.fromkeys([*(product.synonyms or []), 'Enoxaparin Sodium for Bioassays',
@@ -125,7 +146,7 @@ def enrichment_plan(db: Session) -> dict[str, Any]:
         if pack and pack.amount == Decimal('1'):
             pack_changes.pop('amount', None)
         result.append({'id': product.id, 'slug': slug, 'changes': changes,
-                       'packagingId': pack.id if pack else None, 'packagingChanges': pack_changes})
+                       'packagingId': pack_id, 'packagingChanges': pack_changes})
     return {'review': REVIEW, 'sourceUrl': SOURCE_URL, 'errors': errors, 'products': result,
             'changed': sum(bool(p['changes'] or p['packagingChanges']) for p in result)}
 
@@ -151,7 +172,7 @@ def enrich_existing(db: Session, *, apply: bool = False) -> dict[str, Any]:
         if pack is None:
             parsed = parse_pack('1 ampoule')
             assert parsed is not None
-            pack = Packaging(product_id=product.id, key=parsed.key, label_ru=parsed.label_ru,
+            pack = Packaging(id=item['packagingId'], product_id=product.id, key=parsed.key, label_ru=parsed.label_ru,
                              label_en=parsed.label_en)
             db.add(pack)
         for key, change in item['packagingChanges'].items():

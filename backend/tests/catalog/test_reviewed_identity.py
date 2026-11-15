@@ -10,6 +10,7 @@ from sqlalchemy import func, select
 
 from app.admin.models import AuditEntry
 from app.catalog import cli, identity, pilot
+from app.catalog.importer import run
 from app.catalog.models import Brand, Document, Packaging, Product
 from app.catalog.normalize import compact
 from app.catalog.search import documents, indexer, query
@@ -18,7 +19,7 @@ from app.catalog.settings import get_setting
 from app.core import storefront
 from app.crm.client import payload
 from app.requests.models import SiteRequest
-from tests.catalog.support import FakeEngine
+from tests.catalog.support import FakeEngine, assortment
 from tests.support import form, submit
 
 
@@ -47,6 +48,30 @@ def reviewed(sessions):
             db.flush()
             rows.append((product.id, pack.id))
     return rows
+
+
+@pytest.fixture
+def production_placeholders(sessions):
+    with sessions.begin() as db:
+        usp = Brand(slug='usp', name='USP')
+        sigma = Brand(slug='sigma-aldrich', name='Sigma-Aldrich')
+        db.add_all([usp, sigma])
+        db.flush()
+        master = Product(id=identity.LEGACY_MASTER_ID, brand_id=usp.id, slug=identity.MASTER_SLUG,
+                         name_en='USP 1235831', catalog_number='1235831', catalog_number_norm='1235831',
+                         source='import:assortment', status='published', availability='in_stock', supplier_stock=True)
+        channel = Product(id='525369d2-db22-4a5d-98be-c803a736bddf', brand_id=sigma.id, slug=identity.CHANNEL_SLUG,
+                          name_en='Old channel label', catalog_number='1235831-1AMP',
+                          catalog_number_norm=compact('1235831-1AMP'), source='import:assortment', status='published')
+        db.add_all([master, channel])
+        db.flush()
+        pcs = Packaging(product_id=master.id, key='1-pcs', amount=Decimal(1), unit='pcs',
+                        label_ru='1 шт.', label_en='1 pcs', availability='in_stock')
+        vial = Packaging(product_id=master.id, key='1viala', label_ru='1 виала', label_en='1 vial',
+                         availability='in_stock', price_estimate=Decimal('543.21'), crm_packing_id='old-pack-link')
+        db.add_all([pcs, vial])
+        db.flush()
+        return {'master': master.id, 'channel': channel.id, 'pcs': pcs.id, 'vial': vial.id}
 
 
 def test_dry_run_apply_is_idempotent_and_preserves_catalog_and_old_request(client, sessions, reviewed):
@@ -227,3 +252,101 @@ def test_enrichment_cli_revalidates_both_product_tags_after_targeted_index(sessi
     cli._enrich_usp(argparse.Namespace(apply=False))
     assert json.loads(capsys.readouterr().out)['applied'] is False
     assert len(indexed) == len(invalidated) == 1
+
+
+def test_exact_production_placeholders_keep_ids_but_public_and_search_show_one_ampoule(
+        client, sessions, production_placeholders):
+    ids = production_placeholders
+    fake = FakeEngine()
+    old = form(items=[{'siteProductId': ids['master'], 'brand': 'USP', 'catalogNumber': '1235831',
+                      'name': 'Original customer label', 'packaging': '1 шт.', 'quantity': 9, 'unit': 'pack'}])
+    assert submit(client, old).status_code == 201
+    with sessions.begin() as db:
+        request = db.scalar(select(SiteRequest))
+        historical = deepcopy(payload(db, request)[0])
+        dry = identity.enrich_existing(db)
+        assert not dry['errors'] and dry['changed'] == 2 and not dry['applied']
+        assert dry['products'][0]['packagingId'] == ids['vial']
+        new_id = dry['products'][1]['packagingId']
+        assert identity.enrich_existing(db)['products'][1]['packagingId'] == new_id
+        assert db.scalar(select(func.count()).select_from(Packaging)) == 2
+        assert identity.enrich_existing(db, apply=True)['applied']
+        master = db.get(Product, ids['master'])
+        reviewed_identity = deepcopy(master.seo['identity'])
+        assert reviewed_identity['verifiedPackagingId'] == ids['vial']
+        assert reviewed_identity['legacyPackagingIds'] == [ids['pcs']]
+        old_pcs, corrected = db.get(Packaging, ids['pcs']), db.get(Packaging, ids['vial'])
+        assert (old_pcs.key, old_pcs.label_ru, old_pcs.unit, old_pcs.catalog_number) == ('1-pcs', '1 шт.', 'pcs', None)
+        assert (corrected.key, corrected.unit, corrected.catalog_number) == ('1-ampoule', 'ampoule', '1235831-1AMP')
+        assert corrected.availability == 'in_stock' and corrected.price_estimate == Decimal('543.21')
+        assert corrected.crm_packing_id == 'old-pack-link'
+        assert db.get(Packaging, new_id).product_id == ids['channel']
+        assert db.scalar(select(func.count()).select_from(Packaging)) == 3
+        assert payload(db, request)[0] == historical
+        assert identity.enrich_existing(db, apply=True)['changed'] == 0
+        assert master.seo['identity'] == reviewed_identity
+        indexer.index_pending(db, fake, product_ids=[ids['master'], ids['channel']])
+        assert set(fake.documents) == {ids['master']}
+        assert fake.documents[ids['master']]['packs'] == ['1-ampoule']
+        assert len(fake.documents[ids['master']]['packagings']) == 1
+    for slug in (identity.MASTER_SLUG, identity.CHANNEL_SLUG):
+        response = client.get(f'/api/v1/public/products/{slug}')
+        assert response.status_code == 200, response.text
+        packs = response.json()['product']['packagings']
+        assert [(pack['label'], pack['catalogNumber']) for pack in packs] == [('1 амп.', '1235831-1AMP')]
+
+
+@pytest.mark.parametrize('change', ['other_id', 'extra_pack', 'numbered_placeholder'])
+def test_production_exception_does_not_resolve_other_ambiguities(sessions, production_placeholders, change):
+    ids = production_placeholders
+    with sessions.begin() as db:
+        master = db.get(Product, ids['master'])
+        if change == 'other_id':
+            # Keep the same names/keys on another product: the reviewed exception is tied to the real ID.
+            master.slug = 'old-master-before-test'
+            copy = Product(brand_id=master.brand_id, slug=identity.MASTER_SLUG, catalog_number='temporary',
+                           catalog_number_norm='temporary', name_en=master.name_en)
+            master.catalog_number_norm = 'old-record'
+            db.add(copy)
+            db.flush()
+            copy.catalog_number = '1235831'
+            copy.catalog_number_norm = '1235831'
+            for pack in db.scalars(select(Packaging).where(Packaging.product_id == master.id)):
+                pack.product_id = copy.id
+        elif change == 'extra_pack':
+            db.add(Packaging(product_id=master.id, key='another-placeholder', label_ru='Другая', label_en='Other'))
+        else:
+            db.get(Packaging, ids['pcs']).catalog_number = 'another-number'
+        db.flush()
+        result = identity.enrich_existing(db, apply=True)
+        assert result['errors'] and not result['applied']
+        assert db.scalar(select(func.count()).select_from(AuditEntry)) == 0
+
+
+def test_import_preserves_reviewed_pack_and_does_not_publish_new_unreviewed_variants(
+        client, sessions, production_placeholders, tmp_path):
+    ids = production_placeholders
+    with sessions.begin() as db:
+        assert identity.enrich_existing(db, apply=True)['applied']
+    path = assortment(tmp_path / 'reload.xlsx', [
+        ('Wrong new import name', '1235831-1AMP', None, 'USP', '1 ampoule'),
+        ('Wrong new import name', '1235831', None, 'USP', '1viala'),
+        ('Wrong new import name', '1235831-1AMP', None, 'Sigma-Aldrich', '1 ampoule'),
+    ])
+    imported = run.import_files(sessions, [path], source='assortment')
+    assert imported['files'][0].get('created', 0) == 0
+    with sessions.begin() as db:
+        master = db.get(Product, ids['master'])
+        assert db.scalar(select(func.count()).select_from(Product)) == 2
+        assert master.name_en == identity.NAME and master.catalog_number == '1235831'
+        verified = db.get(Packaging, ids['vial'])
+        assert (verified.key, verified.label_ru, verified.catalog_number) == ('1-ampoule', '1 амп.', '1235831-1AMP')
+        assert '1viala' in set(db.scalars(select(Packaging.key).where(Packaging.product_id == master.id)))
+        # Simulate another future source/CRM adding a variant; it stays stored but cannot bypass the allowlist.
+        db.add(Packaging(product_id=master.id, key='future-unreviewed', label_ru='Не проверено', label_en='Unreviewed'))
+        db.flush()
+        fake = FakeEngine()
+        indexer.index_pending(db, fake, product_ids=[ids['master'], ids['channel']])
+        assert fake.documents[ids['master']]['packs'] == ['1-ampoule']
+    response = client.get(f'/api/v1/public/products/{identity.MASTER_SLUG}')
+    assert [pack['label'] for pack in response.json()['product']['packagings']] == ['1 амп.']

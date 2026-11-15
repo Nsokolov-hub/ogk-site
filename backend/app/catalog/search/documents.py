@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.catalog.cas_pages import name_variants
-from app.catalog.identity import identifier_aliases, indexed_as_alias, public_identity
+from app.catalog.identity import identifier_aliases, indexed_as_alias, public_identity, public_packagings
 from app.catalog.models import (
     Brand,
     BrandAlias,
@@ -115,6 +115,7 @@ def build(db: Session, products: list[Product], ctx: Context, *, for_index: bool
 
 
 def document(product: Product, ctx: Context, packs: list[Packaging], links: list[ProductCategory]) -> dict[str, Any]:
+    packs = public_packagings(product, packs)
     brand = ctx.brands[product.brand_id]
     substance = ctx.substances.get(product.substance_id or '')
     primary = next((ctx.categories[link.category_id] for link in links if link.is_primary), None)
