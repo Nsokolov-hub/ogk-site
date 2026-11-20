@@ -121,7 +121,13 @@ echo "  нагрузка $load на $cores ядра"
 
 step "Миграции и перезапуск"
 up_at=$(remote "date -u +%Y-%m-%dT%H:%M:%SZ")
-remote_job up "compose up -d --no-build"
+if [[ -n $migrations ]]; then
+  # Finish old stock checks before the migration clears their links and crawl state.
+  # An old worker must not write those links back after the new matching rules take effect.
+  remote_job up "compose stop worker && compose up -d --no-build"
+else
+  remote_job up "compose up -d --no-build"
+fi
 
 # deploy/caddy is mounted into the running Caddy, so a changed config needs a restart (a new admin image already
 # recreated the container with it). The production Caddyfile has `admin off`, so `caddy reload` cannot reach it:
@@ -158,7 +164,7 @@ remote "compose ps --format '{{.Name}} {{.Status}}'" | sed 's/^/  /'
 # новой схеме может не заработать, а откат миграции требует решения.
 rollback() {
   step "АВТОМАТИЧЕСКИЙ ОТКАТ на $live: $1"
-  [[ -z $migrations ]] || die "в выкатке есть миграции базы — автоматически не откатываю, на проде остаётся $sha. Откатите миграцию, затем образы: for s in ${SERVICES[*]}; do docker tag ogk-site-\$s:rollback-$live ogk-site-\$s:latest; done; compose up -d --no-build"
+  [[ -z $migrations ]] || die "в выкатке есть миграции базы — автоматически не откатываю, на проде остаётся $sha. Используйте отдельный план отката; для снимков наличия см. docs/stock-sources-2026-11-20.md. Не удаляйте схему и сохранённые снимки через alembic downgrade."
   remote "for s in ${SERVICES[*]}; do docker tag ogk-site-\$s:rollback-$live ogk-site-\$s:latest; done; docker tag ogk-site-caddy:rollback-$live ogk-site-caddy:local"
   remote_job rollback "compose up -d --no-build"
   # The checkout follows what runs, so --check and the next deploy see $live; the next deploy fast-forwards again.
@@ -218,6 +224,8 @@ remote "for repo in ${SERVICES[*]/#/ogk-site-} ogk-site-caddy; do docker images 
 cat <<EOF
 
 ГОТОВО: на проде $sha (было $live).
-Откат, если понадобится (если в выкатке была миграция базы, сначала откатите её):
+Команда возврата образов ниже подходит только для релиза без миграций.
+При наличии миграций используйте отдельный план отката: docs/stock-sources-2026-11-20.md.
+Схему и сохранённые снимки наличия через alembic downgrade не удалять.
   ssh $HOST 'cd $APP && for s in ${SERVICES[*]}; do docker tag ogk-site-\$s:rollback-$live ogk-site-\$s:latest; done && docker tag ogk-site-caddy:rollback-$live ogk-site-caddy:local && source scripts/lib.sh && compose up -d --no-build'
 EOF
