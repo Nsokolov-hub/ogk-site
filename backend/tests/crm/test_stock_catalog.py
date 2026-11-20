@@ -139,6 +139,32 @@ def test_own_stock_requires_the_selected_pack_or_one_pack_product(client, sessio
     assert ask(client, {'source': 'chimmed'}).json()['items'] == []
 
 
+def test_overlapping_stock_sources_are_deduplicated_before_filters_and_pagination(client, sessions):
+    now = utcnow()
+    with sessions.begin() as db:
+        both, packs = product(db, 'a-overlap', own=True)
+        packs[0].availability = 'in_stock'
+        offer(db, 'overlap-chimmed', both, packs[0], now)
+        offer(db, 'overlap-skygen', both, packs[0], now, source='skygen')
+        _, explicit = product(db, 'b-explicit', packs=2)
+        explicit[1].availability = 'in_stock'
+        product(db, 'c-own', own=True)
+    first = ask(client, {'limit': 1}).json()
+    second = ask(client, {'limit': 1, 'as_of': first['as_of'], 'cursor': first['next_cursor']}).json()
+    third = ask(client, {'limit': 1, 'as_of': first['as_of'], 'cursor': second['next_cursor']}).json()
+    assert [page['items'][0]['packaging_id'] for page in (first, second, third)] == [
+        'a-overlap-pack-0', 'b-explicit-pack-1', 'c-own-pack-0']
+    assert first['has_more'] and second['has_more'] and not third['has_more']
+    assert len(first['items'][0]['offers']) == 2
+    filtered = ask(client, {'q': 'SKU-b-explicit-2G', 'brand': 'Test manufacturer', 'limit': 1}).json()
+    assert [row['packaging_id'] for row in filtered['items']] == ['b-explicit-pack-1']
+    assert not filtered['has_more']
+    source = ask(client, {'source': 'chimmed', 'limit': 1}).json()
+    assert [row['packaging_id'] for row in source['items']] == ['a-overlap-pack-0']
+    assert [value['source'] for value in source['items'][0]['offers']] == ['chimmed']
+    assert not source['has_more']
+
+
 def test_catalog_cursor_is_keyset_and_bound_to_filters_and_as_of(client, sessions):
     with sessions.begin() as db:
         for identifier in ('row-a', 'row-b', 'row-c'):

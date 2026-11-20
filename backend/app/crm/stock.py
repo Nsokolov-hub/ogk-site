@@ -9,7 +9,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
-from sqlalchemy import and_, exists, func, or_, select
+from sqlalchemy import and_, exists, false, func, or_, select
 from sqlalchemy.orm import Session, aliased
 
 from app.catalog.identity import CHANNEL_SLUG, MASTER_SLUG, indexed_as_alias, verified_identity
@@ -74,8 +74,10 @@ def catalog(db: Session, body: StockIn, at: datetime, key: list[str] | None) -> 
     fresh = fresh_offers(db, max(as_utc(at), as_utc(utcnow())))
     if body.source:
         fresh = fresh.where(CompetitorOffer.source == body.source)
-    supplier = fresh.where(CompetitorOffer.product_id == Product.id,
-                           CompetitorOffer.packaging_id == Packaging.id).exists()
+    supplier_keys = fresh.with_only_columns(
+        CompetitorOffer.product_id.label('product_id'), CompetitorOffer.packaging_id.label('packaging_id')
+    ).join(Packaging, and_(Packaging.id == CompetitorOffer.packaging_id,
+                          Packaging.product_id == CompetitorOffer.product_id))
     other = aliased(Packaging)
     single_pack = ~exists(select(other.id).where(other.product_id == Product.id, other.id != Packaging.id))
     # The explicit identity review retains historic placeholders. Query its two indexed slugs, never scan
@@ -84,11 +86,24 @@ def catalog(db: Session, body: StockIn, at: datetime, key: list[str] | None) -> 
     aliases = [product.id for product in reviewed if indexed_as_alias(db, product)]
     approved = {product.id: identity['verifiedPackagingId'] for product in reviewed
                 if (identity := verified_identity(product)) and isinstance(identity.get('verifiedPackagingId'), str)}
-    own = or_(Packaging.availability == 'in_stock', and_(Product.availability == 'in_stock',
-                                                       or_(single_pack, Product.id.in_(approved))))
-    eligible = supplier if body.source else or_(supplier, own)
-    query = select(Product, Packaging, Brand).join(Packaging, Packaging.product_id == Product.id).join(
-        Brand, Brand.id == Product.brand_id).where(public_products(db), eligible)
+    if body.source:
+        eligible = supplier_keys.distinct().subquery('eligible_stock')
+    else:
+        pack_stock = select(Packaging.product_id.label('product_id'), Packaging.id.label('packaging_id')).where(
+            Packaging.availability == 'in_stock')
+        approved_pairs = [and_(Product.id == product_id, Packaging.id == pack_id)
+                          for product_id, pack_id in approved.items()]
+        approved_pack = or_(*approved_pairs) if approved_pairs else false()
+        product_stock = select(Product.id.label('product_id'), Packaging.id.label('packaging_id')).join(
+            Packaging, Packaging.product_id == Product.id).where(
+                Product.availability == 'in_stock', or_(single_pack, approved_pack))
+        # Deduplicate stock evidence before pagination. Starting from these narrow keys avoids a
+        # correlated supplier EXISTS for every product/packaging in the full catalogue.
+        eligible = supplier_keys.union(pack_stock, product_stock).subquery('eligible_stock')
+    query = select(Product, Packaging, Brand).select_from(eligible).join(
+        Product, Product.id == eligible.c.product_id).join(
+        Packaging, and_(Packaging.id == eligible.c.packaging_id, Packaging.product_id == Product.id)).join(
+        Brand, Brand.id == Product.brand_id).where(public_products(db))
     if aliases:
         query = query.where(Product.id.not_in(aliases))
     for product_id, pack_id in approved.items():
