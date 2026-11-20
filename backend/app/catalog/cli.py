@@ -365,7 +365,7 @@ def main() -> None:
     command.add_argument('file')
     command.add_argument('--replace', action='store_true', help='заменить все, а не дополнить')
     command.add_argument('--reindex', action='store_true', help='переиндексировать товары всех названных веществ')
-    command = commands.add_parser('competitors', help='наличие на складах Химмеда и Скайклада')
+    command = commands.add_parser('competitors', help='наличие на складах всех настроенных поставщиков')
     command.add_argument('--now', action='store_true', help='не ждать срока, проверить сейчас')
     command.add_argument('--status', action='store_true', help='только показать последнюю проверку')
     command = commands.add_parser('index-pilot', help='открыть карточки брендов для индексации')

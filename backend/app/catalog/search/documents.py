@@ -25,6 +25,7 @@ from app.catalog.models import (
 )
 from app.catalog.normalize import compact
 from app.catalog.settings import get_setting
+from app.core.db import as_utc
 
 # Facet keys of the storefront → document attributes.
 FACET_FIELDS = {'brand': 'brand_slug', 'pack': 'packs', 'storage': 'storage', 'purpose': 'purpose', 'type': 'type',
@@ -128,6 +129,8 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
     numbers = ([compact(product.catalog_number)] + [compact(p.catalog_number) for p in packs if p.catalog_number]
                + [compact(alias) for alias in identifier_aliases(product)])
     image = product.images[0] if product.images else None
+    availability = shown_availability(product)
+    supplier = availability == 'in_stock' and product.availability != 'in_stock'
     doc: dict[str, Any] = {
         'id': product.id,
         'all': 1,
@@ -154,11 +157,14 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
         'category': primary.path if primary else None,
         'category_top': primary.path.split('/')[0] if primary else None,
         # Our own stock or a supplier's (app.catalog.competitors): both are «В наличии» on the storefront.
-        'availability': shown_availability(product),
-        'in_stock': 1 if shown_availability(product) == 'in_stock' else 0,
-        'stock': 'own' if product.availability == 'in_stock' else 'supplier' if product.supplier_stock else None,
+        'availability': availability,
+        'in_stock': 1 if availability == 'in_stock' else 0,
+        'stock': 'own' if product.availability == 'in_stock' else 'supplier' if supplier else None,
+        # Search hits can outlive the worker/indexer. The response checks this deadline before displaying stock.
+        'stock_valid_until': as_utc(product.supplier_stock_until).isoformat()
+        if supplier and product.supplier_stock_until else None,
         'packs': [p.key for p in packs] + (['custom'] if custom else []),
-        'packagings': [{'key': p.key, 'label_ru': p.label_ru, 'label_en': p.label_en,
+        'packagings': [{'id': p.id, 'key': p.key, 'label_ru': p.label_ru, 'label_en': p.label_en,
                         'catalog_number': p.catalog_number} for p in packs],
         'custom_packaging': bool(custom),
         'formula_hill': product.formula_hill,

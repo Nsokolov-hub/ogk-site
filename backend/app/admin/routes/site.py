@@ -4,6 +4,7 @@ Contacts and requisites are the one source for the header, the footer and Organi
 weights of completeness re-count the whole catalog in the background; the feed check lists what Direct would refuse.
 """
 
+import math
 from datetime import timedelta
 from typing import Any
 
@@ -67,7 +68,7 @@ def integration(db: DB) -> dict[str, Any]:
 
 EDITABLE = {'site': 'settings.write', 'counters': 'settings.write', 'mail': 'settings.write',
             'index_threshold': 'settings.write', 'completeness_weights': 'settings.write',
-            'hide_controlled': 'settings.write', 'feed': 'feeds.write'}
+            'hide_controlled': 'settings.write', 'feed': 'feeds.write', 'competitor_stock': 'settings.write'}
 RECOUNT = ('index_threshold', 'completeness_weights', 'hide_controlled')
 
 
@@ -85,6 +86,32 @@ class SettingIn(BaseModel):
 
 
 def check_setting(key: str, value: Any) -> Any:
+    if key == 'competitor_stock':
+        from app.catalog.competitors import META
+
+        if not isinstance(value, dict):
+            raise DomainError('VALUE_INVALID', 'Нужны настройки проверки складов', 422)
+        sources = value.get('sources')
+        if not isinstance(sources, list) or any(not isinstance(s, str) or s not in META for s in sources):
+            raise DomainError('VALUE_INVALID', 'Выберите известные источники', 422, 'sources')
+        clean: dict[str, Any] = {'sources': list(dict.fromkeys(sources))}
+        for name, low, high in [('every_days', 0.25, 30), ('keep_days', 1, 30), ('pause_seconds', 2, 60)]:
+            number = value.get(name, DEFAULTS['competitor_stock'][name])
+            if isinstance(number, bool) or not isinstance(number, (int, float)) or \
+                    not math.isfinite(number) or not low <= number <= high:
+                raise DomainError('VALUE_INVALID', f'{name}: от {low} до {high}', 422, name)
+            clean[name] = float(number)
+        limit = value.get('max_pages_per_source', DEFAULTS['competitor_stock']['max_pages_per_source'])
+        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 1000:
+            raise DomainError('VALUE_INVALID', 'Лимит страниц — от 1 до 1000', 422, 'max_pages_per_source')
+        clean['max_pages_per_source'] = limit
+        aliases = value.get('brand_aliases', {})
+        if not isinstance(aliases, dict) or any(not isinstance(k, str) or not k.strip() or len(k) > 250 or
+                                               not isinstance(v, str) or not v.strip() or len(v) > 200
+                                               for k, v in aliases.items()):
+            raise DomainError('VALUE_INVALID', 'Алиасы брендов: название → код бренда', 422, 'brand_aliases')
+        clean['brand_aliases'] = {k.strip(): v.strip() for k, v in aliases.items()}
+        return clean
     if key == 'site':
         if not isinstance(value, dict) or not isinstance(value.get('ru'), dict):
             raise DomainError('VALUE_INVALID', 'Нужны контакты на русском', 422, 'ru')

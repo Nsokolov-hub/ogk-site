@@ -7,6 +7,7 @@ export type Analogue = 'none' | 'allowed' | 'requested';
 
 export interface SiteRequestItem {
   siteProductId?: string;
+  sitePackagingId?: string;
   brand?: string;
   catalogNumber?: string;
   cas?: string;

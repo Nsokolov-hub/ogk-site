@@ -163,17 +163,23 @@ class BatchEngine(FakeEngine):
         return answers
 
 
-def test_fuzzy_singleton_is_a_suggestion_and_exact_pack_is_not_first(sessions, reviewed):
+@pytest.mark.parametrize('legacy_index', [False, True])
+def test_fuzzy_singleton_is_a_suggestion_and_exact_pack_is_not_first(sessions, reviewed, legacy_index):
     with sessions.begin() as db:
         identity.enrich_existing(db, apply=True)
         product = db.get(Product, reviewed[0][0])
         hit = documents.build(db, [product], documents.Context(db, True))[0][0]
+    if legacy_index:
+        # Search indexes built before this release still carry the stable product/key identity.
+        for pack in hit['packagings']:
+            pack.pop('id', None)
     hit['packagings'].insert(0, {'key': '10-mg', 'label_ru': '10 мг', 'label_en': '10 mg',
                                'catalog_number': 'other-pack'})
     exact = query.batch(BatchEngine([Result([hit], 1)]), ['USP 1235831-1AMP 9'], 'ru')[0]
     assert exact['status'] == 'exact' and exact['quantity'] == 9 and exact['query'] == 'USP 1235831-1AMP'
     chosen = exact['candidates'][0]
-    assert chosen['match'] == 'catalogNumber' and chosen['matchedPackagingId'] == f'{hit["id"]}-1-ampoule'
+    expected_pack_id = f'{hit["id"]}-1-ampoule' if legacy_index else reviewed[0][1]
+    assert chosen['match'] == 'catalogNumber' and chosen['matchedPackagingId'] == expected_pack_id
     assert chosen['matchedCatalogNumber'] == '1235831-1AMP'
     fuzzy = query.batch(BatchEngine([Result([], 0)], [Result([hit], 1)]), ['enoxaprin 9'], 'ru')[0]
     assert fuzzy['status'] == 'multiple' and fuzzy['candidates'][0]['matchedPackagingId'] is None

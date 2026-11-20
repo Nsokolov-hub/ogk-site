@@ -24,3 +24,17 @@ def test_check_now_is_for_the_administrator(sessions, sites, catalog, signed_in)
     assert state['due'] is True
     with sessions() as db:
         assert competitors.due(db)
+
+
+def test_sources_and_crawl_limits_are_editable_only_with_safe_values(signed_in):
+    admin = signed_in('admin')
+    state = admin.ok(admin.get('/settings'))
+    stock = state['competitor_stock']
+    assert {'chimmed', 'skygen', 'diam', 'vilax'} <= set(stock['sources'])
+    assert admin.put('/settings/competitor_stock', json={'value': {**stock, 'sources': ['unknown']}}).status_code == 422
+    assert admin.put('/settings/competitor_stock', json={'value': {**stock, 'pause_seconds': 0}}).status_code == 422
+    assert admin.put('/settings/competitor_stock', json={'value': {**stock, 'keep_days': -1}}).status_code == 422
+    saved = admin.ok(admin.put('/settings/competitor_stock', json={'value': {
+        **stock, 'sources': ['chimmed'], 'max_pages_per_source': 50,
+    }}))
+    assert saved['competitor_stock']['sources'] == ['chimmed']

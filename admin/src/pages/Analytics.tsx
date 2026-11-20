@@ -410,19 +410,37 @@ interface SupplierStats {
   errors: number;
   truncated: number;
   refused: string | null;
+  incomplete?: string | null;
   products?: number;
   complete?: boolean;
 }
 interface SupplierState {
   enabled: boolean;
-  settings: { every_days: number; sources: string[] };
+  settings: { every_days: number; keep_days: number; sources: string[]; max_pages_per_source?: number };
   last: { startedAt: string; finishedAt: string | null; left: number; sources: Record<string, SupplierStats> } | null;
   running: { startedAt: string; left: number; stats: Record<string, SupplierStats> } | null;
   productsInStock: number;
+  pendingReview: number;
   names: Record<string, string>;
+  sources: Record<string, { name: string; url: string; status: string; reason?: string }>;
 }
 
-/** Склады Химмеда и Скайклада: что у них в наличии — у нас «В наличии» (app.catalog.competitors на сервере) */
+const SOURCE_STATUS: Record<string, string> = {
+  supported: 'Поддерживается',
+  review_only: 'Проверка менеджером',
+  needs_verification: 'Нужно подтверждение',
+  temporarily_unavailable: 'Временно недоступен',
+};
+
+function supplierReason(reason: string) {
+  if (reason.includes('no_stock_evidence') || reason.includes('no_verified_public_stock')) return 'В открытых карточках нет подтверждённого остатка.';
+  if (reason.includes('manufacturer_and_article')) return 'В списке нет производителя и заводского артикула: нужна проверка менеджера.';
+  if (reason.includes('requested_category_empty')) return 'Исходный раздел пуст; проверка продолжена по открытым ссылкам каталога.';
+  if (reason.includes('missing') || reason.includes('changed')) return 'Разметка поставщика изменилась или не подтверждает остатки. Нужна проверка источника.';
+  return reason;
+}
+
+/** Все источники складских остатков и очередь проверки; неизвестное наличие не считается подтверждённым. */
 function SupplierCheck({ admin }: { admin: boolean }) {
   const toast = useToast();
   const client = useQueryClient();
@@ -435,13 +453,14 @@ function SupplierCheck({ admin }: { admin: boolean }) {
     mutationFn: () => api.post<SupplierState>('/competitors/check'),
     onSuccess: (r) => {
       client.setQueryData(['competitors'], r);
-      toast('Проверка начнётся в течение минуты и займёт около часа');
+      toast('Проверка начнётся в течение минуты. Длительность зависит от числа доступных страниц.');
     },
     onError: (e) => toast(errorText(e), 'bad'),
   });
   const s = state.data;
   if (!s) return null;
   const stats = s.running?.stats ?? s.last?.sources ?? {};
+  const sources = [...new Set([...Object.keys(s.sources ?? {}), ...Object.keys(s.names), ...Object.keys(stats)])];
   return (
     <Panel
       title="Наличие на складах поставщиков"
@@ -454,43 +473,65 @@ function SupplierCheck({ admin }: { admin: boolean }) {
             ? `Идёт проверка с ${formatDate(s.running.startedAt)} · осталось страниц: ${s.running.left}`
             : s.last?.finishedAt
               ? `Последняя проверка ${formatDate(s.last.finishedAt)} · следующая через ${s.settings.every_days} дн. после неё`
-              : 'Проверок ещё не было.'}{' '}
+              : s.last ? 'Запланирована новая проверка источников.' : 'Проверок ещё не было.'}{' '}
         На сайте «В наличии» по складам поставщиков: {s.productsInStock} товаров.
       </p>
-      {Object.keys(stats).length ? (
+      <p className="muted small">
+        Свежих предложений для проверки менеджером: {n(s.pendingReview)}. Автоматическое создание и публикация товаров отключены.
+        {' '}Срок действия подтверждения — {s.settings.keep_days} дн. с учётом даты складского списка поставщика.
+        {s.settings.max_pages_per_source ? ` Лимит одного обхода — ${s.settings.max_pages_per_source} страниц на источник.` : ''}
+      </p>
+      {sources.length ? (
         <table className="table">
           <thead>
             <tr>
               <th>Поставщик</th>
+              <th>Подключение</th>
               <th>Страниц</th>
-              <th>Позиций наших брендов</th>
+              <th>Предложений</th>
               <th>Совпало с нашими</th>
               <th>Состояние</th>
             </tr>
           </thead>
           <tbody>
-            {Object.entries(stats).map(([source, st]) => (
+            {sources.map((source) => {
+              const st = stats[source];
+              const metadata = s.sources?.[source];
+              const selected = s.settings.sources.includes(source);
+              return (
               <tr key={source}>
-                <td>{s.names[source] ?? source}</td>
-                <td>{st.pages}</td>
-                <td>{st.offers}</td>
-                <td>{st.matched}</td>
+                <td>{metadata?.url ? <a href={metadata.url} target="_blank" rel="noopener noreferrer">{s.names[source] ?? source}</a> : s.names[source] ?? source}</td>
                 <td>
-                  {st.refused ? (
-                    <Badge tone="bad">сайт отказал ({st.refused}) — старые данные действуют до 10 дней</Badge>
+                  <Badge tone={!selected ? 'neutral' : metadata?.status === 'supported' ? 'good' : 'warn'}>
+                    {!selected ? 'Отключён' : SOURCE_STATUS[metadata?.status ?? ''] ?? 'Настроен'}
+                  </Badge>
+                  {metadata?.reason ? <div className="muted small">{supplierReason(metadata.reason)}</div> : null}
+                </td>
+                <td>{st?.pages ?? '—'}</td>
+                <td>{st?.offers ?? '—'}</td>
+                <td>{st?.matched ?? '—'}</td>
+                <td>
+                  {!st ? (
+                    <Badge tone="neutral">Ещё не проверялся</Badge>
+                  ) : st.refused ? (
+                    <><Badge tone="bad">Доступ ограничен ({st.refused})</Badge><div className="muted small">Прежнее подтверждение действует в пределах {s.settings.keep_days} дн.</div></>
                   ) : st.errors ? (
                     <Badge tone="warn">не открылось страниц: {st.errors}</Badge>
-                  ) : st.complete === false ? (
+                  ) : st.incomplete || st.complete === false || st.truncated ? (
                     <Badge tone="warn">проверен не полностью</Badge>
                   ) : s.running ? (
                     <Badge tone="info">идёт</Badge>
+                  ) : !s.last?.finishedAt ? (
+                    <Badge tone="neutral">Требуется новая проверка</Badge>
                   ) : (
                     <Badge tone="good">проверен полностью</Badge>
                   )}
-                  {st.truncated ? <span className="muted small"> · сайт показал не всё: {st.truncated} запросов</span> : null}
+                  {st?.incomplete ? <div className="muted small">{supplierReason(st.incomplete)}</div> : null}
+                  {st?.truncated ? <div className="muted small">Проверка ограничена: {st.truncated} запросов.</div> : null}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       ) : null}

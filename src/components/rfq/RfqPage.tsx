@@ -111,6 +111,7 @@ export function RfqPage({ docs }: { docs: SiteSettings['docs'] }) {
     setFailed(null);
     const payloadItems: SiteRequestItem[] = items.map((i) => ({
       siteProductId: i.free ? undefined : i.productId,
+      sitePackagingId: i.free ? undefined : i.packagingId ?? undefined,
       brand: i.brand || undefined,
       catalogNumber: i.catalogNumber || undefined,
       cas: i.cas,

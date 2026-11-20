@@ -20,6 +20,8 @@ dependencies = [
     "pydantic-settings>=2.9",
     "pyotp>=2.10",
     "python-multipart>=0.0.20",
+    # Public warehouse PDF of CSDB; unknown manufacturer/SKU stays in the manager's review queue.
+    "pypdf>=6.0",
     # 2D structures from SMILES, formula and mass checks (TZ 12.1).
     "rdkit>=2026.3",
     # Limits of the public API shared by all processes (TZ 12.1, NFR-05).

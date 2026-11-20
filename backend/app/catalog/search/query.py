@@ -11,6 +11,7 @@ import re
 import time
 from collections.abc import Collection
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
 from sqlalchemy import select
@@ -33,7 +34,7 @@ from app.catalog.search.documents import FACET_FIELDS, NUMBER_FIELDS
 from app.catalog.search.engine import Query, Result, SearchEngine, any_of, quote
 from app.catalog.settings import get_setting
 from app.core.config import settings
-from app.core.db import utcnow
+from app.core.db import as_utc, utcnow
 
 SUGGEST_MIN = 2
 SUGGEST_LIMIT = 6
@@ -44,6 +45,19 @@ TRANSLATED_FACETS = ('storage', 'purpose', 'type')
 
 
 # ── documents → storefront shapes ──
+
+def hit_availability(hit: dict[str, Any]) -> str:
+    if hit.get('availability') != 'in_stock':
+        return 'on_order'
+    if hit.get('stock') == 'supplier':
+        try:
+            until = datetime.fromisoformat(hit.get('stock_valid_until') or '')
+        except (ValueError, TypeError):
+            return 'on_order'
+        if as_utc(until) <= utcnow():
+            return 'on_order'
+    return 'in_stock'
+
 
 def preview(hit: dict[str, Any], lang: str, brand_pages: Collection[str] = frozenset()) -> dict[str, Any]:
     """A product preview in the storefront's shape (ProductPreview); brand_pages — slugs of brands with a published
@@ -66,12 +80,12 @@ def preview(hit: dict[str, Any], lang: str, brand_pages: Collection[str] = froze
         'catalogNumber': hit['catalog_number'],
         'cas': hit.get('cas'),
         'categorySlug': hit.get('category') or '',
-        'packagings': [{'id': f'{hit["id"]}-{p["key"]}', 'label': p['label_ru'] if ru else p['label_en'],
+        'packagings': [{'id': p.get('id') or f'{hit["id"]}-{p["key"]}', 'label': p['label_ru'] if ru else p['label_en'],
                         'catalogNumber': p.get('catalog_number')} for p in hit.get('packagings') or []],
         'customPackaging': bool(hit.get('custom_packaging')),
         'image': hit.get('image'),
         'discontinued': bool(hit.get('discontinued')),
-        'availability': 'in_stock' if hit.get('availability') == 'in_stock' else 'on_order',
+        'availability': hit_availability(hit),
         'substance': {'slug': hit['substance_slug'], 'role': hit['substance_role']} if hit.get('substance_slug')
         else None,
         'attributes': attributes,

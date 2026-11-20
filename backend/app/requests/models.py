@@ -128,6 +128,9 @@ class SiteRequestItem(Entity):
     request_id: Mapped[str] = mapped_column(ForeignKey('site_requests.id'), index=True)
     position: Mapped[int] = mapped_column(Integer)
     site_product_id: Mapped[str | None] = mapped_column(String(100))
+    site_packaging_id: Mapped[str | None] = mapped_column(String(150))
+    # Private, server-derived availability at submission time; never recalculated on delivery retries.
+    stock_snapshot: Mapped[dict[str, Any] | None] = mapped_column(JSON)
     brand: Mapped[str | None] = mapped_column(String(200))
     catalog_number: Mapped[str | None] = mapped_column(String(150))
     cas: Mapped[str | None] = mapped_column(String(30))

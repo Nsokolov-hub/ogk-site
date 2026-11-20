@@ -66,7 +66,11 @@ def payload(db: Session, row: SiteRequest) -> tuple[dict[str, Any], list[tuple[s
             'marketing_consent': row.marketing_consent,
         },
         'items': [{
-            'site_product_id': item.site_product_id, 'crm_product_id': None, 'brand': item.brand,
+            'site_product_id': item.site_product_id,
+            # Do not change the body/hash of pre-migration requests whose delivery may be retried.
+            **({'site_packaging_id': item.site_packaging_id} if item.site_packaging_id is not None else {}),
+            **({'stock_snapshot': item.stock_snapshot} if item.stock_snapshot is not None else {}),
+            'crm_product_id': None, 'brand': item.brand,
             'catalog_number': item.catalog_number, 'cas': item.cas, 'name': item.name,
             'packaging': item.packaging, 'quantity': number(item.quantity), 'unit': item.unit,
             'analogue': item.analogue, 'custom_packaging': item.custom_packaging, 'comment': item.comment,

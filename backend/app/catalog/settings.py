@@ -117,7 +117,9 @@ DEFAULTS: dict[str, Any] = {
     # Stock of suppliers (app.catalog.competitors): which sites are checked and how often, the pause between two
     # requests to one site, how long a position not seen again still counts as in stock, extra spellings of brands
     # ({"their name": "our brand slug"}).
-    'competitor_stock': {'sources': ['chimmed', 'skygen'], 'every_days': 3, 'pause_seconds': 2.0,
+    'competitor_stock': {'sources': ['chimmed', 'skygen', 'diam', 'labteh', 'algimed', 'csdb', 'laverna',
+                                     'hplc', 'vilax', 'nevareaktiv', 'lenreactiv'],
+                         'every_days': 3, 'pause_seconds': 2.0, 'max_pages_per_source': 120,
                          'keep_days': 10, 'brand_aliases': {}},
     # The check in progress (its queue of pages, done in short turns of the worker) and the last result of each site.
     'competitor_run': None,

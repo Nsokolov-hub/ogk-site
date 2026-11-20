@@ -94,6 +94,7 @@ class CustomerIn(CamelModel):
 
 class ItemIn(CamelModel):
     site_product_id: str | None = Field(default=None, max_length=100)
+    site_packaging_id: str | None = Field(default=None, max_length=150)
     brand: str | None = Field(default=None, max_length=200)
     catalog_number: str | None = Field(default=None, max_length=150)
     cas: str | None = Field(default=None, max_length=30)
@@ -106,7 +107,7 @@ class ItemIn(CamelModel):
     comment: str | None = Field(default=None, max_length=2000)
     page_url: str | None = Field(default=None, max_length=2000)
 
-    _blank = field_validator('site_product_id', 'brand', 'catalog_number', 'cas', 'packaging', 'comment',
+    _blank = field_validator('site_product_id', 'site_packaging_id', 'brand', 'catalog_number', 'cas', 'packaging', 'comment',
                              'page_url', mode='before')(blank_to_none)
 
 

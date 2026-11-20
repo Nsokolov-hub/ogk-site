@@ -197,6 +197,7 @@ class Product(Entity):
     # Seen in stock at a supplier's warehouse in the last days (app.catalog.competitors): the storefront shows
     # «В наличии» as for our own stock. Kept apart from availability, which imports and managers set.
     supplier_stock: Mapped[bool] = mapped_column(Boolean, default=False, server_default=false())
+    supplier_stock_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     # None — as the brand says (TZ 5.2.2).
     custom_packaging: Mapped[bool | None] = mapped_column(Boolean)
     discontinued: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -224,7 +225,11 @@ class Product(Entity):
 
 def shown_availability(product: Product) -> str:
     """What the storefront says: our own stock, or a supplier's stock we buy from — both are «В наличии»."""
-    return 'in_stock' if product.availability == 'in_stock' or product.supplier_stock else 'on_order'
+    from app.core.db import as_utc
+
+    until = product.supplier_stock_until
+    supplier = product.supplier_stock and until is not None and as_utc(until) > utcnow()
+    return 'in_stock' if product.availability == 'in_stock' or supplier else 'on_order'
 
 
 class CompetitorOffer(Entity):
@@ -253,6 +258,8 @@ class CompetitorOffer(Entity):
     packaging_id: Mapped[str | None] = mapped_column(String(36))
     first_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+    # A published stock-list date is different from the time we downloaded that list.
+    stock_updated_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class ProductCategory(Base):

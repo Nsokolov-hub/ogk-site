@@ -15,6 +15,7 @@ from pydantic import ValidationError
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 
+from app.catalog.stock_availability import capture_stock
 from app.core.config import settings
 from app.core.db import utcnow
 from app.core.errors import DomainError
@@ -132,7 +133,12 @@ def accept(db: Session, payload: str | None, client_key: str | None, upload: tup
     db.add(row)
     db.flush()
     for position, item in enumerate(data.items, start=1):
-        db.add(SiteRequestItem(request_id=row.id, position=position, **item.model_dump()))
+        values = item.model_dump()
+        stock = capture_stock(db, values, now)
+        if stock.get('packaging_match') == 'exact' and stock.get('site_packaging_id'):
+            values['site_packaging_id'] = stock['site_packaging_id']
+        db.add(SiteRequestItem(request_id=row.id, position=position, **values,
+                               stock_snapshot=stock))
     if file and upload:
         key, checksum = attachments.store(upload[1])
         db.add(SiteRequestAttachment(request_id=row.id, file_name=file[0], media_type=file[1], size=len(upload[1]),

@@ -14,13 +14,14 @@ import pytest
 from sqlalchemy import func, select, update
 
 from app.catalog import competitors
+from app.catalog.identity import ALIASES, MASTER_SLUG, REVIEW, SOURCE_URL
 from app.catalog.models import Brand, BrandAlias, CompetitorOffer, Packaging, Product
-from app.catalog.normalize import brand_key, compact
+from app.catalog.normalize import brand_key, compact, parse_pack, split_pack_suffix
 from app.catalog.search.documents import Context, build
 from app.catalog.search.query import preview
 from app.catalog.settings import get_setting, set_setting
 from app.core.config import settings
-from app.core.db import utcnow
+from app.core.db import as_utc, utcnow
 
 MAKERS = {'E': [['EDQM']], 'S': [['Sigma-Aldrich']], 'A': [['Agilent Technologies', 'Aladdin Scientific']],
           'L': [['Larodan']]}
@@ -70,6 +71,8 @@ class FakeSites:
         assert request.headers['User-Agent'] == settings.competitor_user_agent
         if request.url.host in self.refuse:
             return httpx.Response(self.refuse[request.url.host], text='<html>Доступ ограничен</html>')
+        if request.url.path == '/robots.txt':
+            return httpx.Response(200, text='User-agent: *\nAllow: /products/\nAllow: /catalog/\n')
         if request.url.host == 'chimmed-new.ru':
             return self.chimmed(request)
         assert request.url.host == 'klad.skygen.com'
@@ -110,22 +113,29 @@ class FakeSites:
 
 
 @pytest.fixture
-def sites(monkeypatch) -> FakeSites:
+def sites(monkeypatch, sessions) -> FakeSites:
     fake = FakeSites()
     monkeypatch.setattr(competitors, 'http_client', lambda: httpx.Client(
         transport=httpx.MockTransport(fake.handle), headers={'User-Agent': settings.competitor_user_agent}))
     monkeypatch.setattr(competitors, 'pause', lambda seconds: None)
     monkeypatch.setattr(settings, 'competitor_stock_enabled', True)
+    with sessions.begin() as db:
+        set_setting(db, 'competitor_stock', {**get_setting(db, 'competitor_stock'),
+                                            'sources': ['chimmed', 'skygen']})
     return fake
 
 
-def product(db, brand: Brand, number: str, packs: tuple[str, ...] = ()) -> Product:
+def product(db, brand: Brand, number: str, packs: tuple[str, ...] = (), default_pack: str = '1 g') -> Product:
     row = Product(brand_id=brand.id, catalog_number=number, catalog_number_norm=compact(number),
                   slug=f'{brand.slug}-{compact(number)}', name_en=f'{brand.name} {number}', status='published')
     db.add(row)
     db.flush()
     for i, pack_number in enumerate(packs):
-        db.add(Packaging(product_id=row.id, position=i, key=f'p{i}', label_ru='1 г', label_en='1 g',
+        _base, size = split_pack_suffix(pack_number, None)
+        size = size or parse_pack(default_pack)
+        assert size is not None
+        db.add(Packaging(product_id=row.id, position=i, key=f'p{i}', label_ru=size.label_ru,
+                         label_en=size.label_en, amount=size.amount, unit=size.unit,
                          catalog_number=pack_number, catalog_number_norm=compact(pack_number)))
     db.flush()
     return row
@@ -142,15 +152,15 @@ def catalog(sessions):
         db.add(BrandAlias(brand_id=brands['waters'].id, name='Waters Corporation',
                           normalized=brand_key('Waters Corporation')))
         ids = {
-            'oxcarbazepine': product(db, brands['edqm'], 'Y0001897').id,
-            'ibuprofen': product(db, brands['edqm'], 'Y0000881').id,
-            'edqm-not-in-stock': product(db, brands['edqm'], 'B1220000').id,
+            'oxcarbazepine': product(db, brands['edqm'], 'Y0001897', packs=('Y0001897',), default_pack='100 mg').id,
+            'ibuprofen': product(db, brands['edqm'], 'Y0000881', packs=('Y0000881',), default_pack='100 mg').id,
+            'edqm-not-in-stock': product(db, brands['edqm'], 'B1220000', packs=('B1220000',), default_pack='100 mg').id,
             'sigma-pack': product(db, brands['sigma-aldrich'], '413283', packs=('413283-100G',)).id,
-            # Their number carries the packaging, ours does not: «T5648-1G» → «T5648».
-            'sigma-base': product(db, brands['sigma-aldrich'], 'T5648').id,
-            'agilent': product(db, brands['agilent'], 'GKSB-312').id,
-            'agilent-sold-out': product(db, brands['agilent'], '5190-9015').id,
-            'waters': product(db, brands['waters'], '186003116').id,
+            # Product article stays generic; each stocked variant has an explicit manufacturer packaging.
+            'sigma-base': product(db, brands['sigma-aldrich'], 'T5648', packs=('T5648-1G', 'T5648-5G')).id,
+            'agilent': product(db, brands['agilent'], 'GKSB-312', packs=('GKSB-312',), default_pack='1 pcs').id,
+            'agilent-sold-out': product(db, brands['agilent'], '5190-9015', packs=('5190-9015',), default_pack='1 pcs').id,
+            'waters': product(db, brands['waters'], '186003116', packs=('186003116',), default_pack='1 pcs').id,
         }
         db.execute(update(Product).values(needs_index=False))
     return ids
@@ -270,7 +280,7 @@ def test_the_check_goes_in_short_turns_and_continues_after_a_restart(sessions, s
         with sessions() as db:  # the queue is in the database: a new worker would continue it
             assert get_setting(db, 'competitor_run')['queue']
     assert turns >= 3 and step and step['sources']['chimmed']['complete']
-    assert len(sites.calls) == 9  # nine pages in all, three per turn
+    assert len([c for c in sites.calls if c.url.path != '/robots.txt']) == 9
     assert flags(sessions)[catalog['sigma-base']]
 
 
@@ -294,4 +304,219 @@ def test_brand_spellings_of_the_suppliers(sessions, catalog):
     assert slug[brands.find('Waters Corporation')] == 'waters'
     assert slug[brands.find('Supelco')] == 'sigma-aldrich'
     assert brands.find('Aladdin Scientific') is None and brands.find('USP') is None
+
+
+def test_brand_prefixes_and_ambiguous_aliases_cannot_publish_stock(sessions, catalog):
+    with sessions.begin() as db:
+        brands = competitors.Brands(db)
+        assert brands.find('Agilent unrelated manufacturer') is None
+        assert brands.find('Agilent') is not None
+        sigma = db.scalar(select(Brand).where(Brand.slug == 'sigma-aldrich'))
+        db.add(BrandAlias(brand_id=sigma.id, name='Agilent', normalized=brand_key('Agilent')))
+        db.flush()
+        assert competitors.Brands(db).find('Agilent') is None
+
+
+def test_conflicting_cas_or_pack_size_stays_unmatched_for_review(sessions, catalog):
+    with sessions.begin() as db:
+        sigma = db.get(Product, catalog['sigma-pack'])
+        sigma.cas = '50-00-0'
+        offers = [
+            competitors.Offer('cas-conflict', 'Sigma-Aldrich', '413283-100G', 'Other substance',
+                              'https://chimmed-new.ru/products/a', cas='64-17-5', pack='100 g'),
+            competitors.Offer('pack-conflict', 'Sigma-Aldrich', '413283-5G', 'Other pack',
+                              'https://chimmed-new.ru/products/b', cas='50-00-0', pack='5 g'),
+        ]
+        kept, matched = competitors.save(db, 'chimmed', offers, competitors.Brands(db), utcnow())
+        assert (kept, matched) == (2, 0)
+        assert not db.get(Product, catalog['sigma-pack']).supplier_stock
+        assert all(o.product_id is None for o in db.scalars(select(CompetitorOffer)))
+        assert competitors.status(db)['pendingReview'] == 2
+
+
+def test_zero_quantity_removes_previous_offer_and_flag(sessions, catalog):
+    now = utcnow()
+    with sessions.begin() as db:
+        offer = competitors.Offer('qty', 'Agilent', 'GKSB-312', 'Product',
+                                  'https://klad.skygen.com/catalog/a/', quantity=2)
+        brands = competitors.Brands(db)
+        competitors.save(db, 'skygen', [offer], brands, now)
+        assert db.get(Product, catalog['agilent']).supplier_stock
+        offer.quantity = 0
+        assert competitors.save(db, 'skygen', [offer], brands, now) == (0, 0)
+        assert not db.get(Product, catalog['agilent']).supplier_stock
+        assert db.scalar(select(func.count()).select_from(CompetitorOffer)) == 0
+
+
+def test_positive_recheck_renews_the_search_document_deadline(sessions, catalog):
+    with sessions.begin() as db:
+        now = utcnow()
+        offer = competitors.Offer('renewed', 'Agilent', 'GKSB-312', 'Product',
+                                  'https://klad.skygen.com/catalog/a/', quantity=1)
+        brands = competitors.Brands(db)
+        competitors.save(db, 'skygen', [offer], brands, now)
+        row = db.get(Product, catalog['agilent'])
+        first = row.supplier_stock_until
+        row.needs_index = False
+        competitors.save(db, 'skygen', [offer], brands, now + timedelta(hours=1))
+        assert row.supplier_stock and row.needs_index
+        assert as_utc(row.supplier_stock_until) == as_utc(first) + timedelta(hours=1)
+        docs, _ = build(db, [row], Context(db, False))
+        assert docs[0]['stock_valid_until'] == as_utc(row.supplier_stock_until).isoformat()
+
+
+def test_ambiguous_fixed_sku_never_picks_arbitrary_product(sessions, catalog):
+    with sessions.begin() as db:
+        brand = db.scalar(select(Brand).where(Brand.slug == 'sigma-aldrich'))
+        product(db, brand, 'other-product', packs=('413283-100G',))
+        offer = competitors.Offer('ambiguous', 'Sigma-Aldrich', '413283-100G', 'Product',
+                                  'https://chimmed-new.ru/products/a', pack='100 g')
+        assert competitors.match(db, [(offer, brand.id)]) == {}
+
+
+def test_reviewed_packaging_allowlist_prevents_hidden_variant_stock(sessions):
+    with sessions.begin() as db:
+        brand = Brand(slug='usp', name='USP')
+        db.add(brand)
+        db.flush()
+        row = product(db, brand, '1235831', packs=('1235831-1AMP', '1235831-5AMP'))
+        packs = list(db.scalars(select(Packaging).where(Packaging.product_id == row.id)
+                                .order_by(Packaging.position)))
+        row.seo = {'identity': {'review': REVIEW, 'sourceUrl': SOURCE_URL, 'manufacturer': 'USP',
+                   'canonicalSlug': MASTER_SLUG, 'canonicalProductId': row.id, 'identifierAliases': ALIASES,
+                   'verifiedPackagingId': packs[0].id}}
+        hidden = competitors.Offer('hidden', 'USP', '1235831-5AMP', 'Product',
+                                   'https://source.test/item', pack='5 ampoules')
+        approved = competitors.Offer('approved', 'USP', '1235831-1AMP', 'Product',
+                                     'https://source.test/item', pack='1 ampoule')
+        assert competitors.match(db, [(hidden, brand.id)]) == {}
+        assert competitors.match(db, [(approved, brand.id)]) == {0: (row.id, packs[0].id)}
+
+
+def test_expiry_runs_even_when_crawling_is_disabled(sessions, catalog, monkeypatch):
+    with sessions.begin() as db:
+        now = utcnow()
+        offer = competitors.Offer('expires', 'Agilent', 'GKSB-312', 'Product',
+                                  'https://klad.skygen.com/catalog/a/', quantity=1)
+        competitors.save(db, 'skygen', [offer], competitors.Brands(db), now)
+        db.execute(update(CompetitorOffer).values(seen_at=now - timedelta(days=11)))
+        assert competitors.offers_of(db, catalog['agilent'], now) == []
+    monkeypatch.setattr(settings, 'competitor_stock_enabled', False)
+    assert competitors.turn(sessions) is None
+    assert not flags(sessions)[catalog['agilent']]
+
+
+def test_fetching_old_declared_stock_does_not_refresh_its_availability(sessions, catalog):
+    with sessions.begin() as db:
+        now = utcnow()
+        offer = competitors.Offer('old-news', 'Agilent', 'GKSB-312', 'Product',
+                                  'https://klad.skygen.com/catalog/a/',
+                                  stock_updated_at=now - timedelta(days=20))
+        competitors.save(db, 'skygen', [offer], competitors.Brands(db), now)
+        assert competitors.offers_of(db, catalog['agilent'], now) == []
+        assert not db.get(Product, catalog['agilent']).supplier_stock
+        competitors.settle(db, now, [], now)
+        assert db.scalar(select(func.count()).select_from(CompetitorOffer)) == 1
+
+
+def test_review_only_stock_does_not_guess_manufacturer_or_article(sessions, catalog):
+    with sessions.begin() as db:
+        now = utcnow()
+        unknown = competitors.Offer('pdf-row', '', '', 'Oxcarbazepine, analytical grade',
+                                    'https://source.test/stock.pdf', cas='28721-07-5', pack='100 mg',
+                                    review_only=True)
+        known = competitors.Offer('review-known', 'Agilent', 'GKSB-312', 'Needs human verification',
+                                  'https://source.test/stock.pdf', review_only=True)
+        assert competitors.save(db, 'pending', [unknown, known], competitors.Brands(db), now) == (2, 0)
+        assert all(o.product_id is None and o.packaging_id is None for o in db.scalars(select(CompetitorOffer)))
+        assert not any(p.supplier_stock for p in db.scalars(select(Product)))
+
+
+def test_pending_review_counter_includes_unresolved_packaging(sessions, catalog):
+    with sessions.begin() as db:
+        brand = db.scalar(select(Brand).where(Brand.slug == 'agilent'))
+        assert brand is not None
+        target = product(db, brand, 'PRODUCT-ONLY')
+        offer = competitors.Offer('product-only', 'Agilent', 'PRODUCT-ONLY', 'Product without a fixed packaging',
+                                  'https://klad.skygen.com/catalog/a/')
+        assert competitors.save(db, 'skygen', [offer], competitors.Brands(db), utcnow()) == (1, 1)
+        row = db.scalar(select(CompetitorOffer))
+        assert row is not None and row.product_id == target.id and row.packaging_id is None
+        assert competitors.status(db)['pendingReview'] == 1
+        assert not target.supplier_stock and target.supplier_stock_until is None
+
+
+@pytest.mark.parametrize('tie', ['missing-pack', 'foreign-pack'])
+def test_orphan_or_wrong_product_pack_tie_cannot_qualify_public_stock(sessions, catalog, tie):
+    with sessions.begin() as db:
+        now = utcnow()
+        offer = competitors.Offer('invalid-tie', 'Agilent', 'GKSB-312', 'Product',
+                                  'https://klad.skygen.com/catalog/a/')
+        competitors.save(db, 'skygen', [offer], competitors.Brands(db), now)
+        target = db.get(Product, catalog['agilent'])
+        assert target is not None and target.supplier_stock
+        row = db.scalar(select(CompetitorOffer))
+        assert row is not None
+        foreign_pack = db.scalar(select(Packaging).where(Packaging.product_id == catalog['waters']))
+        assert foreign_pack is not None
+        row.packaging_id = 'deleted-pack' if tie == 'missing-pack' else foreign_pack.id
+        target.needs_index = False
+        db.flush()
+        competitors._refresh_flags(db, now)
+        assert not target.supplier_stock and target.supplier_stock_until is None and target.needs_index
+
+
+def test_parser_drift_preserves_last_known_fresh_offers(sessions, sites, catalog):
+    competitors.run_all(sessions)
+    real = sites.handle
+
+    def handle(request):
+        if request.url.host == 'klad.skygen.com' and request.url.path == '/catalog/':
+            return httpx.Response(200, text='<html><body>Новая версия сайта</body></html>')
+        return real(request)
+
+    sites.handle = handle
+    with sessions.begin() as db:
+        set_setting(db, 'competitor_results', {'finishedAt': None})
+    result = competitors.run_all(sessions)
+    assert result is not None
+    assert result['sources']['skygen']['incomplete']
+    assert not result['sources']['skygen']['complete']
+    assert flags(sessions)[catalog['waters']]
+
+
+def test_truncated_source_does_not_forget_unvisited_offers(sessions, sites, catalog, monkeypatch):
+    competitors.run_all(sessions)
+    original = competitors.SOURCES['skygen']
+
+    def limited(client, task, wanted):
+        page = original(client, task, wanted)
+        page.tasks = []
+        page.truncated = 1
+        return page
+
+    monkeypatch.setitem(competitors.SOURCES, 'skygen', limited)
+    with sessions.begin() as db:
+        set_setting(db, 'competitor_results', {'finishedAt': None})
+    result = competitors.run_all(sessions)
+    assert result is not None
+    assert not result['sources']['skygen']['complete']
+    assert flags(sessions)[catalog['waters']]
+
+
+def test_robots_disallow_stops_without_requesting_the_catalog(sessions, sites, catalog):
+    real = sites.handle
+
+    def handle(request):
+        if request.url.host == 'klad.skygen.com':
+            sites.calls.append(request)
+            assert request.url.path == '/robots.txt'
+            return httpx.Response(200, text='User-agent: *\nDisallow: /catalog/\n')
+        return real(request)
+
+    sites.handle = handle
+    result = competitors.run_all(sessions)
+    assert result is not None
+    assert result['sources']['skygen']['refused'] == 'robots_disallow'
+    assert len([c for c in sites.calls if c.url.host == 'klad.skygen.com']) == 1
 

@@ -47,6 +47,7 @@ export function requestItemFromProduct(
   const item = itemFromProduct(product, selection, locale, customPackagingLabel);
   return {
     siteProductId: item.productId,
+    sitePackagingId: item.packagingId ?? undefined,
     brand: item.brand,
     catalogNumber: item.catalogNumber,
     cas: item.cas,
