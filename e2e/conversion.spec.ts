@@ -35,19 +35,22 @@ test.describe('Закупочные сценарии и сохранение н�
     await page.goto(`/product/${MULTI_PACK}/`);
     await dismissCookies(page);
     const panel = page.locator('#product-order');
-    await panel.getByRole('radio', { name: '25 мг', exact: true }).press('Space');
+    const selectedPack = panel.getByRole('radio', { name: '25 мг', exact: true });
+    const selectedPackId = await selectedPack.inputValue();
+    await selectedPack.press('Space');
     await panel.getByLabel('Количество упаковок', { exact: true }).fill('5');
     await panel.getByRole('radio', { name: 'Готовы рассмотреть аналоги' }).press('Space');
     await panel.getByRole('button', { name: 'Заказать в 1 клик' }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.getByLabel('Количество упаковок', { exact: true })).toHaveValue('5');
-    await expect(dialog.getByLabel('Фасовка', { exact: true })).toHaveValue(/25-mg$/);
+    await expect(dialog.getByLabel('Фасовка', { exact: true })).toHaveValue(selectedPackId);
+    await expect(dialog.getByLabel('Фасовка', { exact: true }).locator('option:checked')).toHaveText('25 мг');
     await expect(dialog.getByRole('radio', { name: 'Готовы рассмотреть аналоги' })).toBeChecked();
     await emailOnly(dialog);
     await dialog.getByRole('button', { name: 'Отправить запрос' }).click();
     await expect(dialog.getByText(/Запрос № S-900001 отправлен/)).toBeVisible();
     expect(submissions).toHaveLength(1);
-    expect(submissions[0].payload.items[0]).toMatchObject({ packaging: '25 мг', quantity: 5, analogue: 'allowed', customPackaging: false });
+    expect(submissions[0].payload.items[0]).toMatchObject({ sitePackagingId: selectedPackId, packaging: '25 мг', quantity: 5, analogue: 'allowed', customPackaging: false });
     expect(submissions[0].payload.customer).toMatchObject({ name: '', company: '', phone: '', email: 'e2e@ogk-chem.ru' });
   });
 

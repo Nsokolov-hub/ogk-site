@@ -2,8 +2,16 @@ import { expect, type Page } from '@playwright/test';
 
 /** Баннер cookie: только необходимые (так же поступил бы осторожный посетитель) */
 export async function dismissCookies(page: Page) {
-  const button = page.getByRole('button', { name: 'Только необходимые' });
-  if (await button.isVisible().catch(() => false)) await button.click();
+  const consent = await page.evaluate(() => localStorage.getItem('ogk-cookie-consent'));
+  const banner = page.getByRole('region', { name: 'Согласие на использование cookies' });
+  if (consent !== 'necessary' && consent !== 'all') {
+    // The banner appears after hydration; an immediate isVisible() can miss it and leave it over mobile CTAs.
+    const button = banner.getByRole('button', { name: 'Только необходимые', exact: true });
+    await expect(button).toBeVisible();
+    await button.click();
+    await expect.poll(() => page.evaluate(() => localStorage.getItem('ogk-cookie-consent'))).toBe('necessary');
+  }
+  await expect(banner).not.toBeVisible();
 }
 
 /** Контакты формы заявки; форма закрыта от ботов, поэтому заполняем её не быстрее живого человека */
