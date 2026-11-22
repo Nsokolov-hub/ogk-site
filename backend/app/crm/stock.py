@@ -58,14 +58,44 @@ def read_cursor(body: StockIn, at: datetime) -> list[str] | None:
 
 
 def source_status(db: Session) -> list[dict[str, Any]]:
-    from app.catalog.competitors import META, NAMES
+    from app.catalog.competitors import META, NAMES, fresh_offers
 
     results = get_setting(db, 'competitor_results') or {}
     checks = results.get('sources') or results.get('stats') or {}
-    return [{'id': code, 'name': name, 'status': META.get(code, {}).get('status', 'configured'),
-             'reason': META.get(code, {}).get('reason', ''),
-             'last_check': {'checked_at': results.get('finishedAt'), **checks[code]} if code in checks else None}
-            for code, name in sorted(NAMES.items(), key=lambda entry: entry[1])]
+    run = get_setting(db, 'competitor_run') or {}
+    current = run.get('stats') or {}
+    # A page may repeat a warehouse row. Persisted observations and exact, fresh packaging matches explain
+    # the difference between rows parsed, rows awaiting review and goods usable by our catalogue.
+    stored = dict(db.execute(select(CompetitorOffer.source, func.count()).group_by(CompetitorOffer.source)).all())
+    review_counts = dict(db.execute(select(CompetitorOffer.source, func.count()).where(or_(
+        CompetitorOffer.product_id.is_(None), CompetitorOffer.packaging_id.is_(None)))
+        .group_by(CompetitorOffer.source)).all())
+    fresh = fresh_offers(db)
+    fresh_counts = dict(db.execute(fresh.with_only_columns(CompetitorOffer.source, func.count())
+                                  .group_by(CompetitorOffer.source)).all())
+    exact_counts = dict(db.execute(fresh.join(Packaging, and_(
+        Packaging.id == CompetitorOffer.packaging_id, Packaging.product_id == CompetitorOffer.product_id))
+        .with_only_columns(CompetitorOffer.source, func.count(func.distinct(CompetitorOffer.packaging_id)))
+        .group_by(CompetitorOffer.source)).all())
+    pending: dict[str, int] = {}
+    for task in run.get('queue') or []:
+        pending[task['s']] = pending.get(task['s'], 0) + 1
+    sources = []
+    for code, name in sorted(NAMES.items(), key=lambda entry: entry[1]):
+        check = {'checked_at': results.get('finishedAt'), **checks[code]} if code in checks else None
+        if code in current:
+            # Do not present a previous completed check as the outcome of the active crawl. Its counters
+            # are available immediately, including sources that found only offers for manager review.
+            check = {'checked_at': None, **current[code], 'complete': False, 'running': True,
+                     'started_at': run.get('startedAt'), 'pending_pages': pending.get(code, 0)}
+        if check is not None or code in stored:
+            check = {**(check or {}), 'stored_offers': int(stored.get(code, 0)),
+                     'fresh_offers': int(fresh_counts.get(code, 0)),
+                     'exact_packagings': int(exact_counts.get(code, 0)),
+                     'pending_review': int(review_counts.get(code, 0))}
+        sources.append({'id': code, 'name': name, 'status': META.get(code, {}).get('status', 'configured'),
+                        'reason': META.get(code, {}).get('reason', ''), 'last_check': check})
+    return sources
 
 
 def catalog(db: Session, body: StockIn, at: datetime, key: list[str] | None) -> tuple[list[dict[str, Any]], bool, list[str] | None]:

@@ -78,3 +78,57 @@ def test_undeclared_origin_or_path_is_rejected_before_network():
         with pytest.raises(Refused, match='path_not_allowed'):
             public.get('https://source.test/account/')
     assert requests == ['https://source.test/robots.txt']
+
+
+def test_canonical_redirect_rechecks_paths_and_robots_before_following():
+    calls = []
+
+    def handle(request):
+        calls.append(request.url.path)
+        if request.url.path == '/robots.txt':
+            return httpx.Response(200, text='User-agent: *\nDisallow: /catalog/closed/')
+        if request.url.path == '/catalog/old/':
+            return httpx.Response(301, headers={'Location': '/catalog/current/'})
+        if request.url.path == '/catalog/blocked/':
+            return httpx.Response(308, headers={'Location': '/catalog/closed/'})
+        return httpx.Response(200, text='public warehouse')
+
+    with httpx.Client(transport=httpx.MockTransport(handle)) as client:
+        public = PublicClient(client, 'https://source.test', 'StockCheck', ['/catalog/'])
+        assert public.get('https://source.test/catalog/old/').text == 'public warehouse'
+        with pytest.raises(Refused, match='robots_disallow'):
+            public.get('https://source.test/catalog/blocked/')
+    assert calls == ['/robots.txt', '/catalog/old/', '/catalog/current/', '/catalog/blocked/']
+
+
+def test_same_origin_login_redirect_and_http_200_antibot_are_refused():
+    from app.catalog.stock_sources.base import check_answer
+
+    def handle(request):
+        if request.url.path == '/robots.txt':
+            return httpx.Response(404)
+        assert request.url.path == '/catalog/'
+        return httpx.Response(301, headers={'Location': '/login/'})
+
+    with httpx.Client(transport=httpx.MockTransport(handle)) as client:
+        public = PublicClient(client, 'https://source.test', 'StockCheck', ['/catalog/'])
+        with pytest.raises(Refused, match='path_not_allowed'):
+            public.get('https://source.test/catalog/')
+    with pytest.raises(Refused, match='captcha'):
+        check_answer(httpx.Response(200, text='<html><script>xhr.open("POST", "/protect980/index.php")</script></html>'))
+
+
+def test_declared_root_is_not_a_wildcard_for_login_redirects():
+    calls = []
+
+    def handle(request):
+        calls.append(request.url.path)
+        if request.url.path == '/robots.txt':
+            return httpx.Response(404)
+        return httpx.Response(301, headers={'Location': '/login/'})
+
+    with httpx.Client(transport=httpx.MockTransport(handle)) as client:
+        public = PublicClient(client, 'https://source.test', 'StockCheck', ['/'])
+        with pytest.raises(Refused, match='path_not_allowed'):
+            public.get('https://source.test/')
+    assert calls == ['/robots.txt', '/']

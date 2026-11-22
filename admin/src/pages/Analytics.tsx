@@ -479,7 +479,7 @@ function SupplierCheck({ admin }: { admin: boolean }) {
       <p className="muted small">
         Свежих предложений для проверки менеджером: {n(s.pendingReview)}. Автоматическое создание и публикация товаров отключены.
         {' '}Срок действия подтверждения — {s.settings.keep_days} дн. с учётом даты складского списка поставщика.
-        {s.settings.max_pages_per_source ? ` Лимит одного обхода — ${s.settings.max_pages_per_source} страниц на источник.` : ''}
+        {s.settings.max_pages_per_source ? ` За один этап обрабатывается до ${s.settings.max_pages_per_source} страниц источника; оставшиеся продолжаются автоматически.` : ''}
       </p>
       {sources.length ? (
         <table className="table">

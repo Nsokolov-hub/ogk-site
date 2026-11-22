@@ -1,7 +1,8 @@
 """Вилакс: quantities in a single product card, never generic warehouse prose.
 
 The spreadsheet's old chromatography category is empty; its visible Welch navigation leads to the active
-column catalogue. Public cards explicitly distinguish «Есть в наличии: 3» from «Нет в наличии».
+column catalogue and its reagent navigation to bottle packs. Public cards explicitly distinguish
+«Есть в наличии: 3» from «Нет в наличии».
 """
 
 import re
@@ -11,13 +12,15 @@ from urllib.parse import urlsplit
 
 import httpx
 
+from app.catalog.normalize import parse_pack
 from app.catalog.stock_sources.base import Offer, Page, ParseChanged, check_answer
 from app.catalog.stock_sources.html import Document, Node, identity, links, public_url, tasks
 
 ORIGIN = 'https://vilax.ru'
 START = f'{ORIGIN}/catalog/oborudovanie_i_materialy/kolonki_khromatograficheskie/'
 PREFIXES = ('/catalog/oborudovanie_i_materialy/welch/',
-            '/catalog/oborudovanie_i_materialy/kolonki_khromatograficheskie/')
+            '/catalog/oborudovanie_i_materialy/kolonki_khromatograficheskie/',
+            '/catalog/khimicheskie_reaktivy/')
 _TITLE = re.compile(r'^(\S+(?:\s+Chemika)?)\s+([A-Za-z0-9][A-Za-z0-9._-]*)\s+(.+)$', re.I)
 _STOCK = re.compile(r'Есть\s+в\s+наличии\s*:\s*(\d+)', re.I)
 
@@ -38,21 +41,25 @@ def parse(page: str, url: str) -> Page:
             continue
         seen.add(product_url)
         scope = anchor.parent
+        stock_scope = None
         marker = None
         for _ in range(7):
             if scope is None:
                 break
             local_urls = {public_url(candidate.attrs.get('href', ''), url, PREFIXES)
-                          for candidate in scope.find('a') if product_title(candidate)} - {None}
+                          for candidate in scope.find('a')} - {None}
             if len(local_urls) > 1:
                 break
-            marker = _STOCK.search(scope.text())
-            if marker or re.search(r'Нет\s+в\s+наличии', scope.text(), re.I):
-                break
+            if _STOCK.search(scope.text()) or re.search(r'Нет\s+в\s+наличии', scope.text(), re.I):
+                stock_scope = scope
             scope = scope.parent
+        # Availability sits in the top sub-block, while price and sale unit are sibling elements. Keep the
+        # largest scope containing this one identity, stopping before any neighbouring product card.
+        scope = stock_scope
+        marker = _STOCK.search(scope.text()) if scope else None
         if not marker:
             # A recognized product card with no local availability must not clear older stock.
-            if scope and not re.search(r'Нет\s+в\s+наличии', scope.text(), re.I):
+            if scope is None or not re.search(r'Нет\s+в\s+наличии', scope.text(), re.I):
                 out.incomplete = 'card_stock_marker_missing'
             continue
         quantity = int(marker[1])
@@ -60,11 +67,16 @@ def parse(page: str, url: str) -> Page:
             continue
         # Read after the availability count, so «3» units cannot become the first digit of the price.
         price = re.search(r'[\d][\d\s\xa0.,]*\s*(?:₽|руб\.)', scope.text()[marker.end():]) if scope else None
+        # Reagent titles expose the actual bottle size. «/шт» is only the sale unit and must not replace 100 г.
+        packs = [value for value in re.findall(r'\(([^()]*)\)', anchor.text())
+                 if (parsed := parse_pack(value)) and parsed.unit]
+        pack = packs[-1] if packs else ('1 шт' if scope and re.search(r'/\s*шт\b', scope.text()) else None)
         out.offers.append(Offer(identity(product_url, match[2]), match[1], match[2], anchor.text(), product_url,
-                                quantity=quantity, price=price.group().strip() if price else None))
+                                pack=pack, quantity=quantity, price=price.group().strip() if price else None))
     # Listing cards provide complete identity and quantity. Follow categories/pagination, not every detail page.
     discovered = [link for link in links(root, url, PREFIXES)
                   if not re.search(r'/\d+/$', urlsplit(link).path)]
+    discovered.sort(key=lambda link: '?' not in link)
     out.tasks, out.truncated = tasks(discovered, 'vilax')
     if not products:
         if 'Не нашли товары в разделе' in root.text() and discovered:

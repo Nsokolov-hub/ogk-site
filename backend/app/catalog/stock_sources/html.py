@@ -113,9 +113,9 @@ def links(root: Node, current: str, prefixes: tuple[str, ...]) -> list[str]:
                               if (url := public_url(anchor.attrs.get('href', ''), current, prefixes)) and url != current))
 
 
-def tasks(urls: list[str], source: str, limit: int = 200) -> tuple[list[dict], int]:
+def tasks(urls: list[str], source: str) -> tuple[list[dict], int]:
     return ([{'s': source, 'url': url, 'page': int(dict(parse_qsl(urlsplit(url).query)).get('PAGEN_1', '1'))}
-             for url in urls[:limit]], int(len(urls) > limit))
+             for url in urls], 0)
 
 
 def identity(url: str, number: str, pack: str | None = None) -> str:

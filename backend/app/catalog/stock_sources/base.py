@@ -5,7 +5,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, urljoin, urlsplit
 
 import httpx
 
@@ -55,7 +55,8 @@ def check_answer(response: httpx.Response) -> httpx.Response:
         raise Refused(f'{response.status_code}')
     head = response.text[:16000].lower()
     if ('captcha' in head and ('<form' in head or 'smartcaptcha' in head)) or \
-            any(marker in head for marker in ('cf-chl-', 'challenge-platform', 'проверка браузера')):
+            any(marker in head for marker in ('cf-chl-', 'challenge-platform', 'проверка браузера',
+                                              'antibot-btn', 'sorry, your request has been denied', '/protect980/')):
         raise Refused('captcha')
     if 300 <= response.status_code < 400:
         raise Refused('redirect_requires_review')
@@ -125,8 +126,8 @@ class Robots:
 class PublicClient:
     """Restrict an adapter to its declared origin, public paths and current robots rules.
 
-    The underlying client never follows redirects. In particular a redirect, login wall, robots refusal or captcha
-    never triggers another endpoint, host, proxy, browser fingerprint or authenticated request.
+    Only canonical GET redirects (301/308) inside the declared public paths are followed, with robots checked
+    again before every hop. A login wall, another host, robots refusal or captcha never triggers alternate access.
     """
 
     def __init__(self, client: httpx.Client, origin: str, user_agent: str, paths: list[str]) -> None:
@@ -145,16 +146,33 @@ class PublicClient:
                 raise Refused('robots_unavailable')
             self.robots = Robots(response.text, user_agent)
 
-    def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
+    def _check_url(self, url: str) -> None:
         parsed = urlsplit(url)
         if f'{parsed.scheme}://{parsed.netloc}'.rstrip('/') != self.origin or parsed.username or parsed.password:
             raise Refused('origin_not_allowed')
-        if not any(parsed.path == path or parsed.path.startswith(path.rstrip('/') + '/') for path in self.paths):
+        if not any(parsed.path == path or path != '/' and parsed.path.startswith(path.rstrip('/') + '/')
+                   for path in self.paths):
             raise Refused('path_not_allowed')
-        request = self.client.build_request(method, url, **kwargs)
-        if self.robots and not self.robots.allowed(str(request.url)):
+        if self.robots and not self.robots.allowed(url):
             raise Refused('robots_disallow')
-        return check_answer(self.client.send(request, follow_redirects=False))
+
+    def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
+        request = self.client.build_request(method, url, **kwargs)
+        visited: set[str] = set()
+        for _ in range(5):
+            current = str(request.url)
+            self._check_url(current)
+            if current in visited:
+                raise Refused('redirect_loop')
+            visited.add(current)
+            response = self.client.send(request, follow_redirects=False)
+            if method == 'GET' and response.status_code in (301, 308) and response.headers.get('location'):
+                target = urljoin(current, response.headers['location'])
+                self._check_url(target)  # Validate before making any further network request.
+                request = self.client.build_request('GET', target)
+                continue
+            return check_answer(response)
+        raise Refused('redirect_limit')
 
     def get(self, url: str, **kwargs: Any) -> httpx.Response:
         return self._request('GET', url, **kwargs)

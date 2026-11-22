@@ -121,6 +121,7 @@ DEFAULTS: dict[str, Any] = {
                                      'hplc', 'vilax', 'nevareaktiv', 'lenreactiv'],
                          'every_days': 3, 'pause_seconds': 2.0, 'max_pages_per_source': 120,
                          'keep_days': 10, 'brand_aliases': {}},
+    # max_pages_per_source limits a worker batch, not the entire crawl: discovered pages are never dropped.
     # The check in progress (its queue of pages, done in short turns of the worker) and the last result of each site.
     'competitor_run': None,
     'competitor_results': {},

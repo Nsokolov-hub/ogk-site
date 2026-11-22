@@ -92,7 +92,9 @@ def test_labteh_reports_a_changed_layout_or_unverifiable_stock_identity():
     <tr><td><a href="/catalog/khimicheskie-reaktivy/item/">Реактив, 2-12345</a></td>
     <td>В наличии</td></tr></table>'''
     out = labteh.parse(page, labteh.START)
-    assert not out.offers and out.incomplete == 'manufacturer_identity_missing'
+    assert len(out.offers) == 1 and out.offers[0].review_only
+    assert out.offers[0].brand_name == '' and out.offers[0].catalog_number == ''
+    assert out.incomplete == 'manufacturer_identity_missing'
 
 
 def test_vilax_uses_only_stock_within_the_same_product_card():

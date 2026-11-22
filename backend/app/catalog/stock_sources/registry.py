@@ -17,10 +17,11 @@ META = {
                'paths': list(labteh.PREFIXES), 'status': 'supported',
                'reason': 'Наличие только при явном подтверждении в сроке поставки'},
     'laverna': {'name': NAMES['laverna'], 'url': 'https://laverna-xxi.ru/', 'origin': laverna.ORIGIN,
-                'paths': ['/catalog/'], 'status': 'needs_verification', 'reason': 'no_stock_evidence'},
+                'paths': ['/catalog/'], 'status': 'needs_verification',
+                'reason': 'Проверяются открытые каталоги и карточки; запрос стоимости не подтверждает остаток'},
     'vilax': {'name': NAMES['vilax'], 'url': vilax.START, 'origin': vilax.ORIGIN,
               'paths': list(vilax.PREFIXES), 'status': 'supported',
-              'reason': 'Количество из карточек; исходный пустой раздел ведёт в открытый каталог Welch'},
+              'reason': 'Количество и фасовки из открытых разделов Welch и химических реактивов'},
 }
 
 if importlib.util.find_spec('app.catalog.stock_sources.additional') is not None:

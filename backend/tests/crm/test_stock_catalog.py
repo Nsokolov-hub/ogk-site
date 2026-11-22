@@ -237,7 +237,9 @@ def test_source_status_uses_real_runner_results_and_merged_source_metadata(clien
                     'sources': {'chimmed': {'offers': 4, 'complete': True, 'refused': None}}})
     sources = {row['id']: row for row in ask(client).json()['sources']}
     assert sources['chimmed']['status'] == 'supported'
-    assert sources['chimmed']['last_check'] == {'checked_at': checked, 'offers': 4, 'complete': True, 'refused': None}
+    assert sources['chimmed']['last_check'] == {'checked_at': checked, 'offers': 4, 'complete': True, 'refused': None,
+                                               'stored_offers': 0, 'fresh_offers': 0,
+                                               'exact_packagings': 0, 'pending_review': 0}
     assert 'laverna' in sources and sources['laverna']['last_check'] is None
 
 

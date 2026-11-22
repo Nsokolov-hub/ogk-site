@@ -124,7 +124,8 @@ def chimmed_offers(data: dict[str, Any]) -> list[Offer]:
 def chimmed_page(client: httpx.Client, task: dict[str, Any], wanted: Callable[[str], bool]) -> Page:
     if task['k'] == 'start':
         page = _answer(client.get(f'{CHIMMED}/products/storage')).text
-        makers = [m for m in chimmed_manufacturers(page) if wanted(m)]
+        # Known brands are checked first; other positive warehouse rows belong in the private review queue.
+        makers = sorted(dict.fromkeys(chimmed_manufacturers(page)), key=lambda name: not wanted(name))
         return Page(tasks=[{'s': 'chimmed', 'k': 'list', 'm': m, 'letter': '', 'page': 1} for m in makers])
     maker, letter, number = task['m'], task['letter'], task['page']
     response = _answer(client.post(f'{CHIMMED}/products/load', json=chimmed_body(maker, letter, number),
@@ -148,46 +149,70 @@ def chimmed_page(client: httpx.Client, task: dict[str, Any], wanted: Callable[[s
 
 # ── Скайклад: the catalogue of warehouse goods ──
 
-_CARD = re.compile(r'<div class="product-item" id="bx_\d+_(?P<id>\d+)">(?P<body>.*?)</form>', re.S)
+def _skygen_rows(page: str) -> tuple[list[Offer], bool]:
+    from app.catalog.stock_sources.html import Document, public_url
 
-
-def _text(fragment: str) -> str:
-    return clean_spaces(html.unescape(re.sub(r'<[^>]+>', ' ', fragment)))
+    root = Document(page).root
+    cards = [node for node in root.walk() if 'product-item' in node.attrs.get('class', '').split()]
+    if not cards:
+        raise ParseChanged('skygen: warehouse cards missing')
+    out = []
+    incomplete = False
+    for card in cards:
+        anchors = [node for node in card.find('a') if 'product-item-title' in node.attrs.get('class', '').split()]
+        numbers = [node.text() for node in card.walk() if 'article' in node.attrs.get('class', '').split()]
+        label = card.text()
+        left = re.search(r'Доступно:\s*(\d+)', label, re.I)
+        if (left and int(left.group(1)) == 0) or re.search(r'нет\s+в\s+наличии', label, re.I):
+            continue
+        if not left:
+            incomplete = True
+            continue
+        link = anchors[0] if len(anchors) == 1 else None
+        url = public_url(link.attrs.get('href', ''), f'{SKYGEN}/catalog/', ('/catalog/',)) if link else None
+        identifier = re.fullmatch(r'bx_\d+_(\d+)', card.attrs.get('id', ''))
+        if not link or not url or not identifier:
+            incomplete = True
+            continue
+        makers = [node.text() for node in card.find('div') if re.match(r'^Производитель:', node.text(), re.I)]
+        maker = re.sub(r'^Производитель:\s*', '', makers[-1], flags=re.I) if makers else ''
+        number = numbers[0] if len(numbers) == 1 else ''
+        name = link.text()[:500]
+        props = re.search(r'(?:Фасовка|Упаковка|Объ[её]м):\s*([^:;]+?)(?=\s+[А-ЯA-Z][^:]*:|$)', label)
+        suffix = split_pack_suffix(number, None)[1]
+        size = re.search(r'(?:^|[\s,(])((?:\d+\s*[xх×]\s*)?\d+(?:[.,]\d+)?\s*'
+                         r'(?:мкг|мг|кг|г|мкл|мл|л|ug|mg|kg|g|ul|ml|l|ampoules?|ампулы?|pcs|шт\.?))'
+                         r'(?=\s*[,);]|\s*$)', name, re.I)
+        pack = props.group(1).strip() if props else size.group(1) if size else suffix.label_en if suffix else None
+        sizes = {_pack_size(value) for value in (props.group(1).strip() if props else None,
+                                                 size.group(1) if size else None,
+                                                 suffix.label_en if suffix else None)} - {None}
+        prices = [node.text() for node in card.walk()
+                  if 'product-item-price-current' in node.attrs.get('class', '').split()]
+        price = re.match(r'[\d\s ,.]+руб\.', prices[0]) if prices else None
+        cases = {value for raw in re.findall(r'\b\d{2,7}-\d{2}-\d\b', name) if (value := cas_or_none(raw))}
+        out.append(Offer(external_id=identifier.group(1), brand_name=maker, catalog_number=number, name=name,
+                         url=url, quantity=int(left.group(1)), pack=pack,
+                         cas=next(iter(cases)) if len(cases) == 1 else None,
+                         price=clean_spaces(price.group()) if price else None,
+                         review_only=not maker or not number or len(sizes) > 1))
+        incomplete |= not maker or not number
+    return out, incomplete
 
 
 def skygen_offers(page: str) -> list[Offer]:
-    out = []
-    for card in _CARD.finditer(page):
-        body = card.group('body')
-        link = re.search(r'<a href="(/catalog/[^"]+)" class="product-item-title[^"]*">(.*?)</a>', body, re.S)
-        number = re.search(r'<div class="article">(.*?)</div>', body, re.S)
-        maker = re.search(r'Производитель:\s*(.*?)</div>', body, re.S)
-        left = re.search(r'Доступно:\s*(\d+)', body)
-        if not (link and number and maker and left) or int(left.group(1)) <= 0:
-            continue
-        price = re.search(r'product-item-price-current[^>]*>\s*([\d\s ,.]+руб\.)', body)
-        out.append(Offer(external_id=card.group('id'), brand_name=_text(maker.group(1)),
-                         catalog_number=_text(number.group(1)), name=_text(link.group(2))[:500],
-                         url=f'{SKYGEN}{link.group(1)}', quantity=int(left.group(1)),
-                         price=clean_spaces(price.group(1)) if price else None))
-    return out
+    return _skygen_rows(page)[0]
 
 
 def skygen_page(client: httpx.Client, task: dict[str, Any], wanted: Callable[[str], bool]) -> Page:
     number = task['page']
-    page = _answer(client.get(f'{SKYGEN}/catalog/', params={'PAGEN_1': number} if number > 1 else None)).text
-    expected_cards = re.findall(r'class=["\'][^"\']*\bproduct-item\b(?=[\s"\'])', page)
-    if not _CARD.search(page) or len(list(_CARD.finditer(page))) != len(expected_cards):
-        raise ParseChanged('skygen: warehouse cards missing')
-    for card in _CARD.finditer(page):
-        if not all(re.search(pattern, card.group('body'), re.S) for pattern in (
-                r'product-item-title', r'<div class="article">', r'Производитель:', r'Доступно:\s*\d+')):
-            raise ParseChanged('skygen: incomplete warehouse card')
-    out = Page(offers=[o for o in skygen_offers(page) if wanted(o.brand_name)])
-    if number == 1:
-        last = max([int(n) for n in re.findall(r'PAGEN_1=(\d+)', page)] or [1])
-        out.tasks = [{**task, 'page': n} for n in range(2, min(last, 1000) + 1)]
-        out.truncated = int(last > 1000)
+    response = _answer(client.get(f'{SKYGEN}/catalog/', params={'PAGEN_1': number} if number > 1 else None))
+    offers, incomplete = _skygen_rows(response.text)
+    out = Page(offers=offers, incomplete='skygen: incomplete warehouse card' if incomplete else None)
+    last = max([int(n) for n in re.findall(r'PAGEN_1=(\d+)', response.text)] or [number])
+    # Follow the visible pager one page at a time; no arbitrary 120/1000-page tail is discarded.
+    if last > number:
+        out.tasks = [{**task, 'page': number + 1}]
     return out
 
 
@@ -464,19 +489,41 @@ def start(db: Session, now: datetime) -> dict[str, Any]:
                       for s in sources}}
 
 
-def _enqueue(run: dict[str, Any], source: str, tasks: list[dict[str, Any]], limit: int) -> None:
+def _enqueue(run: dict[str, Any], source: str, tasks: list[dict[str, Any]]) -> None:
     scheduled = run.setdefault('scheduled', {}).setdefault(source, [])
+    keys = set(scheduled)
     for task in tasks:
+        task = {key: value for key, value in task.items() if key != 'tries'}
         if task.get('s') != source:
             raise ParseChanged('cross-source task')
         key = json.dumps(task, sort_keys=True)
-        if key in scheduled:
-            continue
-        if len(scheduled) >= limit:
-            run['stats'][source]['truncated'] += 1
+        if key in keys:
             continue
         scheduled.append(key)
+        keys.add(key)
         run['queue'].append(task)
+
+
+def _next_task(run: dict[str, Any], counts: dict[str, int], limit: int) -> dict[str, Any] | None:
+    """Round-robin sources; a batch limit pauses work, never throws away discovered pages.
+
+    A large catalogue must not monopolize the queue while other sources wait behind hundreds of its pages.
+    The remaining queue and duplicate keys survive worker turns/restarts in competitor_run.
+    """
+    sources = list(run['stats'])
+    last = run.get('lastSource')
+    if last in sources:
+        start_at = sources.index(last) + 1
+        sources = sources[start_at:] + sources[:start_at]
+    for source in sources:
+        if counts.get(source, 0) >= limit:
+            continue
+        for index, task in enumerate(run['queue']):
+            if task['s'] == source:
+                run['lastSource'] = source
+                counts[source] = counts.get(source, 0) + 1
+                return run['queue'].pop(index)
+    return None
 
 
 def turn(sessions: sessionmaker[Session], seconds: float = TURN_SECONDS) -> dict[str, Any] | None:
@@ -493,10 +540,13 @@ def turn(sessions: sessionmaker[Session], seconds: float = TURN_SECONDS) -> dict
         brands = Brands(db)
     deadline = time.monotonic() + seconds
     first = True
+    counts: dict[str, int] = {}
     with http_client() as client:
         clients: dict[str, PublicClient] = {}
         while run['queue'] and time.monotonic() < deadline:
-            task = run['queue'].pop(0)
+            task = _next_task(run, counts, max(1, page_limit))
+            if task is None:
+                break
             source, stats = task['s'], run['stats'][task['s']]
             if stats['refused']:
                 continue
@@ -513,12 +563,19 @@ def turn(sessions: sessionmaker[Session], seconds: float = TURN_SECONDS) -> dict
                 if any(t.get('s') != source for t in page.tasks):
                     raise ParseChanged('cross-source task')
             except Refused as exc:
-                stats['refused'] = str(exc)
-                run['queue'] = [t for t in run['queue'] if t['s'] != source]
+                reason = str(exc)
+                if source in clients and reason in ('robots_disallow', 'path_not_allowed', 'redirect_loop', 'redirect_limit',
+                              'redirect_requires_review', 'origin_not_allowed'):
+                    # Skip this disallowed/broken link, without requesting it or erasing permitted sibling pages.
+                    stats['incomplete'] = reason
+                    stats['refused'] = reason if not any(t['s'] == source for t in run['queue']) else None
+                else:
+                    stats['refused'] = reason
+                    run['queue'] = [t for t in run['queue'] if t['s'] != source]
                 event(logger, 'competitor_refused', logging.WARNING, source=source, answer=str(exc))
             except ParseChanged as exc:
                 stats['incomplete'] = str(exc)[:200]
-                run['queue'] = [t for t in run['queue'] if t['s'] != source]
+                # One discontinued or incomplete card does not invalidate independent warehouse/category pages.
                 event(logger, 'competitor_parser_changed', logging.WARNING, source=source, error=str(exc)[:200])
             except (httpx.HTTPError, ValueError, KeyError) as exc:
                 if task.get('tries', 0) + 1 < ATTEMPTS:
@@ -529,7 +586,7 @@ def turn(sessions: sessionmaker[Session], seconds: float = TURN_SECONDS) -> dict
             else:
                 with sessions.begin() as db:
                     kept, hits = save(db, source, page.offers, brands, utcnow())
-                    _enqueue(run, source, page.tasks, page_limit)
+                    _enqueue(run, source, page.tasks)
                     stats['pages'] += 1
                     stats['offers'] += kept
                     stats['matched'] += hits

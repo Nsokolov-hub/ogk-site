@@ -109,7 +109,9 @@ class FakeSites:
         if maker == 'Agilent Technologies':
             return httpx.Response(200, json={'products': {'list': [chimmed_row(20, 'GKSB-312', maker, '1 шт')]},
                                              'totalPages': 1, 'currentPage': page, 'filters': {}})
-        raise AssertionError(f'a manufacturer we do not carry was asked: {maker}')
+        assert maker in {'Aladdin Scientific', 'Larodan'}
+        return httpx.Response(200, json={'products': [chimmed_row(30 if maker == 'Larodan' else 31,
+                                                                'NEW-1', maker)], 'totalPages': 1})
 
 
 @pytest.fixture
@@ -180,18 +182,19 @@ def test_a_check_marks_what_the_suppliers_keep_in_stock(sessions, sites, catalog
 
     chimmed, skygen = result['sources']['chimmed'], result['sources']['skygen']
     assert chimmed['complete'] and chimmed['refused'] is None and chimmed['errors'] == 0
-    # EDQM (1 page), Sigma: the capped first page, then letters «1» and «T» (two pages), Agilent; Larodan and
-    # Aladdin are not our brands and are never asked.
-    assert chimmed['pages'] == 1 + 1 + 1 + 1 + 2 + 1
+    # All manufacturers are checked, including new brands kept privately for manager review.
+    assert chimmed['pages'] == 1 + 1 + 1 + 1 + 2 + 1 + 2
     makers = [json.loads(c.content)['filterManufactor'] for c in sites.calls if c.url.path == '/products/load']
-    assert set(makers) == {'EDQM', 'Sigma-Aldrich', 'Agilent Technologies'}
+    assert set(makers) == {'EDQM', 'Sigma-Aldrich', 'Agilent Technologies', 'Aladdin Scientific', 'Larodan'}
     assert skygen['complete'] and skygen['pages'] == 2 and skygen['matched'] == 2
 
     with sessions() as db:
         offers = {(o.source, o.catalog_number): o for o in db.scalars(select(CompetitorOffer))}
-        # Not a warehouse position, sold out, or a brand we do not carry: not kept.
+        # Non-stock/sold-out rows are excluded. New brands are retained for private review.
         assert ('chimmed', 'B1220000') not in offers and ('skygen', '5190-9015') not in offers
-        assert ('skygen', 'ZZ-1') not in offers and ('skygen', 'sc-300953') not in offers
+        assert offers[('skygen', 'ZZ-1')].product_id is None
+        assert offers[('skygen', 'sc-300953')].product_id is None
+        assert offers[('chimmed', 'NEW-1')].product_id is None
         pack = offers[('chimmed', '413283-100G')]
         assert pack.product_id == catalog['sigma-pack'] and pack.packaging_id is not None
         assert offers[('chimmed', 'T5648-5G')].product_id == catalog['sigma-base']
@@ -280,7 +283,7 @@ def test_the_check_goes_in_short_turns_and_continues_after_a_restart(sessions, s
         with sessions() as db:  # the queue is in the database: a new worker would continue it
             assert get_setting(db, 'competitor_run')['queue']
     assert turns >= 3 and step and step['sources']['chimmed']['complete']
-    assert len([c for c in sites.calls if c.url.path != '/robots.txt']) == 9
+    assert len([c for c in sites.calls if c.url.path != '/robots.txt']) == 11
     assert flags(sessions)[catalog['sigma-base']]
 
 

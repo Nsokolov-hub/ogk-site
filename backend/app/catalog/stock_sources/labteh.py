@@ -69,12 +69,27 @@ def parse(page: str, url: str) -> Page:
             found_identity = title_identity(title)
             if not found_identity:
                 out.incomplete = 'manufacturer_identity_missing'
+                # The row still explicitly confirms stock. Preserve it for manager review rather than hiding
+                # the supplier merely because its manufacturer spelling is not in our title grammar.
+                case = re.search(r'\bCAS\s*:?\s*(\d{2,7}-\d{2}-\d)', title, re.I)
+                packs = list(_PACK.finditer(re.split(r'\bCAS\b', title, maxsplit=1, flags=re.I)[0]))
+                pack = packs[-1].group() if packs else None
+                out.offers.append(Offer(identity(product_url, '', pack), '', '', title, product_url,
+                                        cas=cas_or_none(case[1]) if case else None, pack=pack, quantity=quantity,
+                                        price=row[price].text() if price is not None and len(row) > price else None,
+                                        review_only=True))
                 continue
             brand, number, cas, pack = found_identity
             out.offers.append(Offer(identity(product_url, number, pack), brand, number, title, product_url,
                                     cas=cas, pack=pack, quantity=quantity,
                                     price=row[price].text() if price is not None and len(row) > price else None))
-    discovered = [link for link in links(root, url, PREFIXES) if link.split('?')[0] not in product_urls]
+    # These two parent listings already contain all rows in their manufacturer subcategories. Crawling both
+    # every parent page and every brand/category page repeatedly spends the budget on duplicate products.
+    current_path = urlsplit(url).path
+    discovered = [link for link in links(root, url, PREFIXES)
+                  if link.split('?')[0] not in product_urls and
+                  (urlsplit(link).path == current_path or urlsplit(link).path in PREFIXES)]
+    discovered.sort(key=lambda link: urlsplit(link).path != current_path)
     out.tasks, out.truncated = tasks(discovered, 'labteh')
     if not found:
         raise ParseChanged('labteh_delivery_table_missing')
