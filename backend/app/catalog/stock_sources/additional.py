@@ -76,13 +76,14 @@ def algimed_parse(content: str, url: str = ALGIMED) -> Page:
 
 
 def algimed_page(client: httpx.Client, task: dict[str, Any], wanted: Callable[[str], bool]) -> Page:
-    url = task.get('url', ALGIMED)
+    url = urlsplit(task.get('url', ALGIMED))._replace(fragment='').geturl()
     content = check_answer(client.get(url)).text
     result = algimed_parse(content, url)
     # The supplied news page links another real warehouse publication, with three-column tables.
     # Follow only those named stock publications; neither the general catalogue nor arbitrary news is stock.
     root = Document(content).root
-    urls = dict.fromkeys(urljoin(url, anchor.attrs.get('href', '')) for anchor in root.find('a'))
+    urls = dict.fromkeys(urlsplit(urljoin(url, anchor.attrs.get('href', '')))._replace(fragment='').geturl()
+                        for anchor in root.find('a'))
     result.tasks = [{'s': 'algimed', 'url': link, 'page': 1} for link in urls
                     if urlsplit(link).netloc == 'algimed.ru' and
                     re.fullmatch(r'/news/algimed-stocks-of-[a-z-]+/', urlsplit(link).path) and
@@ -182,8 +183,8 @@ META = {
                     'origin': 'https://www.nevareaktiv.ru', 'paths': ['/', '/catalog/'], 'status': 'needs_verification',
                     'reason': 'Проверяются разделы реактивов/стандартов и карточки; опубликованная цена не подтверждает остаток'},
     'lenreactiv': {'name': NAMES['lenreactiv'], 'url': 'https://lenreactiv.ru/shop/',
-                   'origin': 'https://lenreactiv.ru', 'paths': ['/shop/'], 'status': 'temporarily_unavailable',
-                   'reason': 'Проверка 22.11.2026: HTTP 503. Требуется повторная доступная проверка или файл остатков'},
+                   'origin': 'https://lenreactiv.ru', 'paths': ['/shop/'], 'status': 'needs_verification',
+                   'reason': 'Проверяется открытый магазин; результат загрузки и подтверждение остатков показаны ниже'},
 }
 SOURCES = {'algimed': algimed_page, 'csdb': csdb_page, 'hplc': hplc_page,
            'nevareaktiv': neva_page, 'lenreactiv': lenreactiv_page}

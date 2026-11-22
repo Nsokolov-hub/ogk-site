@@ -20,7 +20,8 @@ def test_algimed_discovers_other_published_stock_list_and_three_column_balances(
         '<tr><td>Реагент, 100 мг, Acros Organics, 12345</td><td>уп</td><td>2</td></tr>' \
         '<tr><td>Неопределённый реагент</td><td>уп</td><td>1</td></tr>' \
         '<tr><td>Неизвестный остаток, Acros Organics, 54321</td><td>уп</td><td>_</td></tr></table>' \
-        '<a href="/news/algimed-stocks-of-consumables-and-reagents/">Складские остатки</a>' \
+        '<a href="#site-navigation">Навигация</a><a href="#content">Содержимое</a>' \
+        '<a href="/news/algimed-stocks-of-consumables-and-reagents/#content">Складские остатки</a>' \
         '<a href="https://foreign.example/news/algimed-stocks-of-bad/">Внешний</a>'
     with client(content) as http:
         result = algimed_page(http, {'s': 'algimed'}, lambda name: True)
