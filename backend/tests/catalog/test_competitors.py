@@ -36,7 +36,7 @@ def storage_page() -> str:
 def chimmed_row(i: int, number: str, maker: str, pack: str = '100 мг', storage: bool = True) -> dict:
     return {'id': 7900000 + i, 'name': f'Позиция {i}', 'art_number': number, 'cas': '28721-07-5', 'packing': pack,
             'price': '14 794,82 ₽', 'product_type': 'Товар со склада' if storage else 'Реактивы & Стандарты',
-            'manufactorName': maker, 'sub_type': 'Склад: реактивы', 'storage_product': storage,
+            'manufactorName': maker, 'sub_type': 'Склад: реактивы', 'storage_product': storage, 'is_delayed': False,
             'url': f'pozitsiya-{i}'}
 
 

@@ -66,11 +66,6 @@ def catalogue_cards(root: Node, url: str) -> tuple[Page, set[str]]:
                 continue
             marker = statuses[0].attrs.get('title', '') or statuses[0].text()
             available, quantity = positive(marker)
-            if not available:
-                if not negative(marker) and quantity != 0:
-                    out.incomplete = 'stock_marker_changed'
-                    complete.discard(product_url)
-                continue
             numbers = [node.text() for node in model.walk() if _class(node, 'product-model__article')]
             number = numbers[0] if len(numbers) == 1 else ''
             brand = model.attrs.get('data-manufacturer', '').strip()
@@ -80,6 +75,13 @@ def catalogue_cards(root: Node, url: str) -> tuple[Page, set[str]]:
                 continue
             packs = [node.text() for node in model.walk() if _class(node, 'product-model__amount')]
             pack = packs[0] if len(packs) == 1 else None
+            if not available:
+                if negative(marker) or quantity == 0:
+                    out.unavailable_ids.append(identity(product_url, number, pack))
+                else:
+                    out.incomplete = 'stock_marker_changed'
+                    complete.discard(product_url)
+                continue
             prices = [node.text() for node in model.walk() if _class(node, 'product-model__price')]
             cases = {value for candidate in re.findall(r'\b\d{2,7}-\d{2}-\d\b', card.text())
                      if (value := cas_or_none(candidate))}
@@ -135,11 +137,6 @@ def parse(page: str, url: str) -> Page:
             if len(row) <= max(article, stock):
                 out.incomplete = 'product_table_changed'
                 continue
-            available, quantity = positive(row[stock].text())
-            if not available:
-                if not negative(row[stock].text()) and quantity != 0:
-                    out.incomplete = 'stock_marker_changed'
-                continue
             number = row[article].text()
             if not number:
                 out.incomplete = 'missing_manufacturer_article'
@@ -149,6 +146,13 @@ def parse(page: str, url: str) -> Page:
                 continue
             pack = next((cell.text() for cell in row[article + 1:price if price is not None else stock]
                          if (parsed := parse_pack(cell.text())) and parsed.unit), None)
+            available, quantity = positive(row[stock].text())
+            if not available:
+                if negative(row[stock].text()) or quantity == 0:
+                    out.unavailable_ids.append(identity(url, number, pack))
+                else:
+                    out.incomplete = 'stock_marker_changed'
+                continue
             out.offers.append(Offer(identity(url, number, pack), brand, number, title, url, cas=cas,
                                     pack=pack, quantity=quantity,
                                     price=row[price].text() if price is not None and len(row) > price else None))

@@ -413,12 +413,17 @@ interface SupplierStats {
   incomplete?: string | null;
   products?: number;
   complete?: boolean;
+  withdrawn?: number;
 }
 interface SupplierState {
   enabled: boolean;
-  settings: { every_days: number; keep_days: number; sources: string[]; max_pages_per_source?: number };
+  settings: { every_days: number; keep_days: number; fresh_hours?: number; refresh_hours?: number; sources: string[]; max_pages_per_source?: number };
   last: { startedAt: string; finishedAt: string | null; left: number; sources: Record<string, SupplierStats> } | null;
   running: { startedAt: string; left: number; stats: Record<string, SupplierStats> } | null;
+  refresh?: {
+    running: { startedAt: string; left: number; stats: Record<string, SupplierStats> } | null;
+    last: { startedAt: string; finishedAt: string | null; sources: Record<string, SupplierStats> } | null;
+  };
   productsInStock: number;
   pendingReview: number;
   names: Record<string, string>;
@@ -447,7 +452,7 @@ function SupplierCheck({ admin }: { admin: boolean }) {
   const state = useQuery({
     queryKey: ['competitors'],
     queryFn: () => api.get<SupplierState>('/competitors'),
-    refetchInterval: (q) => (q.state.data?.running ? 30_000 : false),
+    refetchInterval: (q) => (q.state.data?.running || q.state.data?.refresh?.running ? 30_000 : false),
   });
   const check = useMutation({
     mutationFn: () => api.post<SupplierState>('/competitors/check'),
@@ -460,6 +465,7 @@ function SupplierCheck({ admin }: { admin: boolean }) {
   const s = state.data;
   if (!s) return null;
   const stats = s.running?.stats ?? s.last?.sources ?? {};
+  const refreshStats = s.refresh?.running?.stats ?? s.refresh?.last?.sources ?? {};
   const sources = [...new Set([...Object.keys(s.sources ?? {}), ...Object.keys(s.names), ...Object.keys(stats)])];
   return (
     <Panel
@@ -470,15 +476,24 @@ function SupplierCheck({ admin }: { admin: boolean }) {
         {!s.enabled
           ? 'Проверка выключена: она работает на продакшене или с COMPETITOR_STOCK_ENABLED=true.'
           : s.running
-            ? `Идёт проверка с ${formatDate(s.running.startedAt)} · осталось страниц: ${s.running.left}`
+            ? `Идёт обход каталога с ${formatDate(s.running.startedAt)} · осталось страниц: ${s.running.left}`
             : s.last?.finishedAt
-              ? `Последняя проверка ${formatDate(s.last.finishedAt)} · следующая через ${s.settings.every_days} дн. после неё`
+              ? `Последний обход каталога ${formatDate(s.last.finishedAt)} · следующий через ${s.settings.every_days} дн. после него`
               : s.last ? 'Запланирована новая проверка источников.' : 'Проверок ещё не было.'}{' '}
         На сайте «В наличии» по складам поставщиков: {s.productsInStock} товаров.
       </p>
+      <p className="muted">
+        Перепроверка известного наличия Химмеда и Диаэм — каждые {s.settings.refresh_hours ?? 2} ч., независимо от полного обхода каталога.
+        {' '}{s.refresh?.running
+          ? `Сейчас идёт перепроверка с ${formatDate(s.refresh.running.startedAt)} · осталось страниц: ${s.refresh.running.left}.`
+          : s.refresh?.last?.finishedAt
+            ? `Последняя перепроверка завершена ${formatDate(s.refresh.last.finishedAt)}.`
+            : 'Перепроверка будет выполнена при следующей работе сборщика.'}
+      </p>
       <p className="muted small">
         Свежих предложений для проверки менеджером: {n(s.pendingReview)}. Автоматическое создание и публикация товаров отключены.
-        {' '}Срок действия подтверждения — {s.settings.keep_days} дн. с учётом даты складского списка поставщика.
+        {' '}Подтверждение наличия действует не более {s.settings.fresh_hours ?? 6} ч. с учётом даты складского списка поставщика.
+        {' '}Исходные наблюдения сохраняются {s.settings.keep_days} дн. для проверки менеджером.
         {s.settings.max_pages_per_source ? ` За один этап обрабатывается до ${s.settings.max_pages_per_source} страниц источника; оставшиеся продолжаются автоматически.` : ''}
       </p>
       {sources.length ? (
@@ -496,6 +511,7 @@ function SupplierCheck({ admin }: { admin: boolean }) {
           <tbody>
             {sources.map((source) => {
               const st = stats[source];
+              const refreshed = refreshStats[source];
               const metadata = s.sources?.[source];
               const selected = s.settings.sources.includes(source);
               return (
@@ -514,7 +530,7 @@ function SupplierCheck({ admin }: { admin: boolean }) {
                   {!st ? (
                     <Badge tone="neutral">Ещё не проверялся</Badge>
                   ) : st.refused ? (
-                    <><Badge tone="bad">Доступ ограничен ({st.refused})</Badge><div className="muted small">Прежнее подтверждение действует в пределах {s.settings.keep_days} дн.</div></>
+                    <><Badge tone="bad">Доступ ограничен ({st.refused})</Badge><div className="muted small">Прежнее подтверждение истекает не позднее чем через {s.settings.fresh_hours ?? 6} ч. после получения.</div></>
                   ) : st.errors ? (
                     <Badge tone="warn">не открылось страниц: {st.errors}</Badge>
                   ) : st.incomplete || st.complete === false || st.truncated ? (
@@ -528,6 +544,11 @@ function SupplierCheck({ admin }: { admin: boolean }) {
                   )}
                   {st?.incomplete ? <div className="muted small">{supplierReason(st.incomplete)}</div> : null}
                   {st?.truncated ? <div className="muted small">Проверка ограничена: {st.truncated} запросов.</div> : null}
+                  {refreshed ? <div className="muted small">
+                    Перепроверка известного наличия: {s.refresh?.running?.stats[source] ? 'идёт' : 'завершена'}.
+                    {' '}Страниц: {refreshed.pages}; подтверждено: {refreshed.offers}; снято подтверждений: {refreshed.withdrawn ?? 0}.
+                    {refreshed.refused || refreshed.errors || refreshed.incomplete || refreshed.truncated ? ' Есть ограничения; прежние данные не продлеваются автоматически.' : ''}
+                  </div> : null}
                 </td>
               </tr>
               );

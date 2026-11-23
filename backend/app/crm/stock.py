@@ -64,6 +64,11 @@ def source_status(db: Session) -> list[dict[str, Any]]:
     checks = results.get('sources') or results.get('stats') or {}
     run = get_setting(db, 'competitor_run') or {}
     current = run.get('stats') or {}
+    refresh_result = get_setting(db, 'competitor_refresh_results') or {}
+    refresh_checks = refresh_result.get('sources') or {}
+    refresh_run = get_setting(db, 'competitor_refresh_run') or {}
+    refresh_current = refresh_run.get('stats') or {}
+    config = get_setting(db, 'competitor_stock') or {}
     # A page may repeat a warehouse row. Persisted observations and exact, fresh packaging matches explain
     # the difference between rows parsed, rows awaiting review and goods usable by our catalogue.
     stored = dict(db.execute(select(CompetitorOffer.source, func.count()).group_by(CompetitorOffer.source)).all())
@@ -80,6 +85,9 @@ def source_status(db: Session) -> list[dict[str, Any]]:
     pending: dict[str, int] = {}
     for task in run.get('queue') or []:
         pending[task['s']] = pending.get(task['s'], 0) + 1
+    refresh_pending: dict[str, int] = {}
+    for task in refresh_run.get('queue') or []:
+        refresh_pending[task['s']] = refresh_pending.get(task['s'], 0) + 1
     sources = []
     for code, name in sorted(NAMES.items(), key=lambda entry: entry[1]):
         check = {'checked_at': results.get('finishedAt'), **checks[code]} if code in checks else None
@@ -88,6 +96,18 @@ def source_status(db: Session) -> list[dict[str, Any]]:
             # are available immediately, including sources that found only offers for manager review.
             check = {'checked_at': None, **current[code], 'complete': False, 'running': True,
                      'started_at': run.get('startedAt'), 'pending_pages': pending.get(code, 0)}
+        refresh = ({'checked_at': refresh_result.get('finishedAt'), 'running': False,
+                    'started_at': refresh_result.get('startedAt'), **refresh_checks[code]}
+                   if code in refresh_checks else None)
+        if code in refresh_current:
+            refresh = {'checked_at': None, **refresh_current[code], 'complete': False, 'running': True,
+                       'started_at': refresh_run.get('startedAt'), 'pending_pages': refresh_pending.get(code, 0)}
+        if refresh is not None:
+            # A known-stock refresh is narrower than catalogue discovery. Keep its history/progress separate
+            # rather than replacing a completed warehouse crawl with a misleading partial result.
+            check = {**(check or {}), 'refresh': {**refresh, 'scope': 'known_stock',
+                     'interval_hours': config.get('refresh_hours') or 2,
+                     'fresh_hours': config.get('fresh_hours') or 6}}
         if check is not None or code in stored:
             check = {**(check or {}), 'stored_offers': int(stored.get(code, 0)),
                      'fresh_offers': int(fresh_counts.get(code, 0)),

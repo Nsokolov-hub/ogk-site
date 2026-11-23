@@ -95,7 +95,8 @@ def check_setting(key: str, value: Any) -> Any:
         if not isinstance(sources, list) or any(not isinstance(s, str) or s not in META for s in sources):
             raise DomainError('VALUE_INVALID', 'Выберите известные источники', 422, 'sources')
         clean: dict[str, Any] = {'sources': list(dict.fromkeys(sources))}
-        for name, low, high in [('every_days', 0.25, 30), ('keep_days', 1, 30), ('pause_seconds', 2, 60)]:
+        for name, low, high in [('every_days', 0.25, 30), ('keep_days', 1, 30), ('pause_seconds', 2, 60),
+                                ('fresh_hours', 1, 48), ('refresh_hours', 0.5, 24)]:
             number = value.get(name, DEFAULTS['competitor_stock'][name])
             if isinstance(number, bool) or not isinstance(number, (int, float)) or \
                     not math.isfinite(number) or not low <= number <= high:

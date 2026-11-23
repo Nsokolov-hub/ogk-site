@@ -60,3 +60,29 @@ def test_exact_packaging_counter_deduplicates_offers_and_rejects_stale_or_mismat
         source = next(row for row in source_status(db) if row['id'] == 'skygen')
     assert source['last_check'] == {'stored_offers': 5, 'fresh_offers': 4,
                                     'exact_packagings': 1, 'pending_review': 1}
+
+
+def test_refresh_progress_does_not_replace_catalogue_coverage_or_claim_full_warehouse_verification(sessions):
+    started = utcnow().isoformat()
+    previous = (utcnow() - timedelta(days=1)).isoformat()
+    with sessions.begin() as db:
+        set_setting(db, 'competitor_results', {'finishedAt': previous, 'sources': {
+            'chimmed': {'pages': 2029, 'offers': 18800, 'complete': False}}})
+        set_setting(db, 'competitor_refresh_results', {'startedAt': previous, 'finishedAt': previous,
+            'sources': {'chimmed': {'pages': 75, 'offers': 40, 'withdrawn': 15, 'complete': True},
+                        'diam': {'pages': 7, 'offers': 8, 'complete': True}}})
+        set_setting(db, 'competitor_refresh_run', {'startedAt': started,
+            'queue': [{'s': 'chimmed', 'page': 3}],
+            'stats': {'chimmed': {'pages': 2, 'offers': 5, 'withdrawn': 15, 'errors': 0}}})
+        sources = {entry['id']: entry['last_check'] for entry in source_status(db)}
+    full = sources['chimmed']
+    assert full['pages'] == 2029 and full['offers'] == 18800 and full['checked_at'] == previous
+    assert not full['complete']
+    refresh = full['refresh']
+    assert refresh == {'pages': 2, 'offers': 5, 'withdrawn': 15, 'errors': 0, 'checked_at': None,
+                       'started_at': started, 'running': True, 'complete': False, 'pending_pages': 1,
+                       'scope': 'known_stock', 'interval_hours': 2, 'fresh_hours': 6}
+    assert sources['diam']['refresh']['running'] is False
+    assert sources['diam']['refresh']['checked_at'] == previous
+    assert sources['diam']['refresh']['scope'] == 'known_stock'
+    assert sources['skygen'] is None

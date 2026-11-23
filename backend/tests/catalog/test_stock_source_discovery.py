@@ -1,6 +1,7 @@
 """Regressions for the public catalogue structures inspected on 22 November 2026."""
 
 from app.catalog.stock_sources import dia_m, labteh, vilax
+from app.catalog.stock_sources.html import identity
 
 
 def test_diam_reads_model_stock_in_alphabet_cards_without_fetching_each_detail():
@@ -102,3 +103,46 @@ def test_vilax_does_not_inherit_stock_from_a_neighbour_with_an_unrecognized_titl
       <span>Есть в наличии: 5</span><span>100 ₽ /шт</span></div></div>'''
     result = vilax.parse(page, vilax.ORIGIN + vilax.PREFIXES[0])
     assert not result.offers and result.incomplete == 'card_stock_marker_missing'
+
+
+def test_diam_table_withdraws_only_explicit_negative_variants_in_the_main_product():
+    url = dia_m.START + 'reagent/'
+    page = '''<h1>Reagent <a>Merck</a></h1><table>
+      <tr><th>Артикул</th><th>Фасовка</th><th>Наличие на складе</th></tr>
+      <tr><td>SKU-100G</td><td>100 г</td><td>Под заказ</td></tr>
+      <tr><td>SKU-500G</td><td>500 г</td><td>В наличии</td></tr>
+      <tr><td>SKU-ZERO</td><td>1 г</td><td>В наличии: 0</td></tr>
+      <tr><td>SKU-UNKNOWN</td><td>2 г</td><td>Уточните у менеджера</td></tr>
+      </table><h2>Описание</h2><aside><table>
+      <tr><th>Артикул</th><th>Фасовка</th><th>Наличие на складе</th></tr>
+      <tr><td>NEIGHBOUR</td><td>25 г</td><td>Нет в наличии</td></tr></table></aside>'''
+    result = dia_m.parse(page, url)
+    assert result.unavailable_ids == [identity(url, 'SKU-100G', '100 г'), identity(url, 'SKU-ZERO', '1 г')]
+    assert [offer.catalog_number for offer in result.offers] == ['SKU-500G']
+    assert result.incomplete == 'stock_marker_changed'
+
+
+def test_diam_variant_cards_withdraw_same_url_article_pack_and_do_not_guess_unknown_state():
+    url = dia_m.START + 'letter-28/'
+    product = dia_m.START + 'reagent/'
+    page = '''<h1>А</h1><article class="product-card"><a class="product-card__name"
+      href="/catalog/reactive/reagent/">Reagent</a>
+      <div class="product-model" data-value="SKU-100G" data-manufacturer="Merck">
+        <span class="product-model__article">SKU-100G</span><div class="product-model__amount">100 г</div>
+        <div class="product-model__status" title="В транзите"></div></div>
+      <div class="product-model" data-value="SKU-500G" data-manufacturer="Merck">
+        <span class="product-model__article">SKU-500G</span><div class="product-model__amount">500 г</div>
+        <div class="product-model__status" title="В наличии"></div></div>
+      <div class="product-model" data-value="SKU-ZERO" data-manufacturer="Merck">
+        <span class="product-model__article">SKU-ZERO</span><div class="product-model__amount">1 г</div>
+        <div class="product-model__status" title="В наличии: 0"></div></div>
+      <div class="product-model" data-value="SKU-UNKNOWN" data-manufacturer="Merck">
+        <span class="product-model__article">SKU-UNKNOWN</span><div class="product-model__amount">2 г</div>
+        <div class="product-model__status" title="Уточните у менеджера"></div></div>
+      <div class="product-model" data-value="WRONG-SKU" data-manufacturer="Merck">
+        <span class="product-model__article">NOT-MATCHING</span><div class="product-model__amount">3 г</div>
+        <div class="product-model__status" title="Нет в наличии"></div></div></article>'''
+    result = dia_m.parse(page, url)
+    assert result.unavailable_ids == [identity(product, 'SKU-100G', '100 г'), identity(product, 'SKU-ZERO', '1 г')]
+    assert [offer.catalog_number for offer in result.offers] == ['SKU-500G']
+    assert result.incomplete and result.tasks

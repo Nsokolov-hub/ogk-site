@@ -40,6 +40,8 @@ class Offer:
 @dataclass
 class Page:
     offers: list[Offer] = field(default_factory=list)
+    # Explicit negative stock evidence invalidates this source's old observations immediately.
+    unavailable_ids: list[str] = field(default_factory=list)
     tasks: list[dict[str, Any]] = field(default_factory=list)
     truncated: int = 0
     # An adapter can preserve useful rows while declaring that the full warehouse was not checked.

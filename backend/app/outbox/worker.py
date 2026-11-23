@@ -322,9 +322,11 @@ def index_catalog(limit: int = 5) -> int:
 
 
 def revalidate_pages(slugs: list[str]) -> None:
-    """Drop the storefront's cached data of changed products; a mass import leaves pages to their cache time."""
-    if len(slugs) < storefront.MAX_TAGS:
-        storefront.revalidate(['catalog', *(f'product:{slug}' for slug in slugs)])
+    """Drop every changed product's cached data, including a mass correction of supplier availability."""
+    slugs = list(dict.fromkeys(slugs))
+    size = storefront.MAX_TAGS - 1  # Each request also invalidates the catalogue itself.
+    for start in range(0, len(slugs), size):
+        storefront.revalidate(['catalog', *(f'product:{slug}' for slug in slugs[start:start + size])])
 
 
 def sync_brands_if_due() -> None:
@@ -408,6 +410,53 @@ def check_suppliers_if_due() -> None:
         storefront.revalidate(['catalog'])
 
 
+_stock_turns = 0
+
+
+def choose_stock_lane(refresh: bool, discovery: bool, *, housekeeping: bool = False) -> Literal[
+        'refresh', 'discovery'] | None:
+    """Give published-stock checks priority, with a discovery opportunity at least every fourth busy turn."""
+    global _stock_turns
+    if not (refresh or discovery or housekeeping):
+        return None
+    _stock_turns += 1
+    if refresh and (not discovery or _stock_turns % 4):
+        return 'refresh'
+    return 'discovery'
+
+
+def check_stock_turn(*, housekeeping: bool) -> None:
+    """Continue durable stock queues between outbox batches, without the minute-long housekeeping gap."""
+    from app.catalog import competitors, stock_refresh
+
+    if not competitors.enabled():
+        if housekeeping:
+            # Expiry/retention still run when collection is disabled; turn() will make no HTTP requests.
+            check_suppliers_if_due()
+        return
+    try:
+        with SessionLocal() as db:
+            refresh = stock_refresh.due(db)
+            discovery = competitors.active(db)
+            # Idle two-second iterations do not repeatedly start full scans or reconcile all stock flags.
+            if housekeeping or refresh:
+                discovery = discovery or competitors.due(db)
+            lane = choose_stock_lane(refresh, discovery, housekeeping=housekeeping)
+    except Exception as exc:
+        event(logger, 'competitor_schedule_failed', logging.WARNING, error=str(exc)[:300])
+        return
+    if lane == 'discovery':
+        check_suppliers_if_due()
+    elif lane == 'refresh':
+        try:
+            result = stock_refresh.turn(SessionLocal, seconds=20)
+        except Exception as exc:
+            event(logger, 'competitor_refresh_failed', logging.WARNING, error=str(exc)[:300])
+            return
+        if result and 'finishedAt' in result:
+            storefront.revalidate(['catalog'])
+
+
 _index_ready = False
 
 
@@ -468,11 +517,11 @@ def run_once(*, housekeeping: bool = True) -> dict[str, int]:
         sync_brands_if_due()
         build_cas_pages_if_due()
         refresh_yandex_if_due()
-        check_suppliers_if_due()
         send_indexnow_if_due()
         admin_housekeeping()
     with SessionLocal.begin() as db:
         counts = process_events(db)
+    check_stock_turn(housekeeping=housekeeping)
     counts['structures'] = draw_structures()
     counts['indexed'] = index_catalog()
     return counts

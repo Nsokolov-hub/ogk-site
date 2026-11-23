@@ -99,26 +99,38 @@ def chimmed_body(maker: str, letter: str, page: int) -> dict[str, Any]:
             'pagination': {'currentPage': 1, 'perPage': page}}
 
 
-def chimmed_offers(data: dict[str, Any]) -> list[Offer]:
+def chimmed_stock(data: dict[str, Any]) -> Page:
     raw = data.get('products')
     rows = raw if isinstance(raw, list) else raw.get('list') if isinstance(raw, dict) else None
     if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
         raise ParseChanged('chimmed: warehouse rows missing')
-    out = []
+    out = Page()
     for row in rows:
         if not {'storage_product', 'art_number', 'id', 'manufactorName'} <= row.keys() or \
-                row['storage_product'] not in (True, False, 0, 1):
+                type(row['storage_product']) not in (bool, int) or row['storage_product'] not in (True, False, 0, 1):
             raise ParseChanged('chimmed: warehouse identity or stock marker missing')
         number = clean_spaces(str(row.get('art_number') or ''))
-        if not row.get('storage_product') or not number or not row.get('id'):
+        delayed = row.get('is_delayed')
+        known_delay = type(delayed) in (bool, int) and delayed in (False, True, 0, 1)
+        if row.get('id') and (not row['storage_product'] or known_delay and delayed):
+            out.unavailable_ids.append(str(row['id']))
+            continue
+        if not known_delay:
+            out.incomplete = 'chimmed: actual stock status missing'
+            continue
+        if not number or not row.get('id'):
             continue
         slug = str(row.get('url') or '').strip('/')
-        out.append(Offer(external_id=str(row['id']), brand_name=clean_spaces(str(row.get('manufactorName') or '')),
+        out.offers.append(Offer(external_id=str(row['id']), brand_name=clean_spaces(str(row.get('manufactorName') or '')),
                          catalog_number=number, name=clean_spaces(str(row.get('name') or '')).strip('"; .')[:500],
                          url=f'{CHIMMED}/products/{slug}-id={row["id"]}' if slug else f'{CHIMMED}/products/storage',
                          cas=cas_or_none(row.get('cas')), pack=clean_spaces(str(row.get('packing') or '')) or None,
                          price=clean_spaces(str(row.get('price') or '')) or None))
     return out
+
+
+def chimmed_offers(data: dict[str, Any]) -> list[Offer]:
+    return chimmed_stock(data).offers
 
 
 def chimmed_page(client: httpx.Client, task: dict[str, Any], wanted: Callable[[str], bool]) -> Page:
@@ -134,7 +146,7 @@ def chimmed_page(client: httpx.Client, task: dict[str, Any], wanted: Callable[[s
     data = response.json()
     if not isinstance(data, dict) or 'totalPages' not in data:
         raise ParseChanged('chimmed: warehouse pagination missing')
-    out = Page(offers=chimmed_offers(data))
+    out = chimmed_stock(data)
     if number != 1:
         return out
     pages = int(data.get('totalPages') or 1)
@@ -349,20 +361,37 @@ def keep_delta(db: Session) -> timedelta:
     return timedelta(days=float((get_setting(db, 'competitor_stock') or {}).get('keep_days') or 10))
 
 
+def fresh_delta(db: Session) -> timedelta:
+    """Positive evidence expires independently of the longer private observation retention."""
+    hours = float((get_setting(db, 'competitor_stock') or {}).get('fresh_hours') or 6)
+    return min(keep_delta(db), timedelta(hours=hours))
+
+
+def evidence_floors(db: Session) -> dict[str, datetime]:
+    return {source: as_utc(datetime.fromisoformat(stamp))
+            for source, stamp in (get_setting(db, 'competitor_evidence_since') or {}).items()}
+
+
 def fresh_offers(db: Session, now: datetime | None = None):
     """One freshness rule for flags, admin, CRM lookup and request snapshots."""
-    cutoff = (now or utcnow()) - keep_delta(db)
-    return select(CompetitorOffer).where(
+    cutoff = (now or utcnow()) - fresh_delta(db)
+    query = select(CompetitorOffer).where(
         CompetitorOffer.seen_at > cutoff,
         or_(CompetitorOffer.stock_updated_at.is_(None), CompetitorOffer.stock_updated_at > cutoff),
         or_(CompetitorOffer.quantity.is_(None), CompetitorOffer.quantity > 0))
+    for source, floor in evidence_floors(db).items():
+        query = query.where(or_(CompetitorOffer.source != source, CompetitorOffer.seen_at >= floor))
+    return query
 
 
-def offer_valid_until(db: Session, offer: CompetitorOffer, keep: timedelta | None = None) -> datetime:
+def offer_valid_until(db: Session, offer: CompetitorOffer, keep: timedelta | None = None,
+                      floors: dict[str, datetime] | None = None) -> datetime:
     evidence_at = as_utc(offer.seen_at)
     if offer.stock_updated_at:
         evidence_at = min(evidence_at, as_utc(offer.stock_updated_at))
-    return evidence_at + (keep if keep is not None else keep_delta(db))
+    deadline = evidence_at + (keep if keep is not None else fresh_delta(db))
+    floor = (floors if floors is not None else evidence_floors(db)).get(offer.source)
+    return min(deadline, floor) if floor and as_utc(offer.seen_at) < floor else deadline
 
 
 def _refresh_flags(db: Session, now: datetime, product_ids: set[str] | None = None) -> int:
@@ -373,10 +402,11 @@ def _refresh_flags(db: Session, now: datetime, product_ids: set[str] | None = No
             return 0
         statement = statement.where(CompetitorOffer.product_id.in_(product_ids))
     until: dict[str, datetime] = {}
-    keep = keep_delta(db)
+    keep = fresh_delta(db)
+    floors = evidence_floors(db)
     for offer in db.scalars(statement):
         if offer.product_id:
-            deadline = offer_valid_until(db, offer, keep)
+            deadline = offer_valid_until(db, offer, keep, floors)
             until[offer.product_id] = max(until.get(offer.product_id, deadline), deadline)
     scope = select(Product).where(or_(Product.supplier_stock, Product.id.in_(until)))
     if product_ids is not None:
@@ -454,16 +484,35 @@ def _valid_offer(source: str, offer: Offer) -> bool:
                 not parsed.password and (not origin or f'{parsed.scheme}://{parsed.netloc}' == origin))
 
 
+def save_page(db: Session, source: str, page: Page, brands: Brands, now: datetime) -> tuple[int, int]:
+    """Withdraw explicit negatives even during an incomplete crawl; a negative wins over a duplicate positive."""
+    unavailable = {value for value in page.unavailable_ids if isinstance(value, str) and 0 < len(value) <= 100}
+    affected: set[str] = set()
+    if unavailable:
+        old = list(db.scalars(select(CompetitorOffer).where(
+            CompetitorOffer.source == source, CompetitorOffer.external_id.in_(unavailable))))
+        affected = {row.product_id for row in old if row.product_id}
+        for row in old:
+            db.delete(row)
+        db.flush()
+    kept, hits = save(db, source, [offer for offer in page.offers if offer.external_id not in unavailable], brands, now)
+    if affected:
+        _refresh_flags(db, now, affected)
+    return kept, hits
+
+
 def settle(db: Session, now: datetime, finished: Iterable[str], started: datetime) -> int:
     """A site checked to the end forgets what it did not show again; any offer older than ``keep_days`` is
     dropped; products without a fresh matched offer are no longer «В наличии». Returns the products that left."""
     cutoff = now - keep_delta(db)
     for source in finished:
-        db.execute(delete(CompetitorOffer).where(CompetitorOffer.source == source, CompetitorOffer.seen_at < started))
+        db.execute(delete(CompetitorOffer).where(CompetitorOffer.source == source, CompetitorOffer.seen_at < started)
+                   .execution_options(synchronize_session='fetch'))
     # A newly fetched but explicitly old list remains private evidence for review. Its declared date still makes
     # it ineligible in fresh_offers; retention is measured since we last saw the record rather than its old date.
     db.execute(delete(CompetitorOffer).where(or_(CompetitorOffer.seen_at <= cutoff,
-                                               CompetitorOffer.quantity <= 0)))
+                                               CompetitorOffer.quantity <= 0))
+               .execution_options(synchronize_session='fetch'))
     return _refresh_flags(db, now)
 
 
@@ -477,6 +526,10 @@ def due(db: Session, now: datetime | None = None) -> bool:
     every = timedelta(days=float((get_setting(db, 'competitor_stock') or {}).get('every_days') or 3))
     last = (get_setting(db, 'competitor_results') or {}).get('finishedAt')
     return not last or (now or utcnow()) - datetime.fromisoformat(last) >= every
+
+
+def active(db: Session) -> bool:
+    return enabled() and bool(get_setting(db, 'competitor_run'))
 
 
 def start(db: Session, now: datetime) -> dict[str, Any]:
@@ -585,7 +638,7 @@ def turn(sessions: sessionmaker[Session], seconds: float = TURN_SECONDS) -> dict
                 event(logger, 'competitor_page_failed', logging.WARNING, source=source, error=str(exc)[:200])
             else:
                 with sessions.begin() as db:
-                    kept, hits = save(db, source, page.offers, brands, utcnow())
+                    kept, hits = save_page(db, source, page, brands, utcnow())
                     _enqueue(run, source, page.tasks)
                     stats['pages'] += 1
                     stats['offers'] += kept
@@ -638,13 +691,17 @@ def run_all(sessions: sessionmaker[Session]) -> dict[str, Any] | None:
 def status(db: Session) -> dict[str, Any]:
     run = get_setting(db, 'competitor_run')
     results = get_setting(db, 'competitor_results') or {}
+    refresh = get_setting(db, 'competitor_refresh_run')
     in_stock = db.scalar(select(func.count()).select_from(Product).where(
         Product.supplier_stock, Product.supplier_stock_until > utcnow())) or 0
     review = db.scalar(select(func.count()).select_from(fresh_offers(db).where(
         or_(CompetitorOffer.product_id.is_(None), CompetitorOffer.packaging_id.is_(None))).subquery())) or 0
     return {'enabled': enabled(), 'settings': get_setting(db, 'competitor_stock'), 'last': results or None,
             'running': {'startedAt': run['startedAt'], 'left': len(run['queue']), 'stats': run['stats']} if run else None,
-            'productsInStock': int(in_stock), 'pendingReview': int(review), 'names': NAMES, 'sources': META}
+            'productsInStock': int(in_stock), 'pendingReview': int(review), 'names': NAMES, 'sources': META,
+            'refresh': {'running': {'startedAt': refresh['startedAt'], 'left': len(refresh['queue']),
+                                    'stats': refresh['stats']} if refresh else None,
+                        'last': get_setting(db, 'competitor_refresh_results') or None}}
 
 
 def offers_of(db: Session, product_id: str, now: datetime | None = None) -> list[dict[str, Any]]:
