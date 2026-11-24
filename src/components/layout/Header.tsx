@@ -19,11 +19,7 @@ import { SiteMenu } from './SiteMenu';
 const iconBtn =
   'inline-grid size-11 shrink-0 place-items-center rounded-full text-text transition-colors hover:text-accent';
 
-/**
- * Шапка по макету Figma «Headder» (правки 02.11.2026): одна капсула с заливкой surface — логотип, «Меню», поиск,
- * телефон, корзина, «Заказать». «Меню» открывает направления сайта (SiteMenu); язык переключается в подвале.
- * <1024: логотип, поиск, корзина, бургер.
- */
+/** В узкой шапке телефон и почта для заказов занимают отдельную строку под навигацией. */
 export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuSection[] }) {
   const t = useTranslations('header');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,7 +60,7 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
   return (
     <header
       className={cn(
-        'fixed inset-x-0 top-3 z-[100] px-4 transition-[top] duration-300 md:px-20',
+        'fixed inset-x-0 top-3 z-[100] px-2 transition-[top] duration-300 sm:px-4 md:px-10',
         scrolled ? 'lg:top-3' : 'lg:top-10',
       )}
     >
@@ -76,10 +72,10 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
         }}
       >
         {/* Капсула */}
-        <div className="store-design-type relative isolate flex h-16 items-center justify-between gap-3 rounded-pill pl-4 pr-2 sm:pr-3 lg:h-[72px] lg:gap-4 lg:px-[22px]">
+        <div className="store-design-type relative isolate grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 rounded-[26px] px-3 pt-1 pb-1.5 min-[640px]:flex min-[640px]:h-16 min-[640px]:gap-4 min-[640px]:rounded-pill min-[640px]:py-0 md:px-10 lg:h-[72px] min-[1400px]:gap-6">
           {/* Стекло — отдельным слоем: размытие на самой капсуле не дало бы подсказкам поиска размыть страницу под собой */}
-          <div aria-hidden className="glass absolute inset-0 -z-10 rounded-pill" />
-          <div className="flex min-w-0 items-center gap-4 min-[1400px]:gap-12">
+          <div aria-hidden className="glass absolute inset-0 -z-10 rounded-[inherit]" />
+          <div className="flex min-w-0 items-center gap-4 min-[640px]:mr-auto min-[1400px]:gap-12">
             <Link href="/" aria-label={t('home')} className="shrink-0 rounded-sm">
               <Image src="/images/brand/logo-eng.svg" alt="" width={132} height={46} unoptimized priority className="h-8 w-auto lg:h-auto lg:w-[106px]" />
             </Link>
@@ -104,28 +100,29 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-4 min-[1400px]:gap-6">
+          <div className="col-span-2 row-start-2 flex shrink-0 items-center justify-between gap-2 min-[640px]:gap-3 lg:gap-4 min-[1400px]:gap-6">
             <a
               href={settings.phone.href}
               onClick={() => track('click_phone', { place: 'header' })}
               aria-label={t('phoneLabel', { phone: settings.phone.display })}
-              // На телефоне — иконка-кнопка 44 px рядом с поиском (аудит 11.11.2026): раньше звонок был только в меню
-              className="inline-grid size-11 shrink-0 place-items-center text-body font-medium text-text transition-colors hover:text-accent lg:inline-flex lg:size-auto lg:gap-2.5"
+              className="inline-flex min-h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-medium hover:text-accent min-[640px]:min-h-11 min-[640px]:min-w-11 min-[640px]:justify-center min-[640px]:text-body lg:gap-2.5"
             >
-              <PhoneOutgoingIcon size={24} className="text-accent" />
-              <span className="hidden whitespace-nowrap xl:inline">{settings.phone.display}</span>
+              <PhoneOutgoingIcon size={24} className="size-4 text-accent min-[640px]:size-6" />
+              <span className="min-[640px]:hidden xl:inline">{settings.phone.display}</span>
             </a>
 
             <a
               href={`mailto:${settings.emails.order}`}
               aria-label={settings.emails.order}
               onClick={() => track('click_email', { place: 'header' })}
-              className="hidden shrink-0 items-center gap-2 font-medium hover:text-accent lg:flex"
+              className="inline-flex min-h-7 shrink-0 items-center gap-1.5 whitespace-nowrap text-sm font-medium text-accent min-[640px]:min-h-11 min-[640px]:gap-2 min-[640px]:text-text min-[640px]:hover:text-accent min-[640px]:text-body"
             >
-              <Mail aria-hidden size={24} className="text-accent" />
-              <span className="hidden xl:inline">{settings.emails.order}</span>
+              <Mail aria-hidden size={24} className="size-4 text-accent min-[640px]:size-6" />
+              <span>{settings.emails.order}</span>
             </a>
+          </div>
 
+          <div className="col-start-2 row-start-1 flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-4">
             <button
               type="button"
               className={cn(iconBtn, 'lg:hidden')}
@@ -137,15 +134,13 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
               {searchOpen ? <X aria-hidden size={22} strokeWidth={1.5} /> : <SearchIcon size={22} />}
             </button>
 
-            <div className="flex items-center gap-1 sm:gap-2 lg:gap-4">
-              <CartButton />
-              <Link
-                href="/rfq/"
-                className="hidden h-10 shrink-0 items-center rounded-pill bg-accent pl-[31px] pr-[30px] text-body font-medium text-text-on-accent transition-colors hover:bg-accent-hover lg:inline-flex"
-              >
-                {t('order')}
-              </Link>
-            </div>
+            <CartButton />
+            <Link
+              href="/rfq/"
+              className="hidden h-10 shrink-0 items-center rounded-pill bg-accent pl-[31px] pr-[30px] text-body font-medium text-text-on-accent transition-colors hover:bg-accent-hover lg:inline-flex"
+            >
+              {t('order')}
+            </Link>
 
             <button
               type="button"

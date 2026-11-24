@@ -159,6 +159,20 @@ test.describe('Закупочные сценарии и сохранение н�
     expect(JSON.stringify(submissions[0].payload)).not.toContain('test-only-repeat-token');
   });
 
+  test('почта для заказов видна в шапке на телефоне, планшете и компьютере', async ({ page }) => {
+    await page.goto('/');
+    await dismissCookies(page);
+    const address = 'order@ogk-chem.ru';
+    const email = page.locator('header').getByRole('link', { name: address, exact: true });
+    await expect(email).toHaveAttribute('href', `mailto:${address}`);
+    for (const width of [320, 639, 640, 768, 1024, 1280, 1440, 1920]) {
+      await page.setViewportSize({ width, height: 900 });
+      const text = email.getByText(address, { exact: true });
+      await expect(text).toBeInViewport({ ratio: 1 });
+      await email.click({ trial: true });
+    }
+  });
+
   test('главная показывает слайды, пять тематических ссылок и переход в контакты', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     for (const width of [1440, 1024, 768, 390]) {
