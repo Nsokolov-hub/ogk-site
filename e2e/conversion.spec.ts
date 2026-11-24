@@ -167,14 +167,35 @@ test.describe('Закупочные сценарии и сохранение н�
       await dismissCookies(page);
       const hero = page.getByRole('region', { name: 'Главные предложения', exact: true }).last();
       await expect(hero.getByRole('heading', { level: 1 })).toBeInViewport();
+      await expect(hero.locator('button')).toHaveCount(2);
+      const merck = hero.locator('[role="group"]:not([aria-hidden]) img[src*="merck"]').first();
+      expect(await merck.evaluate((image) => {
+        for (let el: Element | null = image; el && !el.classList.contains('hero-plates'); el = el.parentElement) {
+          if (getComputedStyle(el).filter.includes('blur(')) return false;
+        }
+        return true;
+      })).toBeTruthy();
       await hero.getByRole('button', { name: 'Следующий слайд' }).click();
       await expect(hero.getByRole('heading', { name: /хроматографии/ })).toBeVisible();
       const offers = page.locator('.offer-rail');
       await expect(offers.getByRole('link')).toHaveCount(5);
+      const offerControls = page.locator('section[aria-labelledby="offers-title"] button');
+      expect(await offerControls.count()).toBeGreaterThan(0);
+      for (const button of await offerControls.all()) await expect(button).toHaveAttribute('aria-label', /^Предложения, страница \d+$/);
       await expect(offers.getByRole('link', { name: 'Alfa-D-Glucose Monohydrate (Aozeal)' })).toHaveAttribute('href', /aozeal-d0147-28/);
       await expect(page.locator('section[aria-labelledby="not-found-title"]').getByRole('link', { name: 'Перейти в контакты' })).toHaveAttribute('href', '/contacts/');
       await expect(page.locator('h1')).toHaveCount(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
     }
+  });
+
+  test('Aozeal показан в выдаче с общей иллюстрацией тары, на странице товара — с фотографией', async ({ page }) => {
+    await page.goto('/search/?q=D0147.28');
+    await dismissCookies(page);
+    const tile = page.locator('article').filter({ hasText: 'D0147.28' });
+    await expect(tile.locator('svg[role="img"] image').first()).toHaveAttribute('href', /vial/);
+    await expect(tile.locator('img')).toHaveCount(0);
+    await tile.getByRole('link', { name: 'Alpha-D-Glucose Monohydrate Working Standard', exact: true }).click();
+    await expect(page.getByAltText('Aozeal D0147.28')).toBeVisible();
   });
 });

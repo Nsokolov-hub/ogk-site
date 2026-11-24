@@ -389,9 +389,6 @@
   }
 }
 
-
-.hero-playback { position: absolute; bottom: 16px; left: calc((100cqw - var(--plate-w)) / 2 + 20px); }
-
 @media (min-width: 768px) {
   .store-home > section > .mx-auto { max-width: none; padding-inline: 80px; }
   .store-home > section + section { margin-top: 80px; }

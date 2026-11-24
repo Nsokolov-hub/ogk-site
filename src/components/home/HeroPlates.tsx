@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-import { PlaybackButton } from './PlaybackButton';
+import merckVial from '../../../public/images/home/plates/merck.webp';
 import { useCarouselPlayback } from './useCarouselPlayback';
 import type { HeroSlide } from '@/types/content';
 import { Button } from '@/components/ui/Button';
@@ -24,8 +24,8 @@ function ReferenceVisual({ priority }: { priority: boolean }) {
         <Image src={`${DIR}/circles.svg`} alt="" fill unoptimized />
       </div>
       <div className="absolute grid place-items-center" style={box({ right: -152, top: -51, width: 822.896, height: 822.896 })}>
-        <div className="relative rotate-15" style={{ ...box({ width: 671.892, height: 671.892 }), filter: `blur(${u(2)})` }}>
-          <Image quality={90} src={`${DIR}/merck.webp`} alt="" fill priority={priority} sizes="(min-width: 1024px) 672px, 340px" className="object-cover" />
+        <div className="relative rotate-15" style={box({ width: 671.892, height: 671.892 })}>
+          <Image quality={90} src={merckVial} alt="" fill priority={priority} sizes="(min-width: 1024px) calc(52.5vw - 84px), (min-width: 768px) calc(74.7vw - 119px), calc(96vw - 30px)" className="object-cover" />
         </div>
       </div>
       <div className="absolute grid place-items-center" style={box({ right: 184.85, top: 61.17, width: 564.15, height: 564.15 })}>
@@ -231,12 +231,12 @@ export function HeroPlates({ slides }: { slides: HeroSlide[] }) {
   );
 
   const advance = useCallback(() => go(1), [go]);
-  const playback = useCarouselPlayback(advance, looped, 7000);
+  const carouselRef = useCarouselPlayback(advance, looped, 7000);
 
   return (
     <section aria-label={t('region')} className="pt-[100px] lg:pt-[152px]">
       <div
-        ref={playback.ref}
+        ref={carouselRef}
         role="region"
         aria-roledescription="carousel"
         aria-label={t('region')}
@@ -294,7 +294,6 @@ export function HeroPlates({ slides }: { slides: HeroSlide[] }) {
 
         {looped ? (
           <>
-            <div className="hero-playback"><PlaybackButton {...playback} /></div>
             <button type="button" aria-label={t('prev')} onClick={() => go(-1)} className="hero-arrow hero-arrow-prev group">
               <ArrowCircle direction="left" />
             </button>

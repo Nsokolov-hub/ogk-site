@@ -44,7 +44,7 @@ export function ProductCard({
       className="group relative grid h-full grid-cols-[112px_minmax(0,1fr)] gap-x-3.5 rounded-[22px] border border-card-line bg-card p-3 text-white sm:flex sm:flex-col sm:p-4" // taste-skill-ignore: контур карточки — из утверждённого эталона
     >
       <div className="relative w-full self-start">
-        <ProductImage product={product} sizes={IMAGE_SIZES[size]} priority={priority} className="rounded-xl sm:rounded-2xl" />
+        <ProductImage product={product} catalogTile sizes={IMAGE_SIZES[size]} priority={priority} className="rounded-xl sm:rounded-2xl" />
         <AvailabilityBadge availability={product.availability} />
       </div>
 

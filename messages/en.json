@@ -198,9 +198,7 @@
       "region": "Featured offers",
       "slide": "{current} of {total}",
       "prev": "Previous slide",
-      "next": "Next slide",
-      "pause": "Pause rotation",
-      "play": "Resume rotation"
+      "next": "Next slide"
     },
     "products": {
       "allCatalog": "Full catalog",

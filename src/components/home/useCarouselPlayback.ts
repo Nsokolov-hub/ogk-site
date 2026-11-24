@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 /** Give readers a full delay after returning to the carousel or releasing the pointer. */
 export function useCarouselPlayback(advance: () => void, enabled: boolean, delay: number) {
   const ref = useRef<HTMLDivElement>(null);
-  const [paused, setPaused] = useState(false);
   useEffect(() => {
     const el = ref.current;
-    if (!el || !enabled || paused) return;
+    if (!el || !enabled) return;
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let visible = false;
     let timer: number | undefined;
@@ -40,6 +39,6 @@ export function useCarouselPlayback(advance: () => void, enabled: boolean, delay
       motion.removeEventListener('change', start);
       document.removeEventListener('visibilitychange', start);
     };
-  }, [advance, delay, enabled, paused]);
-  return { ref, paused, toggle: () => setPaused((value) => !value) };
+  }, [advance, delay, enabled]);
+  return ref;
 }

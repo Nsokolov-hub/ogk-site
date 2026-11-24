@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Container } from '@/components/ui/Container';
 import { Link } from '@/i18n/navigation';
-import { PlaybackButton } from './PlaybackButton';
 import { useCarouselPlayback } from './useCarouselPlayback';
 
 const offers = [
@@ -32,7 +31,7 @@ export function SpecialOffers() {
     el.scrollTo({ left: card.offsetLeft, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
   }, [visibleCards]);
   const advance = useCallback(() => moveTo((page + 1) % pageCount), [moveTo, page, pageCount]);
-  const playback = useCarouselPlayback(advance, pageCount > 1, 8000);
+  const carouselRef = useCarouselPlayback(advance, pageCount > 1, 8000);
 
   useEffect(() => {
     const el = rail.current;
@@ -70,7 +69,7 @@ export function SpecialOffers() {
           <h2 id="offers-title" className="store-heading">{t.rich('title', { accent: (text) => <span className="text-accent">{text}</span> })}</h2>
           <p className="store-subtitle">{t('subtitle')}</p>
         </div>
-        <div ref={playback.ref} role="region" aria-roledescription="carousel" aria-labelledby="offers-title">
+        <div ref={carouselRef} role="region" aria-roledescription="carousel" aria-labelledby="offers-title">
           <div ref={rail} className="offer-rail" onScroll={(event) => {
             const el = event.currentTarget;
             const max = el.scrollWidth - el.clientWidth;
@@ -107,14 +106,13 @@ export function SpecialOffers() {
               </Link>
             ))}
           </div>
-          <div className="relative mt-5 flex min-h-10 items-center justify-center gap-2">
+          <div className="mt-5 flex min-h-10 items-center justify-center gap-2">
             {Array.from({ length: pageCount }, (_, index) => (
               <button key={index} type="button" onClick={() => moveTo(index)} aria-label={t('page', { page: index + 1 })} aria-current={page === index ? 'true' : undefined}
                 className="group grid h-10 w-12 place-items-center md:w-16">
                 <span className="h-1 w-full rounded-full bg-text-secondary/40 group-aria-[current=true]:bg-accent" />
               </button>
             ))}
-            <div className="absolute right-0"><PlaybackButton {...playback} /></div>
           </div>
         </div>
       </Container>

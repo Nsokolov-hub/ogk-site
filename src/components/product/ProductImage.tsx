@@ -16,12 +16,14 @@ import { VialPlaceholder } from './VialPlaceholder';
 export function ProductImage({
   product,
   sizes,
+  catalogTile = false,
   priority,
   note,
   className,
 }: {
   product: ProductPreview;
   sizes: string;
+  catalogTile?: boolean;
   priority?: boolean;
   /** Подпись под рисунком тары «упаковка может отличаться» — на странице товара */
   note?: boolean;
@@ -29,7 +31,9 @@ export function ProductImage({
 }) {
   const t = useTranslations('product');
   const [failed, setFailed] = useState(false);
-  const img = product.image;
+  const kind = packKind(product);
+  // В рядах каталога тара показана в едином масштабе и с общей этикеткой.
+  const img = catalogTile && kind !== 'box' ? undefined : product.image;
 
   return (
     <div className={cn('relative isolate aspect-square overflow-hidden rounded-2xl bg-well', className)}>
@@ -57,7 +61,7 @@ export function ProductImage({
             cas={product.cas}
             brand={product.brand.name}
             code={product.catalogNumber}
-            kind={packKind(product)}
+            kind={kind}
             className="h-[88%] w-[88%]"
           />
           {note ? (
