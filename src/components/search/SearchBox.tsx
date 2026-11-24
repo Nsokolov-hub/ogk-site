@@ -341,7 +341,7 @@ export function SearchBox({
         className={cn(
           'ym-disable-keys w-full rounded-pill border bg-base text-text outline-offset-0 transition-colors placeholder:text-text-placeholder hover:border-text-secondary focus-visible:border-accent',
           header
-            ? 'h-10 truncate border-accent/40 bg-transparent pl-[46px] pr-4 text-body placeholder:text-accent/40 hover:border-accent/70'
+            ? 'h-10 truncate border-accent/40 bg-transparent pl-[45px] pr-3 [&:placeholder-shown::-webkit-search-cancel-button]:hidden text-body placeholder:text-accent/40 hover:border-accent/70'
             : lg
               ? 'h-16 border-border pl-14 pr-[7.5rem] text-lead'
               : 'h-11 border-border bg-base/50 pl-11 pr-[5.5rem] text-body',
