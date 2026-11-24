@@ -98,7 +98,9 @@ export function SpecialOffers() {
             {offers.map(({ id, href, image }) => (
               <Link key={id} href={href} draggable={false} className="offer-card group" aria-labelledby={`offer-${id}`}>
                 <div className={`offer-art offer-art-${id}`}>
-                  <Image src={image} alt="" width={342} height={247} className="absolute" draggable={false} sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 85vw" />
+                  <span className="offer-image">
+                    <Image src={image} alt="" width={342} height={247} className="absolute" draggable={false} sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 85vw" />
+                  </span>
                 </div>
                 <h3 id={`offer-${id}`} className="offer-title mt-7 text-accent text-[clamp(1.35rem,2.36vw,2.125rem)] leading-[1.14] font-medium">{t(`${id}.title`)}</h3>
                 <p className="offer-description mb-6 mt-7 text-[clamp(1rem,1.67vw,1.5rem)] leading-[1.2] text-text">{t(`${id}.text`)}</p>

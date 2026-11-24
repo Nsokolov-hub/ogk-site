@@ -25,7 +25,7 @@ function ReferenceVisual({ priority }: { priority: boolean }) {
       </div>
       <div className="absolute grid place-items-center" style={box({ right: -152, top: -51, width: 822.896, height: 822.896 })}>
         <div className="relative rotate-15" style={box({ width: 671.892, height: 671.892 })}>
-          <Image quality={90} src={merckVial} alt="" fill priority={priority} sizes="(min-width: 1024px) calc(52.5vw - 84px), (min-width: 768px) calc(74.7vw - 119px), calc(96vw - 30px)" className="object-cover" />
+          <Image src={merckVial} alt="" fill unoptimized priority={priority} className="object-cover" />
         </div>
       </div>
       <div className="absolute grid place-items-center" style={box({ right: 184.85, top: 61.17, width: 564.15, height: 564.15 })}>

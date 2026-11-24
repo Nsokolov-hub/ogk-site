@@ -72,15 +72,15 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
         }}
       >
         {/* Капсула */}
-        <div className="store-design-type relative isolate grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 rounded-[26px] px-3 pt-1 pb-1.5 min-[640px]:flex min-[640px]:h-16 min-[640px]:gap-4 min-[640px]:rounded-pill min-[640px]:py-0 md:px-10 lg:h-[72px] min-[1400px]:gap-6">
+        <div className="store-design-type relative isolate grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 rounded-[26px] px-3 pt-1 pb-1.5 min-[640px]:flex min-[640px]:h-[76px] min-[640px]:gap-4 min-[640px]:rounded-pill min-[640px]:py-0 md:px-10 lg:h-[90px] lg:gap-2 xl:gap-4 min-[1400px]:gap-6">
           {/* Стекло — отдельным слоем: размытие на самой капсуле не дало бы подсказкам поиска размыть страницу под собой */}
           <div aria-hidden className="glass absolute inset-0 -z-10 rounded-[inherit]" />
-          <div className="flex min-w-0 items-center gap-4 min-[640px]:mr-auto min-[1400px]:gap-12">
+          <div className="flex min-w-0 items-center gap-4 min-[640px]:mr-auto lg:gap-3 xl:gap-4 min-[1400px]:gap-12">
             <Link href="/" aria-label={t('home')} className="shrink-0 rounded-sm">
-              <Image src="/images/brand/logo-eng.svg" alt="" width={132} height={46} unoptimized priority className="h-8 w-auto lg:h-auto lg:w-[106px]" />
+              <Image src="/images/brand/logo-eng.svg" alt="" width={132} height={46} unoptimized priority className="h-8 w-auto lg:h-[46px] lg:w-[132px]" />
             </Link>
 
-            <div className="hidden min-w-0 items-center gap-4 lg:flex">
+            <div className="hidden min-w-0 items-center gap-3 lg:flex xl:gap-4">
               <button
                 ref={menuBtnRef}
                 type="button"
@@ -96,7 +96,7 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
                 {t('menu')}
                 <ChevronDownIcon size={16} className={cn('transition-transform duration-300', menuOpen && 'rotate-180')} />
               </button>
-              <HeaderSearch variant="header" className="w-[314px] min-w-[140px] shrink" />
+              <HeaderSearch variant="header" className="w-[314px] min-w-[124px] shrink" />
             </div>
           </div>
 
@@ -137,7 +137,7 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
             <CartButton />
             <Link
               href="/rfq/"
-              className="hidden h-10 shrink-0 items-center rounded-pill bg-accent pl-[31px] pr-[30px] text-body font-medium text-text-on-accent transition-colors hover:bg-accent-hover lg:inline-flex"
+              className="hidden h-10 shrink-0 items-center rounded-pill bg-accent px-4 text-body font-medium text-text-on-accent transition-colors hover:bg-accent-hover lg:inline-flex xl:pl-[31px] xl:pr-[30px]"
             >
               {t('order')}
             </Link>
