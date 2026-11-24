@@ -159,7 +159,7 @@ test.describe('Закупочные сценарии и сохранение н�
     expect(JSON.stringify(submissions[0].payload)).not.toContain('test-only-repeat-token');
   });
 
-  test('главная показывает слайды, пять тематических ссылок и вход в запрос по списку', async ({ page }) => {
+  test('главная показывает слайды, пять тематических ссылок и переход в контакты', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     for (const width of [1440, 1024, 768, 390]) {
       await page.setViewportSize({ width, height: 900 });
@@ -171,8 +171,8 @@ test.describe('Закупочные сценарии и сохранение н�
       await expect(hero.getByRole('heading', { name: /хроматографии/ })).toBeVisible();
       const offers = page.locator('.offer-rail');
       await expect(offers.getByRole('link')).toHaveCount(5);
-      await expect(offers.getByRole('link', { name: 'Alpha-D-Glucose Monohydrate' })).toHaveAttribute('href', /aozeal-d0147-28/);
-      await expect(page.getByRole('link', { name: 'Отправить список', exact: true })).toHaveAttribute('href', '/rfq/#file');
+      await expect(offers.getByRole('link', { name: 'Alfa-D-Glucose Monohydrate (Aozeal)' })).toHaveAttribute('href', /aozeal-d0147-28/);
+      await expect(page.locator('section[aria-labelledby="not-found-title"]').getByRole('link', { name: 'Перейти в контакты' })).toHaveAttribute('href', '/contacts/');
       await expect(page.locator('h1')).toHaveCount(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
     }

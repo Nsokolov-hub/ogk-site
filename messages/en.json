@@ -66,7 +66,7 @@
       "casOffers": "{n, plural, one {# offer} other {# offers}}"
     },
     "casTypo": "This looks like a CAS number with a typo: the last (check) digit does not match. Please check the number.",
-    "headerPlaceholder": "Name, catalogue no., CAS"
+    "headerPlaceholder": "Name, catalogue no., CAS, etc."
   },
   "footer": {
     "nav": "Site sections",
@@ -236,36 +236,35 @@
       "parseList": "Match an item list to the catalog"
     },
     "offers": {
-      "title": "Special",
-      "accent": "offers",
-      "subtitle": "Products and services for your laboratory",
+      "title": "<accent>Special</accent> offers",
+      "subtitle": "Individual pricing, stock availability and favourable terms",
       "more": "View details",
       "page": "Offers, page {page}",
       "keys": {
         "title": "Access keys",
-        "text": "Annual access to BP and EDQM online pharmacopoeias with activation instructions."
+        "text": "Annual subscription to online pharmacopoeias (BP, EDQM) with activation instructions"
       },
       "glucose": {
-        "title": "Alpha-D-Glucose Monohydrate",
-        "text": "Aozeal working standard, catalogue no. D0147.28."
+        "title": "Alfa-D-Glucose Monohydrate (Aozeal)",
+        "text": "Discounted and in stock at OGK-CHEM"
       },
       "lgc": {
-        "title": "LGC standards",
-        "text": "LGC reference standards and materials for analytical laboratories."
+        "title": "LGC promotion",
+        "text": "Up to 25% off more than 1,500 items until the end of the year! Discounted items in stock"
       },
       "customs": {
         "title": "Customs clearance",
-        "text": "Customs clearance services for pharmaceutical shipments."
+        "text": "Customs clearance services for pharmaceutical shipments"
       },
       "stock": {
-        "title": "Products in stock",
-        "text": "Browse the catalogue and enquire about available pack sizes."
+        "title": "Products in stock at OGK-CHEM",
+        "text": "A wide range of products in stock with fast delivery"
       }
     },
     "notFound": {
-      "title": "Can’t find the right product?",
-      "text": "Send us your list or specification and we’ll help you find the products.",
-      "cta": "Send a list"
+      "title": "Can’t find the <accent>right</accent> product?",
+      "text": "<contact>Contact us</contact> or send a request through the website",
+      "cta": "Go to contacts"
     }
   },
   "notFound": {

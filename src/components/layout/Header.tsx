@@ -76,7 +76,7 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
         }}
       >
         {/* Капсула */}
-        <div className="relative isolate flex h-16 items-center justify-between gap-3 rounded-pill pl-4 pr-2 sm:pr-3 lg:h-[72px] lg:gap-4 lg:px-[22px]">
+        <div className="store-design-type relative isolate flex h-16 items-center justify-between gap-3 rounded-pill pl-4 pr-2 sm:pr-3 lg:h-[72px] lg:gap-4 lg:px-[22px]">
           {/* Стекло — отдельным слоем: размытие на самой капсуле не дало бы подсказкам поиска размыть страницу под собой */}
           <div aria-hidden className="glass absolute inset-0 -z-10 rounded-pill" />
           <div className="flex min-w-0 items-center gap-4 min-[1400px]:gap-12">

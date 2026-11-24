@@ -4,7 +4,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { Container } from '@/components/ui/Container';
-import { SectionHeading } from '@/components/ui/SectionHeading';
 import { Link } from '@/i18n/navigation';
 import { PlaybackButton } from './PlaybackButton';
 import { useCarouselPlayback } from './useCarouselPlayback';
@@ -12,9 +11,9 @@ import { useCarouselPlayback } from './useCarouselPlayback';
 const offers = [
   { id: 'keys', href: '/catalog/pharmacopeias/', image: '/images/home/offers/pharmacopoeias.webp' },
   { id: 'glucose', href: '/product/aozeal-d0147-28-alpha-d-glucose-monohydrate-working-standard/', image: '/images/home/offers/aozeal-d0147-28.webp' },
-  { id: 'lgc', href: '/brands/lgc/', image: '/images/brands/lgc.svg' },
+  { id: 'lgc', href: '/brands/lgc/', image: '/images/home/offers/lgc.webp' },
   { id: 'customs', href: '/services/customs-clearance/', image: '/images/home/offers/customs.webp' },
-  { id: 'stock', href: '/catalog/', image: '/images/brand/logo-eng.svg' },
+  { id: 'stock', href: '/catalog/', image: '/images/home/offers/ogk.webp' },
 ] as const;
 
 export function SpecialOffers() {
@@ -65,9 +64,12 @@ export function SpecialOffers() {
   }
 
   return (
-    <section aria-labelledby="offers-title" className="mt-16">
+    <section aria-labelledby="offers-title" className="store-design-type mt-16">
       <Container>
-        <SectionHeading id="offers-title" title={t('title')} accent={t('accent')} subtitle={t('subtitle')} />
+        <div className="mb-8 md:mb-12">
+          <h2 id="offers-title" className="store-heading">{t.rich('title', { accent: (text) => <span className="text-accent">{text}</span> })}</h2>
+          <p className="store-subtitle">{t('subtitle')}</p>
+        </div>
         <div ref={playback.ref} role="region" aria-roledescription="carousel" aria-labelledby="offers-title">
           <div ref={rail} className="offer-rail" onScroll={(event) => {
             const el = event.currentTarget;
@@ -97,11 +99,11 @@ export function SpecialOffers() {
             {offers.map(({ id, href, image }) => (
               <Link key={id} href={href} draggable={false} className="offer-card group" aria-labelledby={`offer-${id}`}>
                 <div className={`offer-art offer-art-${id}`}>
-                  <Image src={image} alt="" fill draggable={false} sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 85vw" />
+                  <Image src={image} alt="" width={342} height={247} className="absolute" draggable={false} sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 85vw" />
                 </div>
-                <h3 id={`offer-${id}`} className="mt-6 text-[clamp(1.35rem,2.36vw,2.125rem)] leading-[1.14] font-medium">{t(`${id}.title`)}</h3>
-                <p className="mb-6 mt-4 text-[clamp(1rem,1.67vw,1.5rem)] leading-[1.2] text-text-secondary">{t(`${id}.text`)}</p>
-                <span className="mt-auto flex min-h-12 items-center justify-center rounded-pill border border-accent/55 text-accent transition-colors group-hover:bg-accent group-hover:text-base">{t('more')}</span>
+                <h3 id={`offer-${id}`} className="offer-title mt-7 text-accent text-[clamp(1.35rem,2.36vw,2.125rem)] leading-[1.14] font-medium">{t(`${id}.title`)}</h3>
+                <p className="offer-description mb-6 mt-7 text-[clamp(1rem,1.67vw,1.5rem)] leading-[1.2] text-text">{t(`${id}.text`)}</p>
+                <span className="mt-auto flex min-h-12 items-center justify-center rounded-pill border border-accent text-xl text-accent transition-colors group-hover:bg-accent group-hover:text-base">{t('more')}</span>
               </Link>
             ))}
           </div>

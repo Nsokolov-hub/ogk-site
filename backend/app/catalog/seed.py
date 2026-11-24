@@ -114,6 +114,8 @@ def _product(db: Session, raw: dict[str, Any], brands: dict[str, Brand], categor
     product.images = [raw['image']] if raw.get('image') else []
     product.custom_packaging = True if raw.get('customPackaging') and not brand.custom_packaging else None
     product.discontinued, product.popularity = bool(raw.get('discontinued')), int(raw.get('popularity') or 0)
+    if 'availability' in raw:
+        product.availability = raw['availability']
     product.status = 'published'
     product.controlled, product.controlled_state = controlled.apply(
         register, name=product.name_en, cas=cas, synonyms=product.synonyms, current=product.controlled,

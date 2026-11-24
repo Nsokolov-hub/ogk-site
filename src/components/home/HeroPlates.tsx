@@ -9,7 +9,7 @@ import type { HeroSlide } from '@/types/content';
 import { Button } from '@/components/ui/Button';
 import { ArrowDownRightIcon } from '@/components/ui/DesignIcons';
 
-/** Размер из макета плашки 1236 × 582 в единицах плашки (--u, globals.css → .hero-plates) */
+/** Размер из макета плашки 1280 × 582 в единицах плашки (--u, globals.css → .hero-plates) */
 const u = (px: number) => `calc(${px} * var(--u))`;
 const box = (s: Record<string, number>): CSSProperties =>
   Object.fromEntries(Object.entries(s).map(([k, v]) => [k, u(v)])) as CSSProperties;
@@ -20,16 +20,15 @@ const MOVE_MS = 700;
 function ReferenceVisual({ priority }: { priority: boolean }) {
   return (
     <>
-      <div className="absolute" style={box({ left: 363, top: -291, width: 1746, height: 1746 })}>
+      <div className="absolute" style={box({ left: 407, top: -291, width: 1746, height: 1746 })}>
         <Image src={`${DIR}/circles.svg`} alt="" fill unoptimized />
       </div>
-      <div className="absolute grid place-items-center" style={box({ right: -165, top: -51, width: 822.896, height: 822.896 })}>
-        {/* В макете на этом слое размытие 2 px; на сайте в натуральную величину оно заметно, бизнес попросил чётко */}
-        <div className="relative rotate-15" style={box({ width: 671.892, height: 671.892 })}>
+      <div className="absolute grid place-items-center" style={box({ right: -152, top: -51, width: 822.896, height: 822.896 })}>
+        <div className="relative rotate-15" style={{ ...box({ width: 671.892, height: 671.892 }), filter: `blur(${u(2)})` }}>
           <Image quality={90} src={`${DIR}/merck.webp`} alt="" fill priority={priority} sizes="(min-width: 1024px) 672px, 340px" className="object-cover" />
         </div>
       </div>
-      <div className="absolute grid place-items-center" style={box({ right: 171.85, top: 61.17, width: 564.15, height: 564.15 })}>
+      <div className="absolute grid place-items-center" style={box({ right: 184.85, top: 61.17, width: 564.15, height: 564.15 })}>
         <div
           className="relative -rotate-15 [filter:drop-shadow(15px_8px_16.7px_rgb(0_0_0/0.25))]"
           style={box({ width: 460.627, height: 460.627 })}
@@ -44,10 +43,10 @@ function ReferenceVisual({ priority }: { priority: boolean }) {
 function ChromatographyVisual() {
   return (
     <>
-      <div className="absolute" style={box({ left: 443, top: -127, width: 660, height: 660 })}>
+      <div className="absolute" style={box({ left: 466, top: -127, width: 660, height: 660 })}>
         <Image src={`${DIR}/ellipse-glow.svg`} alt="" fill unoptimized />
       </div>
-      <div className="absolute grid place-items-center" style={box({ right: -152.78, top: -187.1, width: 946.038, height: 1228.515 })}>
+      <div className="absolute grid place-items-center" style={box({ right: -132, top: -187.1, width: 946.038, height: 1228.515 })}>
         <div className="relative -rotate-30" style={box({ width: 410.072, height: 1181.812 })}>
           <Image quality={90} src={`${DIR}/column.webp`} alt="" fill sizes="(min-width: 1024px) 410px, 210px" className="object-fill" />
         </div>

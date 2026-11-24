@@ -16,14 +16,14 @@ export async function RequestSection({ request, docs }: { request: HomeContent['
       <Container>
         <SectionHeading id="request-title" title={request.title} accent={request.accent} />
         <div className="grid gap-12 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-16 2xl:gap-24">
-          <div className="order-2 lg:order-1">
+          <div className="store-design-type order-2 lg:order-1">
             <ul className="flex flex-col gap-7 lg:gap-12">
               {request.promises.map((p) => (
                 <li key={p.id} className="flex items-start gap-5 lg:gap-8">
-                  <span className="grid size-14 shrink-0 place-items-center rounded-full bg-surface"><Icon name={p.icon} /></span>
+                  <span className="grid size-14 shrink-0 place-items-center rounded-sm bg-[rgb(53_61_49/0.1)]"><Icon name={p.icon} /></span>
                   <div>
-                    <span className="block text-h4 font-medium text-text">{p.title}</span>
-                    <span className="mt-1.5 block text-body text-text-secondary">{p.text}</span>
+                    <span className="block text-[clamp(18px,1.67vw,24px)] font-medium leading-tight text-accent">{p.title}</span>
+                    <span className="mt-2 block text-[clamp(17px,1.67vw,24px)] leading-tight text-text-secondary">{p.text}</span>
                   </div>
                 </li>
               ))}
