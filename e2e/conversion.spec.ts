@@ -159,16 +159,22 @@ test.describe('Закупочные сценарии и сохранение н�
     expect(JSON.stringify(submissions[0].payload)).not.toContain('test-only-repeat-token');
   });
 
-  test('поиск и отправка файла видны на первом экране главной', async ({ page }) => {
-    for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
-      await page.setViewportSize(viewport);
+  test('главная показывает слайды, пять тематических ссылок и вход в запрос по списку', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const width of [1440, 1024, 768, 390]) {
+      await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
       await dismissCookies(page);
-      const hero = page.getByRole('region', { name: /Стандартные образцы/ }).first();
-      await expect(hero.getByRole('searchbox')).toBeInViewport();
-      await expect(hero.getByRole('link', { name: 'Отправить список' })).toBeInViewport();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+      const hero = page.getByRole('region', { name: 'Главные предложения', exact: true }).last();
+      await expect(hero.getByRole('heading', { level: 1 })).toBeInViewport();
+      await hero.getByRole('button', { name: 'Следующий слайд' }).click();
+      await expect(hero.getByRole('heading', { name: /хроматографии/ })).toBeVisible();
+      const offers = page.locator('.offer-rail');
+      await expect(offers.getByRole('link')).toHaveCount(5);
+      await expect(offers.getByRole('link', { name: 'Alpha-D-Glucose Monohydrate' })).toHaveAttribute('href', /aozeal-d0147-28/);
+      await expect(page.getByRole('link', { name: 'Отправить список', exact: true })).toHaveAttribute('href', '/rfq/#file');
       await expect(page.locator('h1')).toHaveCount(1);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
     }
   });
 });

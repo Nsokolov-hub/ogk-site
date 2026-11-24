@@ -1,7 +1,7 @@
 """The catalog structure and the test catalog (backend/seed/catalog.json).
 
 ``--content-only`` loads what production needs before the first import: the category tree with its texts, brand
-pages and substances. The full load adds 398 test products for development and staging and is refused in
+pages and substances. The full load adds test products for development and staging and is refused in
 production.
 
 Loading is idempotent: brands, categories and substances are matched by slug or path, products by brand and
@@ -142,7 +142,7 @@ def _product(db: Session, raw: dict[str, Any], brands: dict[str, Brand], categor
 
 def load(db: Session, path: Path = SEED_FILE, *, products_too: bool = True) -> dict[str, int]:
     """The catalog structure and texts (categories, brand pages, substances, the root); with ``products_too`` —
-    also the 398 test products, the register of controlled substances and the home selection (development and staging only)."""
+    also the test products, the register of controlled substances and the home selection (development and staging only)."""
     data = json.loads(path.read_text())
     brands = _brands(db, data['brands'])
     categories = _categories(db, data['categories'], data.get('root') or {})

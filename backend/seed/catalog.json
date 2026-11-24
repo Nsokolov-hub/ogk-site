@@ -7362,6 +7362,22 @@
  ],
  "products": [
   {
+   "slug": "aozeal-d0147-28-alpha-d-glucose-monohydrate-working-standard",
+   "name": "Alpha-D-Glucose Monohydrate Working Standard",
+   "nameRu": "Рабочий стандарт моногидрата альфа-D-глюкозы",
+   "catalogNumber": "D0147.28",
+   "brand": "aozeal",
+   "category": "reference-standards",
+   "cardType": "standard",
+   "storage": "2–8 °C",
+   "image": {
+    "src": "/images/home/offers/aozeal-d0147-28.webp",
+    "alt": "Aozeal D0147.28",
+    "kind": "photo"
+   },
+   "packagings": []
+  },
+  {
    "slug": "edqm-y0001897-oxcarbazepine-crs",
    "cardType": "standard",
    "name": "Oxcarbazepine CRS",

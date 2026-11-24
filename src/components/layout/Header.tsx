@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
+import { Mail, Menu, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import type { SiteSettings } from '@/types/settings';
 import type { MenuSection } from '@/lib/site-menu';
@@ -64,24 +64,24 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
   return (
     <header
       className={cn(
-        'fixed inset-x-0 top-3 z-[100] px-4 transition-[top] duration-300 md:px-6 lg:px-10',
+        'fixed inset-x-0 top-3 z-[100] px-4 transition-[top] duration-300 md:px-20',
         scrolled ? 'lg:top-3' : 'lg:top-10',
       )}
     >
       <div
         ref={wrapRef}
-        className="relative mx-auto max-w-[1280px]"
+        className="relative mx-auto"
         onBlur={(e) => {
           if (menuOpen && !e.currentTarget.contains(e.relatedTarget as Node | null)) setMenuOpen(false);
         }}
       >
         {/* Капсула */}
-        <div className="relative isolate flex h-16 items-center justify-between gap-3 rounded-pill pl-4 pr-2 sm:pr-3 lg:h-[72px] lg:gap-8 lg:px-[22px]">
+        <div className="relative isolate flex h-16 items-center justify-between gap-3 rounded-pill pl-4 pr-2 sm:pr-3 lg:h-[72px] lg:gap-4 lg:px-[22px]">
           {/* Стекло — отдельным слоем: размытие на самой капсуле не дало бы подсказкам поиска размыть страницу под собой */}
           <div aria-hidden className="glass absolute inset-0 -z-10 rounded-pill" />
-          <div className="flex min-w-0 items-center gap-8 xl:gap-12">
+          <div className="flex min-w-0 items-center gap-4 min-[1400px]:gap-12">
             <Link href="/" aria-label={t('home')} className="shrink-0 rounded-sm">
-              <Image src="/images/brand/logo-eng.svg" alt="" width={132} height={46} unoptimized priority className="h-8 w-auto lg:h-[37px]" />
+              <Image src="/images/brand/logo-eng.svg" alt="" width={132} height={46} unoptimized priority className="h-8 w-auto lg:h-auto lg:w-[106px]" />
             </Link>
 
             <div className="hidden min-w-0 items-center gap-4 lg:flex">
@@ -100,11 +100,11 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
                 {t('menu')}
                 <ChevronDownIcon size={16} className={cn('transition-transform duration-300', menuOpen && 'rotate-180')} />
               </button>
-              <HeaderSearch variant="header" className="w-[430px] min-w-[180px] shrink" />
+              <HeaderSearch variant="header" className="w-[314px] min-w-[140px] shrink" />
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-6 xl:gap-12">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-4 min-[1400px]:gap-6">
             <a
               href={settings.phone.href}
               onClick={() => track('click_phone', { place: 'header' })}
@@ -114,6 +114,16 @@ export function Header({ settings, menu }: { settings: SiteSettings; menu: MenuS
             >
               <PhoneOutgoingIcon size={24} className="text-accent" />
               <span className="hidden whitespace-nowrap xl:inline">{settings.phone.display}</span>
+            </a>
+
+            <a
+              href={`mailto:${settings.emails.order}`}
+              aria-label={settings.emails.order}
+              onClick={() => track('click_email', { place: 'header' })}
+              className="hidden shrink-0 items-center gap-2 font-medium hover:text-accent lg:flex"
+            >
+              <Mail aria-hidden size={24} className="text-accent" />
+              <span className="hidden xl:inline">{settings.emails.order}</span>
             </a>
 
             <button

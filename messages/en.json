@@ -66,7 +66,7 @@
       "casOffers": "{n, plural, one {# offer} other {# offers}}"
     },
     "casTypo": "This looks like a CAS number with a typo: the last (check) digit does not match. Please check the number.",
-    "headerPlaceholder": "Product or service name, cat. no., CAS, etc."
+    "headerPlaceholder": "Name, catalogue no., CAS"
   },
   "footer": {
     "nav": "Site sections",
@@ -198,7 +198,9 @@
       "region": "Featured offers",
       "slide": "{current} of {total}",
       "prev": "Previous slide",
-      "next": "Next slide"
+      "next": "Next slide",
+      "pause": "Pause rotation",
+      "play": "Resume rotation"
     },
     "products": {
       "allCatalog": "Full catalog",
@@ -232,6 +234,38 @@
       "fileTitle": "Already have an item list?",
       "fileText": "Attach an Excel, CSV, PDF or DOCX file without adding each item to the cart.",
       "parseList": "Match an item list to the catalog"
+    },
+    "offers": {
+      "title": "Special",
+      "accent": "offers",
+      "subtitle": "Products and services for your laboratory",
+      "more": "View details",
+      "page": "Offers, page {page}",
+      "keys": {
+        "title": "Access keys",
+        "text": "Annual access to BP and EDQM online pharmacopoeias with activation instructions."
+      },
+      "glucose": {
+        "title": "Alpha-D-Glucose Monohydrate",
+        "text": "Aozeal working standard, catalogue no. D0147.28."
+      },
+      "lgc": {
+        "title": "LGC standards",
+        "text": "LGC reference standards and materials for analytical laboratories."
+      },
+      "customs": {
+        "title": "Customs clearance",
+        "text": "Customs clearance services for pharmaceutical shipments."
+      },
+      "stock": {
+        "title": "Products in stock",
+        "text": "Browse the catalogue and enquire about available pack sizes."
+      }
+    },
+    "notFound": {
+      "title": "Can’t find the right product?",
+      "text": "Send us your list or specification and we’ll help you find the products.",
+      "cta": "Send a list"
     }
   },
   "notFound": {

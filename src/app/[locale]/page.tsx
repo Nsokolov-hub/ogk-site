@@ -1,16 +1,12 @@
 import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import type { Locale } from '@/i18n/routing';
-import { BrandsSection } from '@/components/home/BrandsSection';
-import { CapabilitiesSection } from '@/components/home/CapabilitiesSection';
-import { HeroSearch } from '@/components/home/HeroSearch';
 import { HeroPlates } from '@/components/home/HeroPlates';
+import { SpecialOffers } from '@/components/home/SpecialOffers';
+import { NotFoundBanner } from '@/components/home/NotFoundBanner';
 import { ProductsSection } from '@/components/home/ProductsSection';
-import { QualitySection } from '@/components/home/QualitySection';
 import { RequestSection } from '@/components/home/RequestSection';
-import { ServicesSection } from '@/components/home/ServicesSection';
 import { SubscribeSection } from '@/components/home/SubscribeSection';
-import { WhyUsSection } from '@/components/home/WhyUsSection';
 import { JsonLd, organizationLd, websiteLd } from '@/components/seo/JsonLd';
 import { getHomeContent, getSiteSettings } from '@/lib/api';
 import { previewParam } from '@/lib/content';
@@ -33,18 +29,14 @@ export default async function HomePage({ params, searchParams }: Props) {
   const [content, settings] = await Promise.all([getHomeContent(locale, preview), getSiteSettings(locale)]);
 
   return (
-    <>
+    <div className="store-home">
       <JsonLd data={[organizationLd(settings), websiteLd(settings, locale)]} />
-      <HeroSearch search={content.hero.search} facts={content.hero.facts} intro={content.hero.slides[0]} />
       <HeroPlates slides={content.hero.slides} />
+      <SpecialOffers />
       <ProductsSection content={content.products} locale={locale} />
-      <BrandsSection brands={content.brands} promo={content.promo} />
-      <QualitySection quality={content.quality} />
-      <ServicesSection services={content.services} />
-      <WhyUsSection whyUs={content.whyUs} />
-      <CapabilitiesSection capabilities={content.capabilities} />
+      <NotFoundBanner />
       <RequestSection request={content.request} docs={settings.docs} />
       <SubscribeSection subscribe={content.subscribe} docs={settings.docs} />
-    </>
+    </div>
   );
 }
