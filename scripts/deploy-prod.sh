@@ -9,7 +9,7 @@
 #
 # Шаги: проверки (ветка main, всё закоммичено и запушено) → админка собирается здесь, если менялась → бэкап на
 # сервере → код до origin/main → текущие образы помечаются rollback-<коммит> → сборка api, worker, migrate, web
-# (без --pull) → образ Caddy с новой админкой → пауза, пока сервер остынет после сборки → compose up → перезапуск
+# (без --pull) → образ Caddy с новой админкой → пауза после сборки → API, прогрев запросов → витрина и worker → перезапуск
 # Caddy, если менялся deploy/caddy → проверки (миграции, страницы, админка, CRM) → наблюдение: ошибки API на живом
 # трафике и время ответа страниц; при сбое — автоматический откат на прежние образы → старые rollback-образы
 # удаляются, кроме трёх последних. Откат печатается в конце.
@@ -119,15 +119,12 @@ for _ in $(seq 1 18); do
 done
 echo "  нагрузка $load на $cores ядра"
 
-step "Миграции и перезапуск"
+step "Миграции, API и прогрев до замены витрины"
 up_at=$(remote "date -u +%Y-%m-%dT%H:%M:%SZ")
-if [[ -n $migrations ]]; then
-  # Finish old stock checks before the migration clears their links and crawl state.
-  # An old worker must not write those links back after the new matching rules take effect.
-  remote_job up "compose stop worker && compose up -d --no-build"
-else
-  remote_job up "compose up -d --no-build"
-fi
+# Keep the old web container's populated cache while the API starts. Replacing both at once drains that cache
+# into a cold API: on 27.11 even the rollback version shed requests for several seconds. The worker stays stopped
+# until warmup so it cannot invalidate the old cache, or write old stock links across a matching migration.
+remote_job up "compose stop worker && compose up -d --no-build --wait api && compose exec -T api python -m app.core.warmup && compose up -d --no-build --no-deps web worker"
 
 # deploy/caddy is mounted into the running Caddy, so a changed config needs a restart (a new admin image already
 # recreated the container with it). The production Caddyfile has `admin off`, so `caddy reload` cannot reach it:
