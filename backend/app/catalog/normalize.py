@@ -132,6 +132,10 @@ def looks_like_number(query: str) -> bool:
     packed = compact(query)
     if not words or len(packed) < 3:
         return False
+    # Reference-culture codes are identifiers even when ATCC and the digits are separate words. Treating them
+    # as full text drops the numeric word and returns unrelated ATCC products instead of all manufacturers.
+    if re.fullmatch(r'atcc(?:baa)?\d+[a-z]?', packed):
+        return True
     digits = sum(ch.isdigit() for ch in packed)
     return all(re.search(r'\d', w) for w in words) or (len(packed) >= 5 and digits / len(packed) >= 0.6)
 

@@ -100,6 +100,16 @@ def test_layout_numbers_slugs_and_brand_spellings():
     assert brand_key('R&D Systems') == brand_key('R and D Systems')
 
 
+@pytest.mark.parametrize('query', ['ATCC 25922', 'ATCC25922', 'atcc 6633', 'ATCC 6538P', 'ATCC BAA-247'])
+def test_reference_culture_codes_use_exact_identifier_search(query):
+    assert looks_like_number(query)
+
+
+def test_reference_code_does_not_turn_a_description_into_a_catalogue_number():
+    assert not looks_like_number('ATCC 25922 medium')
+    assert not looks_like_number('ATCC bacteria')
+
+
 def test_only_formula_and_molecular_weight_are_taken_from_characteristics():
     from app.catalog.normalize import chemical_facts
 
