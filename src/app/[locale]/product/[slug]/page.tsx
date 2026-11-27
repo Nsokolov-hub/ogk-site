@@ -115,7 +115,8 @@ export default async function ProductPage({ params }: Props) {
   ];
 
   const numberLabel =
-    p.cardType === 'equipment' ? t('ids.partNumber') : p.categorySlug === 'biological-standards' ? t('ids.strainCode') : t('ids.catalogNumber');
+    p.cardType === 'equipment' ? t('ids.partNumber') : t('ids.catalogNumber');
+  const strainCode = p.attributes?.strain_code?.join(', ');
   const productLabel = `${p.name}, ${p.brand.name} ${p.catalogNumber}`;
   // Что это за позиция, если нет русского названия: роль по субстанции или раздел каталога
   const deepest = categories.at(-1);
@@ -143,6 +144,7 @@ export default async function ProductPage({ params }: Props) {
   // Ключевые идентификаторы рядом с изображением (ТЗ 5.4); пустые не выводим
   const ids: { label: string; value: ReactNode; copy?: string }[] = [
     { label: numberLabel, value: p.catalogNumber, copy: p.catalogNumber },
+    ...(strainCode ? [{ label: t('ids.strainCode'), value: strainCode, copy: strainCode }] : []),
     ...(p.cas ? [{ label: t('ids.cas'), value: p.cas, copy: p.cas }] : []),
     ...(p.formula ? [{ label: t('ids.formula'), value: <Formula value={p.formula} /> }] : []),
     ...(p.molecularWeight ? [{ label: t('ids.mw'), value: t('ids.mwValue', { value: p.molecularWeight }) }] : []),
@@ -154,6 +156,7 @@ export default async function ProductPage({ params }: Props) {
   const specs: { label: string; value: ReactNode }[] = [
     { label: t('ids.brand'), value: p.identity?.manufacturer ?? p.brand.name },
     { label: numberLabel, value: p.catalogNumber },
+    ...(strainCode ? [{ label: t('ids.strainCode'), value: strainCode }] : []),
     ...(p.cas ? [{ label: t('ids.cas'), value: p.cas }] : []),
     ...(p.altCas?.length ? [{ label: t('ids.altCas'), value: p.altCas.join(', ') }] : []),
     ...(p.formula ? [{ label: t('ids.formula'), value: <Formula value={p.formula} /> }] : []),

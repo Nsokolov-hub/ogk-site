@@ -464,6 +464,9 @@ def save(db: Session, source: str, offers: list[Offer], brands: Brands, now: dat
             hits += 1
             products.add(product_id)
     db.flush()
+    from app.catalog.stock_names import restore_names
+
+    restore_names(db, products)
     _refresh_flags(db, now, products)
     return len(unique), hits
 

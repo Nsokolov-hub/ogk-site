@@ -53,7 +53,7 @@ export interface ProductPreview {
   /** Связь с субстанцией (ТЗ 5.1): страница /substances/{slug}/ и блок «Другие примеси» */
   substance?: { slug: string; role: SubstanceRole };
   /** Значения для фильтров каталога (атрибуты типа, ТЗ 5.1): ключ фильтра → значения */
-  attributes?: Partial<Record<FacetKey, string[]>>;
+  attributes?: Partial<Record<FacetKey | 'strain_code' | 'product_format', string[]>>;
   /** Популярность для сортировки по умолчанию */
   popularity?: number;
   identity?: ProductIdentity;

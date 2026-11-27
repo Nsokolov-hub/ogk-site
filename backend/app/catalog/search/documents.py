@@ -128,6 +128,9 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
     custom = product.custom_packaging if product.custom_packaging is not None else brand.custom_packaging
     numbers = ([compact(product.catalog_number)] + [compact(p.catalog_number) for p in packs if p.catalog_number]
                + [compact(alias) for alias in identifier_aliases(product)])
+    strain_codes = (product.attributes or {}).get('strain_code') or []
+    numbers += [compact(code) for code in strain_codes]
+    numbers += [compact(code.removeprefix('ATCC ')) for code in strain_codes]
     image = product.images[0] if product.images else None
     availability = shown_availability(product)
     supplier = availability == 'in_stock' and product.availability != 'in_stock'
@@ -174,5 +177,7 @@ def document(product: Product, ctx: Context, packs: list[Packaging], links: list
         'image': image,
     }
     for key in ATTRIBUTE_FACETS:
+        doc[key] = (product.attributes or {}).get(key) or []
+    for key in ('strain_code', 'product_format'):
         doc[key] = (product.attributes or {}).get(key) or []
     return doc

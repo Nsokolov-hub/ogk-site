@@ -274,6 +274,46 @@ def _enrich_usp(args: argparse.Namespace) -> None:
     print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
+def _import_strains(args: argparse.Namespace) -> None:
+    from app.catalog.strains import import_reviewed
+
+    content = json.loads(Path(args.file).read_text())
+    with SessionLocal() as db:
+        result = import_reviewed(db, content['products'])
+        if args.apply:
+            db.commit()
+        else:
+            db.rollback()
+    if args.apply:
+        result['indexed'] = _index_targeted([row['id'] for row in result['products']])
+        _refresh_storefront()
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+def _restore_stock_names(args: argparse.Namespace) -> None:
+    from app.catalog.models import Product
+    from app.catalog.stock_names import restore_names
+    from app.core import storefront
+
+    with SessionLocal() as db:
+        ids = restore_names(db)
+        products = list(db.scalars(select(Product).where(Product.id.in_(ids))))
+        result = {'apply': args.apply, 'count': len(ids), 'examples': [
+            {'id': product.id, 'name': product.name_ru or product.name_en, 'article': product.catalog_number}
+            for product in products[:20]]}
+        slugs = [product.slug for product in products]
+        if args.apply:
+            db.commit()
+        else:
+            db.rollback()
+    if args.apply:
+        result['indexed'] = _index_targeted(ids)
+        result['cacheInvalidated'] = all([
+            storefront.revalidate(['catalog', *(f'product:{slug}' for slug in slugs[start:start + 999])])
+            for start in range(0, len(slugs), 999)])
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
 def _quality_pilot(args: argparse.Namespace) -> None:
     from app.catalog import pilot
     from app.core import storefront
@@ -374,6 +414,11 @@ def main() -> None:
     command.add_argument('--undo', action='store_true', help='вернуть решение полноте карточки')
     command = commands.add_parser('enrich-usp-enoxaparin', help='проверенные название, канал и ампула существующих USP/Sigma')
     command.add_argument('--apply', action='store_true', help='применить; без флага — только JSON-предпросмотр')
+    command = commands.add_parser('import-strains', help='загрузить проверенные карточки штаммов из JSON')
+    command.add_argument('file')
+    command.add_argument('--apply', action='store_true')
+    command = commands.add_parser('restore-stock-names', help='названия вместо заглушек по точным предложениям наличия')
+    command.add_argument('--apply', action='store_true')
     command = commands.add_parser('quality-pilot', help='отчёт и ограниченный SEO-пилот реальных карточек')
     command.add_argument('--brands', required=True, help='слаги выбранных брендов через запятую')
     command.add_argument('--limit', type=int, choices=range(20, 51), default=25)
@@ -383,7 +428,8 @@ def main() -> None:
                 'issues': _issues, 'rollback': _rollback, 'controlled': _controlled, 'sync-brands': _sync_brands,
                 'cas-pages': _cas_pages, 'indexnow-sitemap': _indexnow_sitemap, 'cas-names': _cas_names,
                 'index-pilot': _index_pilot, 'competitors': _competitors,
-                'enrich-usp-enoxaparin': _enrich_usp, 'quality-pilot': _quality_pilot,
+                'enrich-usp-enoxaparin': _enrich_usp, 'restore-stock-names': _restore_stock_names,
+                'quality-pilot': _quality_pilot, 'import-strains': _import_strains,
                 'misses': _misses, 'setting': _setting}
     handlers[args.command](args)
 

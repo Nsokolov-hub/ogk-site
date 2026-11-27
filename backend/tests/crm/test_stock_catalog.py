@@ -279,3 +279,48 @@ def test_reviewed_identity_keeps_canonical_list_and_approved_pack_allowlist(clie
     rows = ask(client).json()['items']
     assert [(row['product_id'], row['packaging_id'], row['manufacturer']) for row in rows] == [
         ('master', 'master-pack-1', 'USP')]
+
+
+def test_stock_names_restore_substance_and_remain_searchable(client, sessions):
+    from app.catalog.models import CasPage
+    from app.catalog.stock_names import restore_names
+
+    with sessions.begin() as db:
+        row, packs = product(db, 'glycidol')
+        row.name_en = f'Test manufacturer {row.catalog_number}'
+        row.cas = '556-52-5'
+        db.add(CasPage(cas=row.cas, name='Glycidol', offers=3))
+        evidence = offer(db, 'glycidol-offer', row, packs[0], utcnow())
+        evidence.name, evidence.cas = 'Глицидол, 96%', row.cas
+        db.flush()
+        assert restore_names(db) == [row.id]
+        assert row.name_en == 'Glycidol'
+        assert row.name_ru == 'Глицидол, 96%'
+        assert row.needs_index
+        assert restore_names(db) == []
+    items = ask(client, {'q': 'Глицидол'}).json()['items']
+    assert len(items) == 1
+    assert items[0]['name'] == 'Глицидол, 96%'
+    assert len(ask(client, {'q': 'Glycidol'}).json()['items']) == 1
+
+
+@pytest.mark.parametrize('case', ['manual', 'real_name', 'wrong_cas', 'missing_pack', 'expired'])
+def test_stock_names_protect_existing_names_and_reject_unconfirmed_matches(sessions, case):
+    from app.catalog.stock_names import restore_names
+
+    with sessions.begin() as db:
+        row, packs = product(db, 'protected')
+        row.name_en = f'Test manufacturer {row.catalog_number}'
+        row.cas = '556-52-5'
+        if case == 'manual':
+            row.manual_fields = ['name_en', 'name_ru']
+        if case == 'real_name':
+            row.name_en = 'Reviewed Glycidol'
+        evidence = offer(db, 'protected-offer', row, None if case == 'missing_pack' else packs[0],
+                         utcnow(), days=11 if case == 'expired' else 0)
+        evidence.name = 'Glycidol, 96%'
+        evidence.cas = '99-06-9' if case == 'wrong_cas' else row.cas
+        original = row.name_en
+        db.flush()
+        assert restore_names(db) == []
+        assert row.name_en == original

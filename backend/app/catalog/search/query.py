@@ -64,7 +64,7 @@ def preview(hit: dict[str, Any], lang: str, brand_pages: Collection[str] = froze
     page: only those brands are links (the others would answer 404)."""
     ru = lang != 'en'
     attributes = {key: hit.get(key) or [] for key in ('storage', 'purpose', 'type', 'phase', 'length', 'diameter',
-                                                       'particle', 'ph') if hit.get(key)}
+                                                       'particle', 'ph', 'strain_code', 'product_format') if hit.get(key)}
     attributes['brand'] = [hit['brand_slug']]
     attributes['pack'] = hit.get('packs') or []
     brand = {'slug': hit['brand_slug'], 'name': hit['brand'], 'logo': hit.get('brand_logo'),
